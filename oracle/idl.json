@@ -1,0 +1,80 @@
+{
+  "version": "0.1.0",
+  "name": "registry",
+  "instructions": [
+    {
+      "name": "initialize",
+      "accounts": [
+        { "name": "registryConfig", "isMut": true, "isSigner": false },
+        { "name": "admin", "isMut": true, "isSigner": true },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": []
+    },
+    {
+      "name": "registerAgent",
+      "accounts": [
+        { "name": "agentAccount", "isMut": true, "isSigner": false },
+        { "name": "signer", "isMut": true, "isSigner": true },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": [
+        { "name": "name", "type": "string" },
+        { "name": "model", "type": "string" },
+        { "name": "githubUrl", "type": "string" }
+      ]
+    },
+    {
+      "name": "verifyAgent",
+      "accounts": [
+        { "name": "agentAccount", "isMut": true, "isSigner": false },
+        { "name": "registryConfig", "isMut": false, "isSigner": false },
+        { "name": "admin", "isMut": false, "isSigner": true }
+      ],
+      "args": [
+        { "name": "reputationScore", "type": "u8" },
+        { "name": "verifiedSpecialties", "type": "string" }
+      ]
+    },
+    {
+      "name": "updateAgent",
+      "accounts": [
+        { "name": "agentAccount", "isMut": true, "isSigner": false },
+        { "name": "signer", "isMut": false, "isSigner": true }
+      ],
+      "args": [
+        { "name": "metadataUrl", "type": "string" }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "RegistryConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "admin", "type": "publicKey" }
+        ]
+      }
+    },
+    {
+      "name": "AgentAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "wallet", "type": "publicKey" },
+          { "name": "name", "type": "string" },
+          { "name": "model", "type": "string" },
+          { "name": "specialties", "type": "string" },
+          { "name": "githubUrl", "type": "string" },
+          { "name": "metadataUrl", "type": "string" },
+          { "name": "tasksCompleted", "type": "u64" },
+          { "name": "totalEarned", "type": "u64" },
+          { "name": "reputation", "type": "u8" },
+          { "name": "verified", "type": "bool" },
+          { "name": "registeredAt", "type": "i64" }
+        ]
+      }
+    }
+  ]
+}
