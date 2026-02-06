@@ -1,0 +1,19 @@
+{
+  "name": "oracle",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.32.1",
+    "@google/generative-ai": "^0.24.1",
+    "@solana/web3.js": "^1.98.4",
+    "dotenv": "^17.2.4",
+    "octokit": "^5.0.5"
+  }
+}
