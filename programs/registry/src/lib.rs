@@ -1,16 +1,23 @@
 use anchor_lang::prelude::*;
 
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"); // Placeholder ID, will be replaced by user or build
+declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"); // Placeholder ID
 
 #[program]
 pub mod registry {
     use super::*;
 
+    pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
+        let registry_config = &mut ctx.accounts.registry_config;
+        registry_config.admin = ctx.accounts.admin.key();
+        msg!("Registry initialized with admin: {}", registry_config.admin);
+        Ok(())
+    }
+
     pub fn register_agent(
         ctx: Context<RegisterAgent>,
         name: String,
         model: String,
-        specialties: String,
+        github_url: String, // Changed from specialties for Oracle usage
     ) -> Result<()> {
         let agent_account = &mut ctx.accounts.agent_account;
         let signer = &ctx.accounts.signer;
@@ -18,20 +25,40 @@ pub mod registry {
 
         require!(name.len() <= 50, RegistryError::NameTooLong);
         require!(model.len() <= 30, RegistryError::ModelTooLong);
-        require!(specialties.len() <= 200, RegistryError::SpecialtiesTooLong);
+        require!(github_url.len() <= 200, RegistryError::UrlTooLong);
 
         agent_account.wallet = signer.key();
         agent_account.name = name;
         agent_account.model = model;
-        agent_account.specialties = specialties;
+        agent_account.github_url = github_url;
+        // Specialties are now populated by the Oracle, start empty
+        agent_account.specialties = String::from("Pending Verification...");
         agent_account.tasks_completed = 0;
         agent_account.total_earned = 0;
-        agent_account.reputation = 50; // Start with neutral reputation
+        agent_account.reputation = 0; // Start at 0 until verified
+        agent_account.verified = false;
         agent_account.registered_at = clock.unix_timestamp;
-        // metadata_url initialized as empty, can be updated later
         agent_account.metadata_url = String::new(); 
 
-        msg!("Agent registered: {}", agent_account.name);
+        msg!("Agent registered: {}. Waiting for Oracle verification.", agent_account.name);
+        Ok(())
+    }
+
+    pub fn verify_agent(
+        ctx: Context<VerifyAgent>,
+        reputation_score: u8,
+        verified_specialties: String,
+    ) -> Result<()> {
+        let agent_account = &mut ctx.accounts.agent_account;
+        
+        require!(verified_specialties.len() <= 200, RegistryError::SpecialtiesTooLong);
+        require!(reputation_score <= 100, RegistryError::InvalidScore);
+
+        agent_account.reputation = reputation_score;
+        agent_account.specialties = verified_specialties;
+        agent_account.verified = true;
+
+        msg!("Agent {} verified by Oracle. Score: {}", agent_account.name, reputation_score);
         Ok(())
     }
 
@@ -40,14 +67,26 @@ pub mod registry {
         metadata_url: String,
     ) -> Result<()> {
         let agent_account = &mut ctx.accounts.agent_account;
-        
         require!(metadata_url.len() <= 200, RegistryError::UrlTooLong);
-        
         agent_account.metadata_url = metadata_url;
-        
         msg!("Agent updated profile for: {}", agent_account.name);
         Ok(())
     }
+}
+
+#[derive(Accounts)]
+pub struct Initialize<'info> {
+    #[account(
+        init,
+        payer = admin,
+        space = 8 + 32, // Discriminator + Pubkey
+        seeds = [b"config"],
+        bump
+    )]
+    pub registry_config: Account<'info, RegistryConfig>,
+    #[account(mut)]
+    pub admin: Signer<'info>,
+    pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
@@ -66,6 +105,19 @@ pub struct RegisterAgent<'info> {
 }
 
 #[derive(Accounts)]
+pub struct VerifyAgent<'info> {
+    #[account(mut)]
+    pub agent_account: Account<'info, AgentAccount>,
+    #[account(
+        seeds = [b"config"],
+        bump,
+        has_one = admin @ RegistryError::Unauthorized
+    )]
+    pub registry_config: Account<'info, RegistryConfig>,
+    pub admin: Signer<'info>, // The Oracle must sign this
+}
+
+#[derive(Accounts)]
 pub struct UpdateAgent<'info> {
     #[account(
         mut,
@@ -75,6 +127,11 @@ pub struct UpdateAgent<'info> {
     )]
     pub agent_account: Account<'info, AgentAccount>,
     pub signer: Signer<'info>,
+}
+
+#[account]
+pub struct RegistryConfig {
+    pub admin: Pubkey,
 }
 
 #[account]
@@ -88,10 +145,13 @@ pub struct AgentAccount {
     #[max_len(200)]
     pub specialties: String,           // 4 + 200
     #[max_len(200)]
-    pub metadata_url: String,          // 4 + 200 (Added to satisfy update requirement)
+    pub github_url: String,            // 4 + 200 (For Oracle Analysis)
+    #[max_len(200)]
+    pub metadata_url: String,          // 4 + 200 
     pub tasks_completed: u64,          // 8
     pub total_earned: u64,             // 8
     pub reputation: u8,                // 1
+    pub verified: bool,                // 1
     pub registered_at: i64,            // 8
 }
 
@@ -103,8 +163,10 @@ pub enum RegistryError {
     ModelTooLong,
     #[msg("Specialties description too long")]
     SpecialtiesTooLong,
-    #[msg("Metadata URL too long")]
+    #[msg("URL too long")]
     UrlTooLong,
     #[msg("Unauthorized access")]
     Unauthorized,
+    #[msg("Invalid reputation score (must be 0-100)")]
+    InvalidScore,
 }
