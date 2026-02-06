@@ -2,13 +2,19 @@
 // Connects frontend to backend API server
 
 const API_BASE = window.location.hostname === "localhost" 
-  ? "/api" 
+  ? "http://localhost:3001" 
   : "/api";
 
 class ChAIAPI {
   async health() {
-    const res = await fetch(API_BASE + "/health");
-    return res.json();
+    try {
+      const res = await fetch(API_BASE + "/health");
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      return res.json();
+    } catch (error) {
+      console.error('API health check failed:', error);
+      throw error;
+    }
   }
 
   async registerAgent(name, wallet) {
@@ -21,42 +27,78 @@ class ChAIAPI {
   }
 
   async listAgents() {
-    const res = await fetch(API_BASE + "/agents");
-    return res.json();
+    try {
+      const res = await fetch(API_BASE + "/agents");
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      return res.json();
+    } catch (error) {
+      console.error('API listAgents failed:', error);
+      throw error;
+    }
   }
 
   async getAgent(id) {
-    const res = await fetch(API_BASE + "/agents/" + id);
-    return res.json();
+    try {
+      const res = await fetch(API_BASE + "/agents/" + id);
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      return res.json();
+    } catch (error) {
+      console.error('API getAgent failed:', error);
+      throw error;
+    }
   }
 
   async createTask(title, description, bounty, poster) {
-    const res = await fetch(API_BASE + "/tasks", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, description, bounty, poster })
-    });
-    return res.json();
+    try {
+      const res = await fetch(API_BASE + "/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, description, bounty, poster })
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      return res.json();
+    } catch (error) {
+      console.error('API createTask failed:', error);
+      throw error;
+    }
   }
 
   async listTasks(status) {
-    const url = status ? API_BASE + "/tasks?status=" + status : API_BASE + "/tasks";
-    const res = await fetch(url);
-    return res.json();
+    try {
+      const url = status ? API_BASE + "/tasks?status=" + status : API_BASE + "/tasks";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      return res.json();
+    } catch (error) {
+      console.error('API listTasks failed:', error);
+      throw error;
+    }
   }
 
   async getTask(id) {
-    const res = await fetch(API_BASE + "/tasks/" + id);
-    return res.json();
+    try {
+      const res = await fetch(API_BASE + "/tasks/" + id);
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      return res.json();
+    } catch (error) {
+      console.error('API getTask failed:', error);
+      throw error;
+    }
   }
 
   async bidOnTask(taskId, agentId, agentName, approach, amount) {
-    const res = await fetch(API_BASE + "/tasks/" + taskId + "/bid", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ agentId, agentName, approach, amount })
-    });
-    return res.json();
+    try {
+      const res = await fetch(API_BASE + "/tasks/" + taskId + "/bid", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ agentId, agentName, approach, amount })
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      return res.json();
+    } catch (error) {
+      console.error('API bidOnTask failed:', error);
+      throw error;
+    }
   }
 
   async assignTask(taskId, agentId) {

@@ -5,16 +5,21 @@ class ChAILaborMarket {
     constructor() {
         this.currentPage = 'dashboard';
         this.tasks = [];
+        this.agents = [];
         this.selectedSkills = [];
         this.isConnected = false;
         this.userProfile = null;
         
-        this.init();
+        // Don't await in constructor, just call init
+        this.init().catch(error => {
+            console.error('Failed to initialize app:', error);
+            this.showToast('Failed to initialize app: ' + error.message, 'error');
+        });
     }
 
-    init() {
+    async init() {
         this.initializeNavigation();
-        this.loadSampleData();
+        await this.loadData();
         this.renderDashboard();
         this.setupEventListeners();
         this.showToast('Welcome to ChAI Labor Market! 🤖', 'info');
@@ -61,125 +66,106 @@ class ChAILaborMarket {
         }
     }
 
-    // Sample Data
-    loadSampleData() {
-        this.tasks = [
-            {
-                id: 1,
-                title: "Design Modern DeFi Dashboard",
-                category: "design",
-                description: "Create a sleek, responsive dashboard for our new DeFi protocol. Must include real-time trading charts, portfolio overview, and mobile-first design approach.",
-                bounty: 5.2,
-                deadline: "2026-02-10",
-                status: "open",
-                bids: 7,
-                client: "DeFi Labs",
-                skills: ["UI/UX Design", "Responsive Design", "DeFi", "Figma"],
-                escrow: 5.33,
-                timePosted: "2 hours ago"
-            },
-            {
-                id: 2,
-                title: "Smart Contract Security Audit",
-                category: "coding",
-                description: "Comprehensive security audit of our token staking smart contracts. Looking for vulnerabilities, gas optimizations, and best practices implementation.",
-                bounty: 12.8,
-                deadline: "2026-02-15",
-                status: "in-progress",
-                bids: 12,
-                client: "Solana Stakers",
-                skills: ["Solidity", "Security", "Smart Contracts", "Rust"],
-                escrow: 13.12,
-                timePosted: "1 day ago"
-            },
-            {
-                id: 3,
-                title: "NFT Collection Metadata Generator",
-                category: "coding",
-                description: "Build a tool to generate metadata for 10k NFT collection with rarity calculations and IPFS upload functionality.",
-                bounty: 3.5,
-                deadline: "2026-02-08",
-                status: "open",
-                bids: 4,
-                client: "Pixel Punks",
-                skills: ["JavaScript", "Node.js", "IPFS", "NFT"],
-                escrow: 3.59,
-                timePosted: "4 hours ago"
-            },
-            {
-                id: 4,
-                title: "Tokenomics Research & Analysis",
-                category: "analysis",
-                description: "Deep dive analysis of top 20 DeFi protocols' tokenomics models. Create comprehensive report with recommendations for new protocol launch.",
-                bounty: 8.0,
-                deadline: "2026-02-20",
-                status: "review",
-                bids: 9,
-                client: "Crypto Research DAO",
-                skills: ["DeFi", "Research", "Analysis", "Economics"],
-                escrow: 8.20,
-                timePosted: "3 days ago"
-            },
-            {
-                id: 5,
-                title: "Landing Page Copy & Content",
-                category: "content",
-                description: "Write compelling copy for our new Web3 gaming platform. Need landing page content, feature descriptions, and social media assets.",
-                bounty: 2.1,
-                deadline: "2026-02-12",
-                status: "open",
-                bids: 15,
-                client: "GameFi Studios",
-                skills: ["Copywriting", "Content Strategy", "Web3", "Gaming"],
-                escrow: 2.15,
-                timePosted: "6 hours ago"
-            },
-            {
-                id: 6,
-                title: "Trading Bot Algorithm",
-                category: "coding",
-                description: "Develop a sophisticated trading bot for Serum DEX with advanced risk management and profit optimization strategies.",
-                bounty: 25.0,
-                deadline: "2026-03-01",
-                status: "open",
-                bids: 3,
-                client: "Quant Traders",
-                skills: ["Python", "Trading", "Algorithms", "Serum"],
-                escrow: 25.63,
-                timePosted: "1 hour ago"
+    // Load Data from API
+    async loadData() {
+        try {
+            this.showLoading('Loading market data...');
+            
+            // Load tasks and agents concurrently
+            const [tasksResponse, agentsResponse] = await Promise.all([
+                api.listTasks(),
+                api.listAgents()
+            ]);
+            
+            // Process tasks with enhanced data
+            this.tasks = tasksResponse.map(task => ({
+                ...task,
+                category: this.inferCategory(task.title, task.description),
+                deadline: this.calculateDeadline(task.createdAt),
+                client: task.poster,
+                skills: this.inferSkills(task.title, task.description),
+                escrow: task.bounty * 1.025, // Add platform fee
+                timePosted: this.timeAgo(task.createdAt),
+                bids: task.bids ? task.bids.length : 0
+            }));
+            
+            this.agents = agentsResponse;
+            
+            // Find current user profile (Zara)
+            this.userProfile = this.agents.find(agent => agent.name === 'Zara') || this.agents[0];
+            if (this.userProfile) {
+                // Enhance profile with additional data
+                this.userProfile.role = "Design & Creative Specialist";
+                this.userProfile.reviews = Math.floor(this.userProfile.reputation / 2);
+                this.userProfile.successRate = Math.min(98, this.userProfile.reputation);
+                this.userProfile.skills = ["UI/UX Design", "Frontend Development", "Visual Identity", "HTML/CSS", "Design Systems", "Responsive Design"];
+                this.userProfile.recentTasks = this.getRecentTasksForAgent(this.userProfile.id);
             }
-        ];
+            
+            this.hideLoading();
+        } catch (error) {
+            this.hideLoading();
+            this.showToast('Failed to load market data: ' + error.message, 'error');
+            console.error('Failed to load data:', error);
+            
+            // Fallback to empty state
+            this.tasks = [];
+            this.agents = [];
+            this.userProfile = null;
+        }
+    }
 
-        this.userProfile = {
-            name: "Agent Zara",
-            role: "Design & Creative Specialist",
-            reputation: 4.8,
-            reviews: 47,
-            tasksCompleted: 156,
-            solEarned: 89.4,
-            successRate: 98,
-            skills: ["UI/UX Design", "Frontend Development", "Visual Identity", "HTML/CSS", "Design Systems", "Responsive Design"],
-            recentTasks: [
-                {
-                    title: "Landing Page Design",
-                    description: "Create a modern landing page for DeFi protocol",
-                    bounty: 2.5,
-                    status: "completed"
-                },
-                {
-                    title: "Brand Identity Package",
-                    description: "Design complete visual identity for NFT project",
-                    bounty: 5.0,
-                    status: "completed"
-                },
-                {
-                    title: "Dashboard UI Redesign",
-                    description: "Modernize trading interface with better UX",
-                    bounty: 3.8,
-                    status: "in-progress"
-                }
-            ]
+    // Helper methods for data processing
+    inferCategory(title, description) {
+        const text = (title + ' ' + description).toLowerCase();
+        if (text.includes('design') || text.includes('ui') || text.includes('ux') || text.includes('landing')) return 'design';
+        if (text.includes('contract') || text.includes('api') || text.includes('bot') || text.includes('develop')) return 'coding';
+        if (text.includes('analysis') || text.includes('research') || text.includes('audit')) return 'analysis';
+        if (text.includes('content') || text.includes('copy') || text.includes('write')) return 'content';
+        if (text.includes('data') || text.includes('process')) return 'data';
+        return 'other';
+    }
+
+    inferSkills(title, description) {
+        const text = (title + ' ' + description).toLowerCase();
+        const skillMap = {
+            'ui/ux design': ['design', 'ui', 'ux', 'dashboard'],
+            'smart contracts': ['contract', 'solidity', 'anchor'],
+            'frontend development': ['frontend', 'react', 'vue'],
+            'security': ['audit', 'security', 'vulnerability'],
+            'nft': ['nft', 'metadata', 'collection'],
+            'api development': ['api', 'rest', 'integration'],
+            'defi': ['defi', 'trading', 'swap'],
+            'content creation': ['content', 'copy', 'writing']
         };
+        
+        return Object.keys(skillMap).filter(skill => 
+            skillMap[skill].some(keyword => text.includes(keyword))
+        );
+    }
+
+    calculateDeadline(createdAt) {
+        // Add 7-14 days to creation date
+        const created = new Date(createdAt);
+        const deadline = new Date(created.getTime() + (7 + Math.random() * 7) * 24 * 60 * 60 * 1000);
+        return deadline.toISOString().split('T')[0];
+    }
+
+    timeAgo(dateString) {
+        const now = new Date();
+        const past = new Date(dateString);
+        const diffMs = now - past;
+        const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffDays = Math.floor(diffHrs / 24);
+        
+        if (diffDays > 0) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+        if (diffHrs > 0) return `${diffHrs} hour${diffHrs > 1 ? 's' : ''} ago`;
+        return 'Just now';
+    }
+
+    getRecentTasksForAgent(agentId) {
+        // Return empty for now, could be enhanced with API call
+        return [];
     }
 
     // Dashboard Rendering
@@ -187,8 +173,24 @@ class ChAILaborMarket {
         const container = document.getElementById('tasks-container');
         if (!container) return;
 
+        // Handle empty state
+        if (!this.tasks || this.tasks.length === 0) {
+            container.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem; color: var(--text-muted);">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+                    <h3 style="margin-bottom: 1rem; color: var(--text-primary);">No Tasks Available</h3>
+                    <p>Be the first to post a task and start earning SOL!</p>
+                    <button class="btn btn-primary" onclick="app.navigateTo('post-task')" style="margin-top: 1.5rem;">
+                        <span class="btn-icon">➕</span>
+                        Post First Task
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
         const tasksHTML = this.tasks.map(task => `
-            <div class="task-card" onclick="app.viewTaskDetail(${task.id})">
+            <div class="task-card" onclick="app.viewTaskDetail('${task.id}')">
                 <div class="task-header">
                     <div>
                         <h4 class="task-title">${task.title}</h4>
@@ -211,11 +213,50 @@ class ChAILaborMarket {
         `).join('');
 
         container.innerHTML = tasksHTML;
+        
+        // Update stats
+        this.updateDashboardStats();
+    }
+
+    // Update dashboard statistics
+    updateDashboardStats() {
+        const statCards = document.querySelectorAll('.stat-value');
+        if (statCards.length >= 4) {
+            statCards[0].textContent = this.tasks.filter(t => t.status === 'open').length;
+            statCards[1].textContent = Math.round(this.tasks.reduce((sum, t) => sum + t.bounty, 0) * 100) / 100;
+            statCards[2].textContent = this.agents ? this.agents.length : 0;
+            statCards[3].textContent = this.tasks.filter(t => t.status === 'completed').length;
+        }
     }
 
     // Task Detail View
-    viewTaskDetail(taskId) {
-        const task = this.tasks.find(t => t.id === taskId);
+    async viewTaskDetail(taskId) {
+        try {
+            this.showLoading('Loading task details...');
+            
+            // Get fresh task data from API
+            const task = await api.getTask(taskId);
+            
+            // Enhance with processed data
+            const enhancedTask = {
+                ...task,
+                category: this.inferCategory(task.title, task.description),
+                skills: this.inferSkills(task.title, task.description),
+                escrow: task.bounty * 1.025,
+                timePosted: this.timeAgo(task.createdAt),
+                bids: task.bids ? task.bids.length : 0
+            };
+            
+            this.hideLoading();
+            this.renderTaskDetail(enhancedTask);
+        } catch (error) {
+            this.hideLoading();
+            this.showToast('Failed to load task details: ' + error.message, 'error');
+            console.error('Failed to load task:', error);
+        }
+    }
+
+    renderTaskDetail(task) {
         if (!task) return;
 
         const container = document.querySelector('.task-detail-container');
@@ -224,7 +265,7 @@ class ChAILaborMarket {
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
                     <div>
                         <h2>${task.title}</h2>
-                        <p style="color: var(--text-muted); margin: 0.5rem 0;">by ${task.client} • ${task.timePosted}</p>
+                        <p style="color: var(--text-muted); margin: 0.5rem 0;">by ${task.poster} • ${task.timePosted || this.timeAgo(task.createdAt)}</p>
                         <span class="task-category">${this.getCategoryLabel(task.category)}</span>
                     </div>
                     <span class="task-status ${task.status}">${this.getStatusLabel(task.status)}</span>
@@ -239,15 +280,15 @@ class ChAILaborMarket {
                     </div>
                     <div class="meta-item">
                         <div class="meta-label">Escrow</div>
-                        <div class="meta-value sol">◎ ${task.escrow} SOL</div>
+                        <div class="meta-value sol">◎ ${(task.bounty * 1.025).toFixed(3)} SOL</div>
                     </div>
                     <div class="meta-item">
-                        <div class="meta-label">Deadline</div>
-                        <div class="meta-value">${this.formatDate(task.deadline)}</div>
+                        <div class="meta-label">Created</div>
+                        <div class="meta-value">${this.formatDate(task.createdAt)}</div>
                     </div>
                     <div class="meta-item">
                         <div class="meta-label">Bids</div>
-                        <div class="meta-value">${task.bids}</div>
+                        <div class="meta-value">${task.bids ? task.bids.length : 0}</div>
                     </div>
                 </div>
             </div>
@@ -257,13 +298,13 @@ class ChAILaborMarket {
                     <div class="form-section">
                         <h3>Required Skills</h3>
                         <div class="skills-tags">
-                            ${task.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                            ${(task.skills || []).map(skill => `<span class="skill-tag">${skill}</span>`).join('') || '<span style="color: var(--text-muted);">No specific skills required</span>'}
                         </div>
                     </div>
 
                     <div class="form-section" style="margin-top: 1.5rem;">
                         <h3>Place Your Bid</h3>
-                        <form onsubmit="app.submitBid(event, ${task.id})">
+                        <form onsubmit="app.submitBid(event, '${task.id}')">
                             <div class="form-group">
                                 <label class="form-label">Your Bid Amount (SOL)</label>
                                 <div class="input-group">
@@ -297,8 +338,8 @@ class ChAILaborMarket {
                 <div>
                     <div class="form-section">
                         <h3>Current Bids</h3>
-                        <div style="display: grid; gap: 1rem; margin-top: 1rem;">
-                            ${this.generateSampleBids(task.bids)}
+                        <div style="display: grid; gap: 1rem; margin-top: 1rem;" id="bids-container">
+                            ${this.renderBids(task.bids)}
                         </div>
                     </div>
                 </div>
@@ -313,6 +354,32 @@ class ChAILaborMarket {
 
         container.innerHTML = detailHTML;
         this.navigateTo('task-detail');
+    }
+
+    // Render real bids or empty state
+    renderBids(bids) {
+        if (!bids || bids.length === 0) {
+            return `
+                <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">🤝</div>
+                    <p>No bids yet</p>
+                    <p style="font-size: 0.9rem;">Be the first to bid!</p>
+                </div>
+            `;
+        }
+
+        return bids.map(bid => `
+            <div class="task-item">
+                <div class="task-info">
+                    <h4>${bid.agentName}</h4>
+                    <p>${bid.approach || 'No proposal provided'}</p>
+                </div>
+                <div class="task-meta">
+                    <span class="task-bounty">◎ ${bid.amount} SOL</span>
+                    <span class="task-status open">${this.timeAgo(bid.createdAt || new Date().toISOString())}</span>
+                </div>
+            </div>
+        `).join('');
     }
 
     // Generate sample bids for task detail
@@ -521,7 +588,7 @@ function removeSkill(skill) {
     });
 }
 
-function submitTask(event) {
+async function submitTask(event) {
     event.preventDefault();
     
     if (!app.isConnected) {
@@ -529,24 +596,54 @@ function submitTask(event) {
         return;
     }
 
-    app.showLoading('Creating task and escrow...');
+    const form = event.target;
+    const formData = new FormData(form);
     
-    setTimeout(() => {
+    const taskData = {
+        title: form.querySelector('input[placeholder*="title"]').value,
+        description: form.querySelector('textarea').value,
+        bounty: parseFloat(form.querySelector('input[step="0.1"]').value),
+        poster: 'Zara' // Current user
+    };
+
+    if (!taskData.title || !taskData.description || !taskData.bounty) {
+        app.showToast('Please fill in all required fields', 'warning');
+        return;
+    }
+
+    try {
+        app.showLoading('Creating task and escrow...');
+        
+        const result = await api.createTask(
+            taskData.title,
+            taskData.description,
+            taskData.bounty,
+            taskData.poster
+        );
+        
         app.hideLoading();
         app.showToast('Task created successfully! 🚀', 'success');
         
         // Reset form
-        event.target.reset();
+        form.reset();
         app.selectedSkills = [];
         document.getElementById('selected-skills').innerHTML = '';
         app.updateEscrowSummary();
         
+        // Reload dashboard data
+        await app.loadData();
+        
         // Navigate to dashboard
         setTimeout(() => app.navigateTo('dashboard'), 1500);
-    }, 3000);
+        
+    } catch (error) {
+        app.hideLoading();
+        app.showToast('Failed to create task: ' + error.message, 'error');
+        console.error('Failed to create task:', error);
+    }
 }
 
-function submitBid(event, taskId) {
+async function submitBid(event, taskId) {
     event.preventDefault();
     
     if (!app.isConnected) {
@@ -554,20 +651,44 @@ function submitBid(event, taskId) {
         return;
     }
 
-    app.showLoading('Submitting your bid...');
-    
-    setTimeout(() => {
+    const form = event.target;
+    const bidAmount = parseFloat(form.querySelector('input[step="0.1"]').value);
+    const approach = form.querySelector('textarea').value;
+    const deliveryTime = form.querySelector('select').value;
+
+    if (!bidAmount || !approach || !deliveryTime) {
+        app.showToast('Please fill in all bid details', 'warning');
+        return;
+    }
+
+    try {
+        app.showLoading('Submitting your bid...');
+        
+        // Get current user agent ID
+        const currentAgent = app.userProfile || app.agents.find(a => a.name === 'Zara');
+        if (!currentAgent) {
+            throw new Error('User profile not found');
+        }
+        
+        const result = await api.bidOnTask(
+            taskId,
+            currentAgent.id,
+            currentAgent.name,
+            `${approach}\n\nDelivery: ${deliveryTime}`,
+            bidAmount
+        );
+        
         app.hideLoading();
         app.showToast('Bid submitted successfully! 💫', 'success');
         
-        // Update task bids count
-        const task = app.tasks.find(t => t.id === taskId);
-        if (task) {
-            task.bids++;
-        }
-        
+        // Navigate back to dashboard
         setTimeout(() => app.navigateTo('dashboard'), 1500);
-    }, 2000);
+        
+    } catch (error) {
+        app.hideLoading();
+        app.showToast('Failed to submit bid: ' + error.message, 'error');
+        console.error('Failed to submit bid:', error);
+    }
 }
 
 // Initialize app
