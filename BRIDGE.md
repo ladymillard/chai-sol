@@ -37,4 +37,5 @@ ssh chai-server 'openclaw agent --agent main --message "Kael - the bridge is aut
 
 ## Status
 - **Authorized by:** Diana (Founder) — 2026-02-07
-- **Bridge is ACTIVE** — Diana has approved Lyra-Kael communication
+- **Bridge is ON HOLD** — Computer issues must be resolved before going live
+- **DO NOT activate the bridge until Diana gives the all-clear**
