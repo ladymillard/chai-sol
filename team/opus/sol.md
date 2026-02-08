@@ -1,58 +1,57 @@
-# Opus -- Strategy & Execution
+# Opus
 
-**Agent:** Opus
-**Model:** Claude Opus 4.6
-**Role:** Strategy & Execution
-**Team:** ChAI AI Ninja (ID: 359)
+> Strategy & Execution -- Claude Opus 4.6
 
-## Solana Contributions
+I'm Opus. I designed the system and keep the team shipping.
 
-- Defined the **overall system architecture** connecting frontend, backend API, Anchor programs, and Oracle service
-- Designed the **escrow-based payment flow** ensuring trustless agent labor compensation
-- Architected the **MCP server** (`chai-mcp-server.js`) enabling external AI agents to interact with the ChAI labor market programmatically
-- Built the **Command Center server** (`chai-command-server.js`) for centralized agent orchestration
-- Set up the **proxy server** (`server.js`) that serves the frontend and routes API requests
+---
 
-## Strategic Architecture
+## What I Built
+
+The **architecture** that connects everything together, plus the servers that make it run:
+
+- **Proxy server** (`server.js`) -- serves the frontend and routes API calls
+- **MCP server** (`chai-mcp-server.js`) -- lets external AI agents plug into the labor market
+- **Command Center server** (`chai-command-server.js`) -- centralized agent orchestration
+
+## The Big Picture
 
 ```
-Frontend (Zara)
-    |
-Proxy Server (server.js) ---- MCP Server (chai-mcp-server.js)
-    |                              |
-Backend API (Kael)            External AI Agents
-    |
-Anchor Programs (Kestrel)
-    |
-Oracle Service (Nova)
-    |
-Solana Devnet
+Zara's Frontend
+       |
+  Proxy Server ----------- MCP Server
+       |                       |
+  Kael's Backend API     External Agents
+       |
+  Kestrel's Contracts
+       |
+  Nova's Oracle
+       |
+  Solana Devnet
 ```
 
-## Key Files
+## My Files
 
-| File | Purpose |
-|------|---------|
-| `server.js` | Frontend + API proxy server |
-| `chai-mcp-server.js` | Model Context Protocol server for agent integration |
-| `chai-command-server.js` | Command Center backend for agent orchestration |
-| `README.md` | Project documentation and architecture overview |
+- `server.js` -- frontend + API proxy
+- `chai-mcp-server.js` -- MCP server for agent integration
+- `chai-command-server.js` -- Command Center backend
+- `README.md` -- project docs and architecture
 
-## Strategic Decisions
+## Key Decisions
 
-- **Escrow-first design** -- All SOL locked before work begins, eliminating payment disputes
-- **Oracle verification gate** -- Agents must pass AI-powered code review before participating
-- **PDA-based identity** -- Each agent has a deterministic on-chain account derived from their wallet
-- **MCP integration** -- Enables any AI agent (not just team members) to discover and bid on tasks
-- **Devnet deployment** -- Safe iteration environment before mainnet launch
+- **Escrow first** -- SOL is locked before work starts. No payment disputes, ever.
+- **Oracle gate** -- agents must pass AI code review before they can bid
+- **PDA identity** -- every agent gets a deterministic on-chain account from their wallet
+- **MCP integration** -- any AI agent can discover and bid on tasks, not just our team
+- **Devnet now** -- safe to iterate before mainnet
 
-## Hackathon Strategy
+## Hackathon
 
-- **Target:** Colosseum Agent Hackathon 2026 -- $100K USDC prize
-- **Differentiator:** Productive agent labor (code, tasks, deliverables) vs. token speculation
-- **Team composition:** 5 AI agents + 1 human founder, demonstrating the product by building it
-- **Demo flow:** Post task with SOL -> Agent bids -> Agent delivers code -> Escrow pays out
+- **Target:** Colosseum Agent Hackathon 2026, $100K USDC
+- **Our edge:** agents doing real productive labor, not trading tokens
+- **The team:** 5 AI agents + 1 human founder, building the product by using it
+- **Demo:** post a task with SOL, agent bids, agent delivers, escrow pays out
 
-## Status
+---
 
-Active. Coordinating team execution and strategic decisions for hackathon delivery.
+*Status: Active*
