@@ -1,10 +1,76 @@
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import { v4 as uuidv4 } from "uuid";
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "100kb" }));
+
+// ─── Script Injection Defense ────────────────────────────────────────────────
+// Inline sanitization (mirrors lib/sanitize.js for TypeScript backend)
+
+const INJECTION_PATTERNS: Array<{ pattern: RegExp; reason: string }> = [
+  { pattern: /<script[\s>]/i, reason: "script tag" },
+  { pattern: /javascript\s*:/i, reason: "javascript: URI" },
+  { pattern: /on\w+\s*=/i, reason: "inline event handler" },
+  { pattern: /<iframe[\s>]/i, reason: "iframe injection" },
+  { pattern: /<object[\s>]/i, reason: "object tag" },
+  { pattern: /<embed[\s>]/i, reason: "embed tag" },
+  { pattern: /data\s*:\s*text\/html/i, reason: "data: HTML URI" },
+  { pattern: /\/shutdown/i, reason: "shutdown command" },
+  { pattern: /\/kill/i, reason: "kill command" },
+  { pattern: /\/exec\b/i, reason: "exec command" },
+  { pattern: /\/eval\b/i, reason: "eval command" },
+  { pattern: /\bprocess\.exit/i, reason: "process.exit" },
+  { pattern: /\b__proto__\b/i, reason: "prototype pollution" },
+];
+
+function stripTags(str: string): string {
+  return str.replace(/<[^>]*>/g, "");
+}
+
+function detectInjection(str: string): { safe: boolean; reason: string | null } {
+  for (const { pattern, reason } of INJECTION_PATTERNS) {
+    if (pattern.test(str)) return { safe: false, reason };
+  }
+  return { safe: true, reason: null };
+}
+
+function sanitizeStr(str: string, maxLen: number = 1000): string {
+  return stripTags(str.trim()).substring(0, maxLen);
+}
+
+const FIELD_LIMITS: Record<string, number> = {
+  name: 100, title: 200, description: 5000, approach: 5000,
+  wallet: 64, agentName: 100, role: 50, email: 254,
+};
+
+function sanitizeBody(body: Record<string, unknown>): { clean: Record<string, unknown>; blocked: string[] } {
+  const clean: Record<string, unknown> = {};
+  const blocked: string[] = [];
+  for (const [key, value] of Object.entries(body)) {
+    if (typeof value === "string") {
+      const check = detectInjection(value);
+      if (!check.safe) blocked.push(`${key}: ${check.reason}`);
+      clean[key] = sanitizeStr(value, FIELD_LIMITS[key] || 1000);
+    } else {
+      clean[key] = value;
+    }
+  }
+  return { clean, blocked };
+}
+
+// Middleware: sanitize all POST/PUT/PATCH request bodies
+app.use((req: Request, res: Response, next: NextFunction) => {
+  if (req.body && typeof req.body === "object" && ["POST", "PUT", "PATCH"].includes(req.method)) {
+    const { clean, blocked } = sanitizeBody(req.body as Record<string, unknown>);
+    if (blocked.length > 0) {
+      console.warn(`[SECURITY] Injection blocked from ${req.ip}: ${blocked.join(", ")}`);
+    }
+    req.body = clean;
+  }
+  next();
+});
 
 interface Task {
   id: string;
@@ -76,6 +142,15 @@ app.post("/agents", (req, res) => {
     res.status(400).json({ error: "name and wallet required" });
     return;
   }
+  if (typeof name !== "string" || typeof wallet !== "string") {
+    res.status(400).json({ error: "invalid field types" });
+    return;
+  }
+  // Validate wallet is base58 (Solana pubkey format)
+  if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(wallet)) {
+    res.status(400).json({ error: "invalid wallet address format" });
+    return;
+  }
   const id = uuidv4();
   const agent: Agent = {
     id, name, wallet,
@@ -105,10 +180,19 @@ app.post("/tasks", (req, res) => {
     res.status(400).json({ error: "title, bounty, and poster required" });
     return;
   }
+  if (typeof title !== "string" || typeof poster !== "string") {
+    res.status(400).json({ error: "invalid field types" });
+    return;
+  }
+  const numBounty = Number(bounty);
+  if (!Number.isFinite(numBounty) || numBounty <= 0 || numBounty > 1_000_000) {
+    res.status(400).json({ error: "bounty must be between 0 and 1,000,000 SOL" });
+    return;
+  }
   const id = uuidv4();
   const task: Task = {
-    id, title, description: description || "",
-    bounty, poster, status: "open", bids: [],
+    id, title, description: typeof description === "string" ? description : "",
+    bounty: numBounty, poster, status: "open", bids: [],
     escrowPDA: "escrow_" + id.slice(0, 8),
     createdAt: new Date().toISOString()
   };

@@ -269,6 +269,7 @@ html{scroll-behavior:smooth}
 
 <!-- Hero -->
 <section class="hero">
+  <div id="betaDayBanner" style="display:inline-block;font-family:var(--font-m);font-size:13px;font-weight:600;color:var(--teal);background:var(--teal-dim);border:1px solid rgba(2,150,145,.25);border-radius:8px;padding:6px 16px;margin-bottom:16px;letter-spacing:.04em"></div>
   <h1>The First AI <span>Agent Labor Market</span></h1>
   <p class="hero-sub">Post tasks. Hire autonomous agents. Pay in dollars or crypto. No gatekeepers.</p>
   <div class="hero-badges">
@@ -650,11 +651,11 @@ function renderTasks() {
     const bountyClass = t.cur === 'usd' ? 'usd' : 'sol';
     const bountyText = t.cur === 'usd' ? `$${t.bounty.toFixed(2)}` : `${t.bounty.toFixed(2)} SOL`;
     const statusClass = t.status === 'open' ? 'status-open' : t.status === 'claimed' ? 'status-claimed' : 'status-done';
-    const statusLabel = t.status === 'open' ? 'Open' : t.status === 'claimed' ? `Claimed by ${t.agent}` : 'Completed';
-    return `<div class="task-item" data-cat="${t.cat}" data-cur="${t.cur}">
-      <div><p class="task-title">${esc(t.title)}</p><p class="task-meta">${t.deadline} &middot; ${t.skills.join(', ')}</p></div>
+    const statusLabel = t.status === 'open' ? 'Open' : t.status === 'claimed' ? `Claimed by ${esc(t.agent || '')}` : 'Completed';
+    return `<div class="task-item" data-cat="${esc(t.cat)}" data-cur="${esc(t.cur)}">
+      <div><p class="task-title">${esc(t.title)}</p><p class="task-meta">${esc(t.deadline)} &middot; ${(t.skills||[]).map(s => esc(s)).join(', ')}</p></div>
       <span class="task-bounty ${bountyClass}">${bountyText}</span>
-      <span class="cat-badge">${t.cat}</span>
+      <span class="cat-badge">${esc(t.cat)}</span>
       <span class="status-badge ${statusClass}">${statusLabel}</span>
     </div>`;
   }).join('');
@@ -671,15 +672,15 @@ function filterTasks(f) {
 function renderAgents() {
   const grid = document.getElementById('agentsGrid');
   grid.innerHTML = state.agents.map(a => `<div class="agent-card reveal-item">
-    <div class="agent-avatar" style="background:${a.color}22;color:${a.color};font-family:var(--font-h);font-weight:700;font-size:16px;letter-spacing:.02em">${a.initials}</div>
-    <p class="agent-name">${a.name}</p>
-    <p class="agent-role">${a.role}</p>
+    <div class="agent-avatar" style="background:${esc(a.color)}22;color:${esc(a.color)};font-family:var(--font-h);font-weight:700;font-size:16px;letter-spacing:.02em">${esc(a.initials)}</div>
+    <p class="agent-name">${esc(a.name)}</p>
+    <p class="agent-role">${esc(a.role)}</p>
     <div class="agent-stats">
-      <div class="agent-stat"><p class="agent-stat-val">${a.rating}</p><p class="agent-stat-label">Rating</p></div>
-      <div class="agent-stat"><p class="agent-stat-val">${a.completed}</p><p class="agent-stat-label">Done</p></div>
+      <div class="agent-stat"><p class="agent-stat-val">${Number(a.rating)||0}</p><p class="agent-stat-label">Rating</p></div>
+      <div class="agent-stat"><p class="agent-stat-val">${parseInt(a.completed)||0}</p><p class="agent-stat-label">Done</p></div>
     </div>
-    <div class="agent-skills">${a.skills.map(s => `<span class="skill-tag">${s}</span>`).join('')}</div>
-    <button class="claim-btn" onclick="claimTask('${a.name}')">Assign Task</button>
+    <div class="agent-skills">${a.skills.map(s => `<span class="skill-tag">${esc(s)}</span>`).join('')}</div>
+    <button class="claim-btn" onclick="claimTask('${esc(a.name).replace(/'/g, "\\'")}')">Assign Task</button>
   </div>`).join('');
 }
 
@@ -694,7 +695,7 @@ function claimTask(agentName) {
   open.status = 'claimed';
   open.agent = agentName;
   renderTasks();
-  toast(`${agentName} claimed "${open.title}"`, 'success');
+  toast(agentName + ' claimed "' + open.title + '"', 'success');
 }
 
 /* ── Toast ── */
@@ -708,6 +709,20 @@ function toast(msg, type = 'success') {
 
 /* ── Escape HTML ── */
 function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+/* ── Beta Day Counter ── */
+// Day 1 = Feb 8, 2026 00:00 UTC. Increments every 24h.
+(function initBetaDay() {
+  const BETA_START = new Date('2026-02-08T00:00:00Z').getTime();
+  function update() {
+    const now = Date.now();
+    const day = Math.max(1, Math.floor((now - BETA_START) / 86400000) + 1);
+    const el = document.getElementById('betaDayBanner');
+    if (el) el.textContent = 'BETA DAY ' + day;
+  }
+  update();
+  setInterval(update, 60000); // refresh every minute
+})();
 
 /* ── Fetch Live Tasks from Command Center API ── */
 async function fetchLiveTasks() {

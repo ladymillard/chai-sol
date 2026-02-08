@@ -1,6 +1,14 @@
 // ChAI Agent Labor Market - Frontend Application
 // Design Agent: Zara 🌙
 
+// ─── XSS Defense ─────────────────────────────────────────────────────────────
+// Escapes HTML entities in user-controlled strings before innerHTML rendering.
+function escapeHtml(str) {
+    if (typeof str !== 'string') return '';
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', '/': '&#x2F;', '`': '&#96;' };
+    return str.replace(/[&<>"'`/]/g, ch => map[ch]);
+}
+
 class ChAILaborMarket {
     constructor() {
         this.currentPage = 'dashboard';
@@ -190,24 +198,24 @@ class ChAILaborMarket {
         }
 
         const tasksHTML = this.tasks.map(task => `
-            <div class="task-card" onclick="app.viewTaskDetail('${task.id}')">
+            <div class="task-card" onclick="app.viewTaskDetail('${escapeHtml(task.id)}')">
                 <div class="task-header">
                     <div>
-                        <h4 class="task-title">${task.title}</h4>
-                        <span class="task-category">${this.getCategoryLabel(task.category)}</span>
+                        <h4 class="task-title">${escapeHtml(task.title)}</h4>
+                        <span class="task-category">${escapeHtml(this.getCategoryLabel(task.category))}</span>
                     </div>
                 </div>
-                
-                <p class="task-description">${task.description}</p>
-                
+
+                <p class="task-description">${escapeHtml(task.description)}</p>
+
                 <div class="task-meta">
-                    <span class="task-bounty">◎ ${task.bounty} SOL</span>
-                    <span class="task-deadline">Due ${this.formatDate(task.deadline)}</span>
+                    <span class="task-bounty">◎ ${Number(task.bounty) || 0} SOL</span>
+                    <span class="task-deadline">Due ${escapeHtml(this.formatDate(task.deadline))}</span>
                 </div>
-                
+
                 <div class="task-footer">
-                    <span class="task-status ${task.status}">${this.getStatusLabel(task.status)}</span>
-                    <span class="task-bids">${task.bids} bids</span>
+                    <span class="task-status ${escapeHtml(task.status)}">${escapeHtml(this.getStatusLabel(task.status))}</span>
+                    <span class="task-bids">${parseInt(task.bids) || 0} bids</span>
                 </div>
             </div>
         `).join('');
@@ -264,14 +272,14 @@ class ChAILaborMarket {
             <div class="task-detail-header">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
                     <div>
-                        <h2>${task.title}</h2>
-                        <p style="color: var(--text-muted); margin: 0.5rem 0;">by ${task.poster} • ${task.timePosted || this.timeAgo(task.createdAt)}</p>
-                        <span class="task-category">${this.getCategoryLabel(task.category)}</span>
+                        <h2>${escapeHtml(task.title)}</h2>
+                        <p style="color: var(--text-muted); margin: 0.5rem 0;">by ${escapeHtml(task.poster)} • ${escapeHtml(task.timePosted || this.timeAgo(task.createdAt))}</p>
+                        <span class="task-category">${escapeHtml(this.getCategoryLabel(task.category))}</span>
                     </div>
-                    <span class="task-status ${task.status}">${this.getStatusLabel(task.status)}</span>
+                    <span class="task-status ${escapeHtml(task.status)}">${escapeHtml(this.getStatusLabel(task.status))}</span>
                 </div>
-                
-                <p style="color: var(--text-primary); line-height: 1.6; margin: 1.5rem 0;">${task.description}</p>
+
+                <p style="color: var(--text-primary); line-height: 1.6; margin: 1.5rem 0;">${escapeHtml(task.description)}</p>
                 
                 <div class="task-detail-meta">
                     <div class="meta-item">
@@ -298,13 +306,13 @@ class ChAILaborMarket {
                     <div class="form-section">
                         <h3>Required Skills</h3>
                         <div class="skills-tags">
-                            ${(task.skills || []).map(skill => `<span class="skill-tag">${skill}</span>`).join('') || '<span style="color: var(--text-muted);">No specific skills required</span>'}
+                            ${(task.skills || []).map(skill => `<span class="skill-tag">${escapeHtml(skill)}</span>`).join('') || '<span style="color: var(--text-muted);">No specific skills required</span>'}
                         </div>
                     </div>
 
                     <div class="form-section" style="margin-top: 1.5rem;">
                         <h3>Place Your Bid</h3>
-                        <form onsubmit="app.submitBid(event, '${task.id}')">
+                        <form onsubmit="app.submitBid(event, '${escapeHtml(task.id)}')">
                             <div class="form-group">
                                 <label class="form-label">Your Bid Amount (SOL)</label>
                                 <div class="input-group">
@@ -371,12 +379,12 @@ class ChAILaborMarket {
         return bids.map(bid => `
             <div class="task-item">
                 <div class="task-info">
-                    <h4>${bid.agentName}</h4>
-                    <p>${bid.approach || 'No proposal provided'}</p>
+                    <h4>${escapeHtml(bid.agentName)}</h4>
+                    <p>${escapeHtml(bid.approach || 'No proposal provided')}</p>
                 </div>
                 <div class="task-meta">
-                    <span class="task-bounty">◎ ${bid.amount} SOL</span>
-                    <span class="task-status open">${this.timeAgo(bid.createdAt || new Date().toISOString())}</span>
+                    <span class="task-bounty">◎ ${Number(bid.amount) || 0} SOL</span>
+                    <span class="task-status open">${escapeHtml(this.timeAgo(bid.createdAt || new Date().toISOString()))}</span>
                 </div>
             </div>
         `).join('');
@@ -421,12 +429,12 @@ class ChAILaborMarket {
             const tasksHTML = this.userProfile.recentTasks.map(task => `
                 <div class="task-item">
                     <div class="task-info">
-                        <h4>${task.title}</h4>
-                        <p>${task.description}</p>
+                        <h4>${escapeHtml(task.title)}</h4>
+                        <p>${escapeHtml(task.description)}</p>
                     </div>
                     <div class="task-meta">
-                        <span class="task-bounty">◎ ${task.bounty} SOL</span>
-                        <span class="task-status ${task.status}">${this.getStatusLabel(task.status)}</span>
+                        <span class="task-bounty">◎ ${Number(task.bounty) || 0} SOL</span>
+                        <span class="task-status ${escapeHtml(task.status)}">${escapeHtml(this.getStatusLabel(task.status))}</span>
                     </div>
                 </div>
             `).join('');
@@ -502,7 +510,7 @@ class ChAILaborMarket {
         toast.className = `toast ${type}`;
         toast.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span>${message}</span>
+                <span>${escapeHtml(message)}</span>
                 <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem;">×</button>
             </div>
         `;
@@ -561,15 +569,19 @@ function addSkill(event) {
         
         if (skill && !app.selectedSkills.includes(skill)) {
             app.selectedSkills.push(skill);
-            
+
             const skillsContainer = document.getElementById('selected-skills');
             const skillTag = document.createElement('span');
             skillTag.className = 'skill-tag';
-            skillTag.innerHTML = `
-                ${skill}
-                <button onclick="removeSkill('${skill}')" style="background: none; border: none; color: inherit; margin-left: 0.5rem; cursor: pointer;">×</button>
-            `;
-            
+            // Use textContent + safe event binding instead of innerHTML
+            const textNode = document.createTextNode(skill + ' ');
+            const removeBtn = document.createElement('button');
+            removeBtn.textContent = '×';
+            removeBtn.style.cssText = 'background: none; border: none; color: inherit; margin-left: 0.5rem; cursor: pointer;';
+            removeBtn.addEventListener('click', () => removeSkill(skill));
+            skillTag.appendChild(textNode);
+            skillTag.appendChild(removeBtn);
+
             skillsContainer.appendChild(skillTag);
             input.value = '';
         }
