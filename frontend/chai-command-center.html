@@ -1079,7 +1079,7 @@ html{scroll-behavior:smooth}
 <script>
 // Password gate — hashed for basic client-side protection
 // SHA-256 of the password is stored, not the plaintext
-const PASS_HASH = 'd9ae3dffbab6b3dc23142a64411bd732c180301e268d1257d059681c0afa7296';
+const PASS_HASH = ''; // Set via server config
 
 async function sha256(str) {
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));

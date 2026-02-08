@@ -119,7 +119,7 @@ function authenticateAgent(req) {
 
 // ─── Session Auth (V-003) ───────────────────────────────────────────────────
 
-const AUTH_PASSWORD_HASH = 'd9ae3dffbab6b3dc23142a64411bd732c180301e268d1257d059681c0afa7296';
+const AUTH_PASSWORD_HASH = process.env.AUTH_PASSWORD_HASH || '';
 const SESSION_TTL = 24 * 60 * 60 * 1000; // 24 hours in ms
 
 // Map<token, { expiresAt: number }>
@@ -922,7 +922,7 @@ async function router(req, res) {
 
     // ── Stripe Publishable Key Endpoint (V-001) ─────────────────────────
     if (method === 'GET' && pathname === '/api/config/stripe-key') {
-      const stripePk = process.env.STRIPE_PK || 'pk_live_51RGbN2GGgBHthisisnottherealkeyjustplaceholder';
+      const stripePk = process.env.STRIPE_PK || '';
       jsonResponse(res, 200, { publishableKey: stripePk });
       log(method, pathname, 200);
       return;

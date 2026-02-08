@@ -23,7 +23,7 @@ class SolanaClient {
         const provider = new anchor.AnchorProvider(connection, wallet, { preflightCommitment: "processed" });
         
         // Use the Program ID from the IDL or code (replace with actual deployed ID)
-        const programId = new PublicKey("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"); 
+        const programId = new PublicKey(process.env.REGISTRY_PROGRAM_ID || "11111111111111111111111111111111");
         
         this.program = new anchor.Program(idl, programId, provider);
         this.provider = provider;

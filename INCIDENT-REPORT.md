@@ -16,7 +16,7 @@
    - **Cipher**
    - **Sentinel**
    - **Vector**
-4. **OpenClaw service is unreachable** — `3.14.142.213:18789` returning "Host not allowed."
+4. **OpenClaw service is unreachable** — returning "Host not allowed."
 5. **Lyra-Kael bridge is ON HOLD** — computer issues prevent activation.
 
 ---
