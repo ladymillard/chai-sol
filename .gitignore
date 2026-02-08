@@ -1,3 +1,6 @@
 node_modules/
 dist/
 target/
+
+# Bounty encryption keys
+.bounty-key

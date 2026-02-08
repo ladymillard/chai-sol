@@ -13,7 +13,7 @@ A firsthand account by David Smith, who spent 19 years working at the Airgas / A
 
 ---
 
-## Proposed Chapter Structure
+## Proposed Chapter Structure (17 Chapters)
 
 ### Part I: The Beginning
 
@@ -49,51 +49,67 @@ A firsthand account by David Smith, who spent 19 years working at the Airgas / A
 - Management responses to complaints
 - Consequences of raising issues
 
+**Chapter 7 — The Price of Silence**
+- What happens to those who don't speak up
+- The psychological burden of witnessing injustice daily
+- How silence becomes complicity within the workplace
+
 ### Part III: 19 Years Deep
 
-**Chapter 7 — The Long Haul**
+**Chapter 8 — The Long Haul**
 - How the workplace evolved (or didn't) over nearly two decades
 - Key turning points and incidents
 - The toll of sustained workplace inequity
 
-**Chapter 8 — Faces and Stories**
+**Chapter 9 — Faces and Stories**
 - Profiles of coworkers and their experiences
 - Shared struggles and solidarity
 - Those who left and why
 
-**Chapter 9 — Management Under the Microscope**
+**Chapter 10 — Management Under the Microscope**
 - Detailed examination of management decisions and practices
 - Leadership's role in perpetuating or ignoring disparities
 - Specific actions and inactions by named managers
 
+**Chapter 11 — The System Behind the People**
+- How corporate structure at Airgas / Air Liquide enabled disparities
+- HR processes, grievance procedures, and their effectiveness
+- The gap between company policy on paper and practice on the floor
+
 ### Part IV: Breaking Point
 
-**Chapter 10 — Enough**
+**Chapter 12 — Enough**
 - The decision to document experiences in a manuscript
 - What finally prompted action
 - The emotional and professional cost of speaking out
 
-**Chapter 11 — Putting It on Paper**
+**Chapter 13 — Putting It on Paper**
 - The writing process and what it revealed
 - Organizing 19 years of experiences into a coherent narrative
 - Verification and documentation of accounts
 
+**Chapter 14 — Family and Faith**
+- The personal side of 19 years in a hostile workplace
+- How family, community, and faith sustained David Smith
+- The human cost that doesn't show up in HR files
+
 ### Part V: Going Public
 
-**Chapter 12 — Pay Me No Mind**
+**Chapter 15 — Pay Me No Mind**
 - The founding of Pay Me No Mind Consulting
 - The podcast and its role in sharing the story (Episodes #5 and #15)
 - Public response and community impact
 
-**Chapter 13 — The Offer**
+**Chapter 16 — The Offer**
 - The letter to Airgas / Air Liquide management
 - Giving the company the opportunity to respond
 - What the future holds
 
-**Chapter 14 — What Needs to Change**
+**Chapter 17 — What Needs to Change**
 - Broader implications for workplace equity
 - Recommendations for systemic change
 - A message to workers in similar situations
+- Call to action for corporate accountability
 
 ### Appendices
 
@@ -110,7 +126,7 @@ A firsthand account by David Smith, who spent 19 years working at the Airgas / A
 
 ## Notes for Author
 
-- Each chapter should target 3,000-5,000 words (full book ~40,000-70,000 words)
+- Each chapter should target 3,000-5,000 words (full book ~51,000-85,000 words for 17 chapters)
 - Include specific dates, names, and incidents where possible
 - Keep documentation and evidence for legal review
 - Consider privacy implications for individuals named in the manuscript

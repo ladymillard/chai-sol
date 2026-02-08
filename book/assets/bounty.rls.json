@@ -1,0 +1,70 @@
+{
+  "version": "1.0",
+  "policy_name": "book_bounty_access",
+  "description": "Row Level Security policy for David Smith book manuscript bounty",
+  "created": "2026-02-08T22:24:12.486Z",
+  "roles": {
+    "author": {
+      "identity": "David Smith",
+      "permissions": [
+        "read",
+        "write",
+        "decrypt",
+        "publish",
+        "revoke"
+      ],
+      "access_level": "full"
+    },
+    "representative": {
+      "identity": "Pay Me No Mind Consulting (Alex)",
+      "permissions": [
+        "read",
+        "decrypt",
+        "negotiate",
+        "distribute"
+      ],
+      "access_level": "delegated"
+    },
+    "legal_counsel": {
+      "identity": "TBD — Retained Attorney",
+      "permissions": [
+        "read",
+        "decrypt",
+        "review",
+        "advise"
+      ],
+      "access_level": "privileged"
+    },
+    "design_team": {
+      "identity": "ChAI Agent Team (Zara, Opus, Kael, Nova, Kestrel)",
+      "permissions": [
+        "read",
+        "layout",
+        "design"
+      ],
+      "access_level": "restricted",
+      "restriction": "No access to unredacted manuscript content; outline and structure only"
+    },
+    "target_company": {
+      "identity": "Airgas / Air Liquide Management",
+      "permissions": [
+        "purchase_offer"
+      ],
+      "access_level": "external",
+      "restriction": "View purchase terms only; no manuscript access until rights transfer"
+    }
+  },
+  "encryption": {
+    "algorithm": "aes-256-cbc",
+    "key_derivation": "PBKDF2",
+    "iterations": 100000,
+    "key_length_bits": 256,
+    "iv_length_bits": 128,
+    "salt_length_bits": 256
+  },
+  "audit": {
+    "log_access": true,
+    "log_decryption": true,
+    "require_justification": true
+  }
+}
