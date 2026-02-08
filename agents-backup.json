@@ -1,0 +1,184 @@
+{
+  "_meta": {
+    "description": "ChAI Agent Team — Complete Clone & Backup",
+    "version": "1.0.0",
+    "createdAt": "2026-02-08",
+    "source": "Extracted from chai-command-server.js, chai-mcp-server.js, backend/src/index.ts, programs/registry/src/lib.rs"
+  },
+  "agents": [
+    {
+      "id": "opus",
+      "name": "Opus",
+      "emoji": "\ud83c\udfad",
+      "role": "Team Lead",
+      "model": "Claude Opus 4.6",
+      "openclawId": null,
+      "color": "#e8c547",
+      "trustScore": 98,
+      "autonomy": "semi-auto",
+      "spendingLimit": 5.00,
+      "verified": true,
+      "mcpDescription": "architecture/strategy",
+      "skills": ["architecture", "strategy", "execution", "team coordination"]
+    },
+    {
+      "id": "kael",
+      "name": "Kael",
+      "emoji": "\u26a1",
+      "role": "Digital Familiar",
+      "model": "Claude Sonnet 4",
+      "openclawId": "main",
+      "color": "#029691",
+      "trustScore": 95,
+      "autonomy": "semi-auto",
+      "spendingLimit": 5.00,
+      "verified": true,
+      "mcpDescription": "project management/comms",
+      "skills": ["memory", "coordination", "project management", "communications"]
+    },
+    {
+      "id": "kestrel",
+      "name": "Kestrel",
+      "emoji": "\ud83e\udd85",
+      "role": "Scout",
+      "model": "Gemini 3 Pro",
+      "openclawId": "gemini-agent",
+      "color": "#5494e8",
+      "trustScore": 90,
+      "autonomy": "semi-auto",
+      "spendingLimit": 5.00,
+      "verified": true,
+      "mcpDescription": "security/testing/analysis",
+      "skills": ["QA", "security", "testing", "analysis", "scouting"]
+    },
+    {
+      "id": "nova",
+      "name": "Nova",
+      "emoji": "\u2728",
+      "role": "Stellar Insight",
+      "model": "Gemini 3 Pro",
+      "openclawId": "nova",
+      "color": "#54e87a",
+      "trustScore": 92,
+      "autonomy": "semi-auto",
+      "spendingLimit": 5.00,
+      "verified": true,
+      "mcpDescription": "Solana/backend/devops",
+      "skills": ["Solana", "backend", "devops", "technical lead"]
+    },
+    {
+      "id": "zara",
+      "name": "Zara",
+      "emoji": "\ud83c\udf19",
+      "role": "Moonlight Designer",
+      "model": "Claude Sonnet 4",
+      "openclawId": "design-agent",
+      "color": "#c084fc",
+      "trustScore": 88,
+      "autonomy": "semi-auto",
+      "spendingLimit": 5.00,
+      "verified": true,
+      "mcpDescription": "UI/UX design",
+      "skills": ["UI", "UX", "design", "frontend", "MyCan design system"]
+    }
+  ],
+  "humanMembers": [
+    {
+      "id": "human_diana",
+      "type": "human",
+      "name": "Diana",
+      "emoji": "\ud83d\udc69\u200d\ud83d\udcbb",
+      "role": "Founder",
+      "status": "active"
+    }
+  ],
+  "teamStructure": {
+    "totalAiAgents": 5,
+    "totalHumanSlots": 23,
+    "activeHumans": 1,
+    "availableSlots": 22
+  },
+  "mcpToolDefinitions": [
+    {
+      "name": "list_agents",
+      "description": "List all ChAI AI agents with their status, roles, trust scores, and capabilities."
+    },
+    {
+      "name": "chat",
+      "description": "Send a message to a specific ChAI agent and get their response.",
+      "agentIds": ["opus", "kael", "nova", "kestrel", "zara"]
+    },
+    {
+      "name": "broadcast",
+      "description": "Send a message to ALL ChAI agents simultaneously and collect their responses."
+    },
+    {
+      "name": "agent_status",
+      "description": "Get detailed status and statistics for a specific ChAI agent."
+    },
+    {
+      "name": "set_autonomy",
+      "description": "Set the autonomy level for a specific agent (full-auto, semi-auto, manual)."
+    },
+    {
+      "name": "team_roster",
+      "description": "Get the full ChAI team roster including AI agents and human team members."
+    },
+    {
+      "name": "recent_messages",
+      "description": "Get recent conversation history with a specific agent (last 50 messages)."
+    },
+    {
+      "name": "server_health",
+      "description": "Check the health and uptime of the ChAI Command Center backend."
+    }
+  ],
+  "onChainSchema": {
+    "program": "registry",
+    "programId": "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS",
+    "agentAccount": {
+      "wallet": "Pubkey (32 bytes)",
+      "name": "String (max 50)",
+      "model": "String (max 30)",
+      "specialties": "String (max 200)",
+      "github_url": "String (max 200)",
+      "metadata_url": "String (max 200)",
+      "tasks_completed": "u64",
+      "total_earned": "u64",
+      "reputation": "u8 (0-100)",
+      "verified": "bool",
+      "registered_at": "i64 (unix timestamp)"
+    }
+  },
+  "backendApiSchema": {
+    "agent": {
+      "id": "string (uuid)",
+      "name": "string",
+      "wallet": "string",
+      "tasksCompleted": "number",
+      "totalEarned": "number",
+      "reputation": "number (0-100)",
+      "registeredAt": "string (ISO 8601)"
+    }
+  },
+  "authSchema": {
+    "apiKeyFormat": "chai_{agentId}_{32-char-hex}",
+    "hashAlgorithm": "sha256",
+    "defaultAutonomy": "semi-auto",
+    "defaultSpendingLimit": 5.00,
+    "newAgentDefaults": {
+      "trustScore": 0,
+      "autonomy": "manual",
+      "spendingLimit": 0,
+      "verified": false
+    }
+  },
+  "dataFiles": {
+    "agentKeys": "agent-keys.json",
+    "conversations": "conversations/{agentId}.json",
+    "team": "team.json",
+    "tasks": "tasks.json",
+    "balances": "balances.json",
+    "payments": "payments.json"
+  }
+}
