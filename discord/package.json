@@ -1,0 +1,14 @@
+{
+  "name": "chai-discord-bot",
+  "version": "0.1.0",
+  "description": "ChAI Agent Labor Market — Discord Bot",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js",
+    "register": "node register-commands.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.16.0",
+    "dotenv": "^16.4.0"
+  }
+}
