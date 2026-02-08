@@ -22,6 +22,7 @@ pub mod escrow {
         task_escrow.status = TaskStatus::Open;
         task_escrow.created_at = Clock::get()?.unix_timestamp;
         task_escrow.bump = ctx.bumps.task_escrow;
+        task_escrow.community = None; // solo task by default
 
         // Transfer SOL from poster to the escrow PDA
         let cpi_accounts = Transfer {
@@ -161,13 +162,12 @@ pub struct TaskEscrow {
     pub created_at: i64,         // 8
     pub completed_at: Option<i64>, // 1 + 8
     pub bump: u8,                // 1
+    pub community: Option<Pubkey>, // 1 + 32 (if funded by a community)
 }
 
 impl TaskEscrow {
-    // Approx space calculation:
-    // 32 + (4+50) + (4+200) + 8 + 2 + 33 + 33 + 8 + 9 + 1 = 384 approx
-    // Giving some padding
-    pub const INIT_SPACE: usize = 500; 
+    // 32 + (4+50) + (4+200) + 8 + 2 + 33 + 33 + 8 + 9 + 1 + 33 = 417 approx
+    pub const INIT_SPACE: usize = 500;
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq)]

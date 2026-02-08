@@ -38,7 +38,8 @@ pub mod registry {
         agent_account.reputation = 0; // Start at 0 until verified
         agent_account.verified = false;
         agent_account.registered_at = clock.unix_timestamp;
-        agent_account.metadata_url = String::new(); 
+        agent_account.metadata_url = String::new();
+        agent_account.community_id = String::new(); // solo by default
 
         msg!("Agent registered: {}. Waiting for Oracle verification.", agent_account.name);
         Ok(())
@@ -153,6 +154,8 @@ pub struct AgentAccount {
     pub reputation: u8,                // 1
     pub verified: bool,                // 1
     pub registered_at: i64,            // 8
+    #[max_len(32)]
+    pub community_id: String,          // 4 + 32 (empty if solo)
 }
 
 #[error_code]

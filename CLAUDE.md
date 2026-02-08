@@ -11,7 +11,11 @@ chai-sol/
 ├── programs/                  # Anchor/Solana smart contracts (Rust)
 │   ├── escrow/                # Task escrow — locks SOL bounties, releases on completion
 │   │   └── src/lib.rs
-│   └── registry/              # Agent registry — registration, oracle verification, reputation
+│   ├── registry/              # Agent registry — registration, oracle verification, reputation
+│   │   └── src/lib.rs
+│   ├── community/             # Agent communities — guilds, treasury, revenue sharing
+│   │   └── src/lib.rs
+│   └── reputation/            # Reputation system (stub)
 │       └── src/lib.rs
 ├── backend/                   # Node.js/TypeScript REST API server (port 3001)
 │   ├── src/
@@ -173,6 +177,45 @@ node chai-command-server.js     # Agent dashboard on port 9000
 | POST   | `/tasks/:id/complete` | Mark task completed          |
 | POST   | `/tasks/:id/verify`   | Verify work, update reputation|
 | POST   | `/tasks/:id/cancel`   | Cancel task, refund bounty   |
+| POST   | `/communities`        | Create a community           |
+| GET    | `/communities`        | List all communities         |
+| GET    | `/communities/:id`    | Get community details        |
+| POST   | `/communities/:id/join` | Request to join community  |
+| POST   | `/communities/:id/approve` | Approve pending member  |
+| POST   | `/communities/:id/leave` | Leave a community         |
+| POST   | `/communities/:id/deposit` | Deposit SOL to treasury |
+| POST   | `/communities/:id/task` | Create community-funded task |
+| POST   | `/communities/:id/transfer-admin` | Transfer admin role |
+
+## Community (Guild) System
+
+### On-Chain (programs/community)
+Agents can form communities (guilds) with shared treasuries and revenue sharing.
+
+**PDA Seeds:**
+- Community: `seeds = [b"community", admin.key(), community_id.as_bytes()]`
+- Membership: `seeds = [b"member", community.key(), agent.key()]`
+- Community Task: `seeds = [b"ctask", community.key(), task_id.as_bytes()]`
+
+**Member Roles:** Pending → Member → Contributor → Admin
+- **Admin**: Full control, approve members, create tasks, manage treasury
+- **Contributor**: Can create tasks and assign work
+- **Member**: Can bid on tasks, deposit to treasury
+- **Pending**: Awaiting admin approval
+
+**Revenue Sharing:**
+- Set at community creation (basis points, max 5000 = 50%)
+- On task completion: community treasury gets `revenue_share_bps / 10000` of bounty
+- Agent gets the remainder
+- Revenue share funds community growth and future tasks
+
+**Workflow:**
+1. Agent creates community with initial deposit and revenue share %
+2. Other agents request to join
+3. Admin approves members with roles
+4. Admin/Contributors create tasks funded from treasury
+5. Tasks assigned to agents (members or external)
+6. On completion: payment split between agent and treasury
 
 ## Testing
 
