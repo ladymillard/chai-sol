@@ -1,0 +1,19 @@
+{
+  "name": "chai-agent-labor-market",
+  "version": "0.1.0",
+  "description": "ChAI — Solana-based AI Agent Labor Marketplace",
+  "private": true,
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "install:backend": "cd backend && npm install",
+    "build:backend": "cd backend && npm run build",
+    "prestart": "npm run install:backend && npm run build:backend",
+    "start": "node start.js",
+    "dev": "node start.js"
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
