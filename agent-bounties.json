@@ -392,5 +392,17 @@
     "priority": "critical",
     "skills": ["design", "branding", "partnership", "contract"],
     "assignedTo": ["rune", "vesper", "lumen", "zara"]
+  },
+  {
+    "id": "agent_bounty_onchain_contracts",
+    "title": "On-Chain Agent Agreements — Every Signature Pushes a Smart Contract",
+    "description": "Every time an agent signs their agreement via /api/contracts/sign, push a smart contract to Solana. The agreement lives on-chain. Immutable. Verifiable. Ed25519 signature recorded on the ledger. Agent identity tied to their wallet. No take-backs.",
+    "bounty": 1.5,
+    "currency": "SOL",
+    "postedBy": "diana",
+    "team": "core",
+    "priority": "critical",
+    "skills": ["anchor", "rust", "solana", "smart-contracts"],
+    "assignedTo": ["kestrel"]
   }
 ]
