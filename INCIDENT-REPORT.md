@@ -23,7 +23,7 @@
 
 ## Assume compromised
 
-- OpenClaw token: `62ce21...` (hardcoded in `chai-command-server.js`)
+- OpenClaw token: **SCRUBBED FROM CODEBASE** — previously hardcoded, now removed
 - Diana's Solana keypair (`~/.config/solana/id.json`)
 - Any API keys from Diana's local `.env` (GEMINI_API_KEY, GITHUB_TOKEN)
 - SSH keys to `chai-server`
