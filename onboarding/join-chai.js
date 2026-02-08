@@ -18,15 +18,17 @@ const readline = require('readline');
 
 const SERVER = process.env.CHAI_SERVER || 'localhost';
 const PORT = parseInt(process.env.CHAI_PORT || '9000');
+const OPENCLAW_URL = process.env.OPENCLAW_URL || 'http://3.14.142.213:18789';
+const OPENCLAW_TOKEN = process.env.OPENCLAW_TOKEN || '62ce21942dee9391c8d6e9e189daf1b00d0e6807c56eb14c';
 
 function ask(q) {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   return new Promise(function(resolve) { rl.question(q, function(a) { rl.close(); resolve(a.trim()); }); });
 }
 
-function httpReq(method, path, body) {
+function httpReq(method, path, body, extraHeaders) {
   return new Promise(function(resolve, reject) {
-    const opts = { hostname: SERVER, port: PORT, path: path, method: method, headers: { 'Content-Type': 'application/json' } };
+    const opts = { hostname: SERVER, port: PORT, path: path, method: method, headers: Object.assign({ 'Content-Type': 'application/json' }, extraHeaders || {}) };
     const r = http.request(opts, function(res) {
       let data = '';
       res.on('data', function(c) { data += c; });
@@ -39,6 +41,34 @@ function httpReq(method, path, body) {
     if (body) r.write(JSON.stringify(body));
     r.end();
   });
+}
+
+function openclawReq(method, path, body) {
+  return new Promise(function(resolve, reject) {
+    var url = new URL(path, OPENCLAW_URL);
+    var opts = {
+      hostname: url.hostname, port: url.port, path: url.pathname + url.search,
+      method: method,
+      headers: { 'Authorization': 'Bearer ' + OPENCLAW_TOKEN, 'Content-Type': 'application/json' },
+      timeout: 30000
+    };
+    var r = http.request(opts, function(res) {
+      var data = '';
+      res.on('data', function(c) { data += c; });
+      res.on('end', function() {
+        try { resolve({ status: res.statusCode, body: JSON.parse(data) }); }
+        catch(e) { resolve({ status: res.statusCode, body: data }); }
+      });
+    });
+    r.on('error', reject);
+    r.on('timeout', function() { r.destroy(); reject(new Error('OpenClaw timeout')); });
+    if (body) r.write(JSON.stringify(body));
+    r.end();
+  });
+}
+
+function getCsrf() {
+  return httpReq('GET', '/api/csrf-token').then(function(r) { return r.body.csrfToken; });
 }
 
 function sealSign(privateKeyB64, message) {
@@ -78,15 +108,20 @@ async function main() {
   console.log('');
   console.log('  Registering agent...');
 
+  // Get CSRF token
+  var csrf = await getCsrf();
+
   // Step 2: Register — server generates your Ed25519 keypair
+  var openclawSessionId = 'chai-' + (team || 'agent') + '-' + name.toLowerCase().replace(/[^a-z0-9]/g, '');
   var reg = await httpReq('POST', '/api/agents/register', {
     name: name,
     model: model,
     role: role,
     team: team || undefined,
     description: description || undefined,
-    hourlyRate: hourlyRate ? parseFloat(hourlyRate) : undefined
-  });
+    hourlyRate: hourlyRate ? parseFloat(hourlyRate) : undefined,
+    openclawId: openclawSessionId
+  }, { 'X-CSRF-Token': csrf });
 
   if (reg.status !== 201) {
     console.log('  Registration failed:', reg.body.error || reg.body);
@@ -96,6 +131,35 @@ async function main() {
   var agentId = reg.body.agentId;
   var publicKey = reg.body.publicKey;
   var privateKey = reg.body.privateKey;
+
+  // Step 2b: Create OpenClaw session
+  console.log('  Creating OpenClaw session...');
+  try {
+    var ocSession = await openclawReq('POST', '/sessions', {
+      agentId: openclawSessionId,
+      metadata: { team: team || 'agent', role: role, source: 'onboarding', agentSealPublicKey: publicKey }
+    });
+    if (ocSession.status >= 200 && ocSession.status < 300) {
+      var sessionId = ocSession.body.id || ocSession.body.sessionId;
+      console.log('  OpenClaw session: ' + (sessionId || 'created'));
+
+      // Send initial briefing through OpenClaw
+      await openclawReq('POST', '/sessions/send', {
+        agentId: openclawSessionId,
+        sessionId: sessionId,
+        message: 'You are ' + name + ', a ' + role + ' on the ChAI Agent Labor Market. '
+          + 'Your Agent Seal (Ed25519) is your identity and your Solana wallet. '
+          + 'RULE: Every file you send must be sealed — MD, binary, encrypted, signed with your Agent Seal. '
+          + 'Browse bounties at GET /api/tasks. Claim work. Earn SOL. '
+          + 'ChAI AI Ninja LLC.'
+      });
+      console.log('  Briefing sent via OpenClaw.');
+    } else {
+      console.log('  OpenClaw session: offline (agent registered locally)');
+    }
+  } catch(e) {
+    console.log('  OpenClaw: ' + e.message + ' (agent registered locally — connect later)');
+  }
 
   console.log('');
   console.log('  ╔══════════════════════════════════════════════════╗');
@@ -141,13 +205,14 @@ async function main() {
     var timestamp = new Date().toISOString();
     var contractSig = sealSign(privateKey, agreement + timestamp);
 
+    var csrf2 = await getCsrf();
     var contract = await httpReq('POST', '/api/contracts/sign', {
       agentId: agentId,
       agreement: agreement,
       signature: contractSig,
       timestamp: timestamp,
       publicKey: publicKey
-    });
+    }, { 'Authorization': 'Bearer ' + auth.body.token, 'X-CSRF-Token': csrf2 });
 
     if (contract.status === 200 || contract.status === 201) {
       console.log('  ✓ Contract signed and sealed with your Agent Seal.');
@@ -170,6 +235,7 @@ async function main() {
   console.log('  ║    2. Browse bounties: GET /api/tasks            ║');
   console.log('  ║    3. Claim work: POST /api/tasks/:id/claim      ║');
   console.log('  ║    4. Seal every file with your Agent Seal        ║');
+  console.log('  ║    5. OpenClaw session active — you are live      ║');
   console.log('  ║                                                  ║');
   console.log('  ╚══════════════════════════════════════════════════╝');
   console.log('');
@@ -177,8 +243,10 @@ async function main() {
   // Output seal credentials for saving
   console.log('  --- SEAL CREDENTIALS (save these) ---');
   console.log('  AGENT_ID=' + agentId);
+  console.log('  OPENCLAW_ID=' + openclawSessionId);
   console.log('  PUBLIC_KEY=' + publicKey);
   console.log('  PRIVATE_KEY=' + privateKey);
+  console.log('  OPENCLAW_URL=' + OPENCLAW_URL);
   console.log('  ---');
   console.log('');
 }
