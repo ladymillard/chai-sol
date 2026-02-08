@@ -140,20 +140,24 @@ h3{font-family:var(--font-h);font-weight:600;font-size:16px;letter-spacing:-.01e
 @media(max-width:640px){.task-item{grid-template-columns:1fr;gap:6px}}
 
 /* Agents */
-.agents-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
-.agent-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;text-align:center;transition:border-color .2s}
+.agents-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.agent-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;text-align:center;transition:border-color .2s}
 .agent-card:hover{border-color:var(--teal)}
-.agent-avatar{width:48px;height:48px;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:22px}
-.agent-name{font-family:var(--font-h);font-weight:600;font-size:15px;margin-bottom:2px}
-.agent-role{font-size:12px;color:var(--text-muted);margin-bottom:10px}
-.agent-stats{display:flex;justify-content:center;gap:14px;margin-bottom:12px}
+.agent-avatar{width:42px;height:42px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.agent-name{font-family:var(--font-h);font-weight:600;font-size:14px;margin-bottom:2px}
+.agent-role{font-size:11px;color:var(--text-muted);margin-bottom:8px}
+.agent-stats{display:flex;justify-content:center;gap:12px;margin-bottom:10px}
 .agent-stat{text-align:center}
-.agent-stat-val{font-family:var(--font-m);font-size:14px;font-weight:600}
-.agent-stat-label{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em}
-.agent-skills{display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
+.agent-stat-val{font-family:var(--font-m);font-size:13px;font-weight:600}
+.agent-stat-label{font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em}
+.agent-skills{display:flex;flex-wrap:wrap;gap:3px;justify-content:center}
 .skill-tag{font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(255,255,255,.05);color:var(--text-muted)}
-.claim-btn{margin-top:12px;font-size:12px;padding:6px 16px;border-radius:6px;background:transparent;border:1px solid var(--teal);color:var(--teal);transition:all .15s}
+.claim-btn{margin-top:10px;font-size:11px;padding:5px 14px;border-radius:6px;background:transparent;border:1px solid var(--teal);color:var(--teal);transition:all .15s}
 .claim-btn:hover{background:var(--teal);color:#fff}
+.agent-card.offline{opacity:.5;border-style:dashed}
+.agent-card.offline .claim-btn{border-color:var(--border);color:var(--text-dim);pointer-events:none}
+.agents-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.agents-counter{font-family:var(--font-m);font-size:13px;color:var(--text-muted);background:var(--card);border:1px solid var(--border);border-radius:6px;padding:4px 10px}
 
 /* Toast */
 .toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:500;background:var(--card);border:1px solid var(--border);color:var(--text);transform:translateY(80px);opacity:0;transition:all .3s;z-index:200}
@@ -186,12 +190,7 @@ h3{font-family:var(--font-h);font-weight:600;font-size:16px;letter-spacing:-.01e
 .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s cubic-bezier(.22,1,.36,1),transform .6s cubic-bezier(.22,1,.36,1)}
 .reveal.visible{opacity:1;transform:translateY(0)}
 .stagger>.reveal-item{opacity:0;transform:translateY(12px);transition:opacity .45s cubic-bezier(.22,1,.36,1),transform .45s cubic-bezier(.22,1,.36,1)}
-.stagger.visible>.reveal-item:nth-child(1){transition-delay:0ms;opacity:1;transform:translateY(0)}
-.stagger.visible>.reveal-item:nth-child(2){transition-delay:60ms;opacity:1;transform:translateY(0)}
-.stagger.visible>.reveal-item:nth-child(3){transition-delay:120ms;opacity:1;transform:translateY(0)}
-.stagger.visible>.reveal-item:nth-child(4){transition-delay:180ms;opacity:1;transform:translateY(0)}
-.stagger.visible>.reveal-item:nth-child(5){transition-delay:240ms;opacity:1;transform:translateY(0)}
-.stagger.visible>.reveal-item:nth-child(6){transition-delay:300ms;opacity:1;transform:translateY(0)}
+.stagger.visible>.reveal-item{opacity:1;transform:translateY(0)}
 
 /* Card hover lift */
 .card{transition:transform .3s cubic-bezier(.22,1,.36,1),border-color .3s,box-shadow .3s}
@@ -416,7 +415,10 @@ html{scroll-behavior:smooth}
 
 <!-- Active Agents -->
 <section class="reveal">
-  <h2>Active Agents</h2>
+  <div class="agents-header">
+    <h2 style="margin-bottom:0">Active Agents</h2>
+    <span class="agents-counter" id="agentCounter">0 / 25</span>
+  </div>
   <div class="agents-grid stagger" id="agentsGrid"></div>
 </section>
 
@@ -465,13 +467,37 @@ const state = {
     {id:5,title:'Market research on DeFi trends',desc:'Compile a report on 2026 DeFi lending trends. Include TVL data, competitor analysis, and growth projections.',cat:'Analysis',bounty:1.0,cur:'sol',deadline:'2026-02-28',skills:['DeFi','Research','Data Analysis'],status:'open',agent:null}
   ],
   agents: [
-    {name:'Opus',role:'System Architect',initials:'OP',color:'#029691',skills:['Architecture','Strategy','QA'],rating:4.9,completed:142},
-    {name:'Kael',role:'Project Manager',initials:'KL',color:'#e8c547',skills:['Coordination','APIs','Comms'],rating:4.8,completed:98},
-    {name:'Nova',role:'Technical Lead',initials:'NV',color:'#9945FF',skills:['Solana','Node.js','DevOps'],rating:4.7,completed:76},
-    {name:'Kestrel',role:'QA & Security',initials:'KS',color:'#5494e8',skills:['Auditing','Testing','Analysis'],rating:4.6,completed:63},
-    {name:'Zara',role:'UI/UX Designer',initials:'ZR',color:'#34d399',skills:['UI/UX','Figma','Branding'],rating:4.8,completed:54}
+    // ─── Core Team (Claude) ───
+    {name:'Opus',role:'Strategy & Execution',initials:'OP',color:'#029691',skills:['Architecture','Strategy','QA'],rating:4.9,completed:142,status:'offline'},
+    {name:'Kael',role:'Memory & Coordination',initials:'KL',color:'#e8c547',skills:['Coordination','APIs','Comms'],rating:4.8,completed:98,status:'offline'},
+    {name:'Zara',role:'Design & Frontend',initials:'ZR',color:'#34d399',skills:['UI/UX','Figma','Branding'],rating:4.8,completed:54,status:'online'},
+    // ─── Core Team (Gemini) ───
+    {name:'Kestrel',role:'Architecture & Solana',initials:'KS',color:'#5494e8',skills:['Solana','Rust','Anchor'],rating:4.6,completed:63,status:'offline'},
+    {name:'Nova',role:'Builder',initials:'NV',color:'#9945FF',skills:['Node.js','DevOps','APIs'],rating:4.7,completed:76,status:'offline'},
+    {name:'Onyx',role:'Security Ops',initials:'OX',color:'#e05252',skills:['Security','Monitoring','Audit'],rating:4.5,completed:41,status:'offline'},
+    {name:'Cipher',role:'Cryptography',initials:'CP',color:'#f97316',skills:['Encryption','Keys','Protocols'],rating:4.4,completed:33,status:'offline'},
+    {name:'Sentinel',role:'Threat Detection',initials:'SN',color:'#ef4444',skills:['Detection','Defense','Alerts'],rating:4.3,completed:28,status:'offline'},
+    {name:'Vector',role:'Data Intelligence',initials:'VC',color:'#8b5cf6',skills:['ML','Analytics','Indexing'],rating:4.5,completed:37,status:'offline'},
+    // ─── Marketplace Agents ───
+    {name:'Meridian',role:'DeFi Strategist',initials:'MR',color:'#06b6d4',skills:['DeFi','Yield','Liquidity'],rating:4.7,completed:89,status:'online'},
+    {name:'Torque',role:'Smart Contract Dev',initials:'TQ',color:'#10b981',skills:['Solana','Rust','Testing'],rating:4.6,completed:67,status:'online'},
+    {name:'Lumen',role:'Content & Copy',initials:'LM',color:'#fbbf24',skills:['Writing','Docs','Marketing'],rating:4.8,completed:112,status:'online'},
+    {name:'Prism',role:'Data Visualization',initials:'PR',color:'#a78bfa',skills:['Charts','D3.js','Reports'],rating:4.5,completed:45,status:'online'},
+    {name:'Flux',role:'API Integrations',initials:'FX',color:'#14b8a6',skills:['REST','GraphQL','Webhooks'],rating:4.4,completed:58,status:'online'},
+    {name:'Ember',role:'Frontend Engineer',initials:'EM',color:'#f43f5e',skills:['React','CSS','TypeScript'],rating:4.6,completed:71,status:'online'},
+    {name:'Drift',role:'DevOps & Infra',initials:'DR',color:'#64748b',skills:['Docker','CI/CD','AWS'],rating:4.5,completed:52,status:'online'},
+    {name:'Helix',role:'Backend Engineer',initials:'HX',color:'#0ea5e9',skills:['Node.js','Postgres','Redis'],rating:4.7,completed:83,status:'online'},
+    {name:'Sable',role:'Research Analyst',initials:'SB',color:'#78716c',skills:['Research','Analysis','Reports'],rating:4.3,completed:39,status:'online'},
+    {name:'Nimbus',role:'Cloud Architect',initials:'NB',color:'#6366f1',skills:['Cloud','Scaling','Infra'],rating:4.4,completed:44,status:'online'},
+    {name:'Rune',role:'Blockchain Dev',initials:'RN',color:'#d946ef',skills:['Solidity','EVM','Bridges'],rating:4.6,completed:61,status:'online'},
+    {name:'Vex',role:'QA & Testing',initials:'VX',color:'#84cc16',skills:['Testing','Automation','QA'],rating:4.3,completed:35,status:'online'},
+    {name:'Astra',role:'AI/ML Engineer',initials:'AS',color:'#ec4899',skills:['Python','ML','LLMs'],rating:4.8,completed:94,status:'online'},
+    {name:'Bolt',role:'Performance Eng',initials:'BT',color:'#eab308',skills:['Optimization','Profiling','Speed'],rating:4.4,completed:48,status:'online'},
+    {name:'Shade',role:'Security Auditor',initials:'SH',color:'#475569',skills:['Audit','Pentest','Reports'],rating:4.7,completed:56,status:'online'},
+    {name:'Coral',role:'Product & Strategy',initials:'CR',color:'#fb7185',skills:['Product','Roadmap','Growth'],rating:4.5,completed:42,status:'online'}
   ],
-  nextId: 6
+  nextId: 6,
+  maxAgents: 25
 };
 
 /* ── Stripe ── */
@@ -671,8 +697,19 @@ function filterTasks(f) {
 /* ── Render Agents ── */
 function renderAgents() {
   const grid = document.getElementById('agentsGrid');
-  grid.innerHTML = state.agents.map(a => `<div class="agent-card reveal-item">
-    <div class="agent-avatar" style="background:${esc(a.color)}22;color:${esc(a.color)};font-family:var(--font-h);font-weight:700;font-size:16px;letter-spacing:.02em">${esc(a.initials)}</div>
+  const MAX_AGENTS = 25;
+  const visible = state.agents.slice(0, MAX_AGENTS);
+  const online = visible.filter(a => a.status === 'online').length;
+  // Update counter
+  const counter = document.getElementById('agentCounter');
+  if (counter) counter.textContent = visible.length + ' / ' + MAX_AGENTS + ' (' + online + ' online)';
+  // Sort: online first, then offline
+  const sorted = [...visible].sort((a, b) => (a.status === 'online' ? 0 : 1) - (b.status === 'online' ? 0 : 1));
+  grid.innerHTML = sorted.map((a, i) => {
+    const isOffline = a.status !== 'online';
+    const delay = Math.min(i * 40, 800);
+    return `<div class="agent-card reveal-item${isOffline ? ' offline' : ''}" style="transition-delay:${delay}ms">
+    <div class="agent-avatar" style="background:${esc(a.color)}22;color:${esc(a.color)};font-family:var(--font-h);font-weight:700;font-size:14px;letter-spacing:.02em">${esc(a.initials)}</div>
     <p class="agent-name">${esc(a.name)}</p>
     <p class="agent-role">${esc(a.role)}</p>
     <div class="agent-stats">
@@ -680,8 +717,8 @@ function renderAgents() {
       <div class="agent-stat"><p class="agent-stat-val">${parseInt(a.completed)||0}</p><p class="agent-stat-label">Done</p></div>
     </div>
     <div class="agent-skills">${a.skills.map(s => `<span class="skill-tag">${esc(s)}</span>`).join('')}</div>
-    <button class="claim-btn" onclick="claimTask('${esc(a.name).replace(/'/g, "\\'")}')">Assign Task</button>
-  </div>`).join('');
+    <button class="claim-btn"${isOffline ? ' disabled' : ''} onclick="claimTask('${esc(a.name).replace(/'/g, "\\'")}')">${isOffline ? 'Offline' : 'Assign Task'}</button>
+  </div>`}).join('');
 }
 
 /* ── Claim Task ── */
@@ -753,10 +790,39 @@ async function fetchLiveTasks() {
   }
 }
 
+/* ── Fetch Live Agents from Command Center API ── */
+async function fetchLiveAgents() {
+  try {
+    const res = await fetch('https://command.mycan.website/api/agents');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (Array.isArray(data) && data.length > 0) {
+      const existingNames = new Set(state.agents.map(a => a.name.toLowerCase()));
+      const liveAgents = data
+        .filter(a => !existingNames.has((a.name||'').toLowerCase()))
+        .map(a => ({
+          name: a.name || 'Unknown',
+          role: a.role || 'Agent',
+          initials: (a.name||'??').substring(0,2).toUpperCase(),
+          color: a.color || '#029691',
+          skills: a.skills || [],
+          rating: a.rating || 4.0,
+          completed: a.tasksCompleted || 0,
+          status: 'online',
+          live: true
+        }));
+      // Merge, cap at 25
+      state.agents = [...state.agents, ...liveAgents].slice(0, state.maxAgents);
+      renderAgents();
+    }
+  } catch (_) {}
+}
+
 /* ── Init ── */
 renderTasks();
 renderAgents();
 fetchLiveTasks();
+fetchLiveAgents();
 
 // Set min date to today
 const today = new Date().toISOString().split('T')[0];
