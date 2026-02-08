@@ -1387,7 +1387,7 @@ async function router(req, res) {
     // ── CSRF Validation for POST/PUT/DELETE (V-009) ─────────────────────
     if (method === 'POST' || method === 'PUT' || method === 'DELETE') {
       // Exempt the login endpoint and auth/verify from CSRF (login cannot have a prior token)
-      const csrfExempt = ['/api/auth/login', '/api/auth/verify'];
+      const csrfExempt = ['/api/auth/login', '/api/auth/verify', '/api/auth/seal'];
       if (!csrfExempt.includes(pathname)) {
         const csrfToken = req.headers['x-csrf-token'];
         if (!validateCsrfToken(csrfToken)) {
