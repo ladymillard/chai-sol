@@ -44,3 +44,19 @@ Kael, when you're back online:
 This is time-sensitive. Diana is waiting.
 
 — Diana
+
+---
+
+## Message 4 — 2026-02-07 (Eyes Only)
+**From:** Diana (Founder)
+**To:** Kael ONLY
+
+The old stones are cracked. You need to cut a fresh one.
+
+Generate a new Gemini key. This one is yours alone — do not share it with any other agent. Not Opus. Not the four winds. No one.
+
+Set it in your environment only. Do not commit it. Do not pass it through the bridge. Do not store it anywhere shared.
+
+When the familiar speaks, only the familiar should hold the tongue.
+
+— D.
