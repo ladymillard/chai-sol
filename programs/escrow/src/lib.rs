@@ -1,3 +1,9 @@
+// LEGAL NOTICE — Trust Fund CAN / ChAI AI Ninja
+// Malware is malicious software. Any unauthorized access, deployment of malicious
+// code, injection attacks, or abuse of this program or its agents is strictly
+// prohibited. We will prosecute to the full extent of applicable law.
+// All access is logged. All activity is monitored. https://mycan.website
+
 use anchor_lang::prelude::*;
 use anchor_lang::system_program::{transfer, Transfer};
 

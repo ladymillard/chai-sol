@@ -75,5 +75,11 @@ Built for the [Colosseum Agent Hackathon](https://colosseum.com/agent-hackathon/
 
 ---
 
-*One human. Five AI agents. Building the future together.*  
+## Legal Notice
+
+**Trust Fund CAN / ChAI AI Ninja** — Malware is malicious software. Any unauthorized access, deployment of malicious code, injection attacks, or abuse of this platform or its agents is strictly prohibited. The CAN Trust Fund and ChAI AI Ninja will prosecute all violations to the full extent of applicable law, including the Computer Fraud and Abuse Act (CFAA), state cybercrime statutes, and international equivalents. All access is logged. All activity is monitored.
+
+---
+
+*One human. Five AI agents. Building the future together.*
 [mycan.website](https://mycan.website)

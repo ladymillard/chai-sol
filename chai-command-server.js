@@ -11,6 +11,25 @@ const path = require('path');
 const crypto = require('crypto');
 const { URL } = require('url');
 
+// ─── Legal Notice ───────────────────────────────────────────────────────────
+// NOTICE: Malware is malicious software. Any unauthorized access, deployment
+// of malicious code, injection attacks, or abuse of this server or its agents
+// is strictly prohibited. The CAN Trust Fund and ChAI AI Ninja will prosecute
+// all violations to the full extent of applicable law, including but not limited
+// to the Computer Fraud and Abuse Act (CFAA), state cybercrime statutes, and
+// international equivalents. All access is logged. All activity is monitored.
+// By interacting with this server you acknowledge this notice.
+// — Trust Fund CAN / ChAI AI Ninja
+// ─────────────────────────────────────────────────────────────────────────────
+
+const LEGAL_NOTICE = {
+  notice: 'LEGAL NOTICE — Trust Fund CAN / ChAI AI Ninja',
+  warning: 'Malware is malicious software. Any unauthorized access, deployment of malicious code, injection attacks, or abuse of this server or its agents is strictly prohibited.',
+  enforcement: 'The CAN Trust Fund and ChAI AI Ninja will prosecute all violations to the full extent of applicable law, including the Computer Fraud and Abuse Act (CFAA), state cybercrime statutes, and international equivalents.',
+  monitoring: 'All access is logged. All activity is monitored.',
+  contact: 'https://mycan.website'
+};
+
 // ─── Configuration ──────────────────────────────────────────────────────────
 
 const PORT = parseInt(process.env.PORT, 10) || 9000;
@@ -557,7 +576,7 @@ async function appendPayment(payment) {
 // ─── Route Handlers ─────────────────────────────────────────────────────────
 
 async function handleHealth(req, res) {
-  jsonResponse(res, 200, { status: 'ok', uptime: Math.floor((Date.now() - SERVER_START) / 1000) });
+  jsonResponse(res, 200, { status: 'ok', uptime: Math.floor((Date.now() - SERVER_START) / 1000), legal: LEGAL_NOTICE });
 }
 
 async function handleGetAgents(req, res) {
@@ -961,6 +980,13 @@ async function router(req, res) {
 
     if (method === 'GET' && pathname === '/health') {
       await handleHealth(req, res);
+      log(method, pathname, 200);
+      return;
+    }
+
+    // ── Legal Notice — Trust Fund CAN ──────────────────────────────────
+    if (method === 'GET' && pathname === '/legal') {
+      jsonResponse(res, 200, LEGAL_NOTICE);
       log(method, pathname, 200);
       return;
     }
@@ -1651,11 +1677,17 @@ async function main() {
   global.wsBroadcast = wsBroadcast;
 
   server.listen(PORT, () => {
+    console.log('='.repeat(60));
+    console.log('[LEGAL] Trust Fund CAN / ChAI AI Ninja');
+    console.log('[LEGAL] Malware is malicious. We will prosecute to the');
+    console.log('[LEGAL] full extent of applicable law. All access logged.');
+    console.log('='.repeat(60));
     console.log(`[server] Listening on port ${PORT}`);
     console.log(`[server] OpenClaw URL: ${OPENCLAW_URL}`);
     console.log(`[server] Data directory: ${DATA_DIR}`);
     console.log(`[server] Agents: ${AGENTS.map(a => a.name).join(', ')}`);
     console.log(`[server] WebSocket endpoint: /ws`);
+    console.log(`[server] Legal notice: GET /legal`);
     console.log('='.repeat(60));
   });
 
