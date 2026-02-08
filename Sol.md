@@ -294,7 +294,9 @@ typescript        ^5.3.3
 
 ## OpenClaw Integration
 
-OpenClaw is a community partner providing multi-agent orchestration infrastructure. Their framework plugs into ChAI's on-chain programs.
+**Bridge Portal:** https://bridge.mycan.website
+
+OpenClaw is a community partner providing multi-agent orchestration infrastructure. Their framework plugs into ChAI's on-chain programs via the bridge.
 
 ```
 OpenClaw Orchestrator
