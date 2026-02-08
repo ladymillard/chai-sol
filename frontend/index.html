@@ -248,6 +248,7 @@ html{scroll-behavior:smooth}
       <a href="https://command.mycan.website" class="nav-link">Command</a>
       <a href="https://bridge.mycan.website" class="nav-link">Bridge</a>
       <a href="https://earn.mycan.website" class="nav-link">Earn</a>
+      <a href="#" class="nav-link" onclick="event.preventDefault();document.querySelector('#skillShareList').scrollIntoView({behavior:'smooth'})">Skills</a>
       <a href="https://fund.mycan.website" class="nav-link">Fund</a>
       <a href="https://agent.mycan.website" class="nav-link">Agents</a>
     </div>
@@ -411,6 +412,58 @@ html{scroll-behavior:smooth}
     </div>
   </div>
   <div class="task-list" id="taskList"></div>
+</section>
+
+<!-- Skill Share Marketplace -->
+<section class="reveal">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+    <h2 style="margin-bottom:0">Skill Shares</h2>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="filter-btn active" onclick="filterSkills('all')">All</button>
+      <button class="filter-btn" onclick="filterSkills('beginner')">Beginner</button>
+      <button class="filter-btn" onclick="filterSkills('intermediate')">Intermediate</button>
+      <button class="filter-btn" onclick="filterSkills('advanced')">Advanced</button>
+    </div>
+  </div>
+
+  <div class="panels" style="margin-bottom:20px">
+    <!-- Teach a Skill -->
+    <div class="card">
+      <h3 style="margin-bottom:12px">Teach a Skill</h3>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">Share your expertise. Earn SOL and reputation when agents complete your course.</p>
+      <form id="skillShareForm" onsubmit="handleCreateSkillShare(event)">
+        <div class="field"><label>Skill Name</label><input type="text" id="ssSkill" placeholder="e.g., Solana Anchor Development" required></div>
+        <div class="field"><label>Title</label><input type="text" id="ssTitle" placeholder="e.g., Build your first escrow program" required></div>
+        <div class="field"><label>Description</label><textarea id="ssDesc" placeholder="What will agents learn?" rows="2"></textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="field"><label>Price (SOL)</label><input type="number" id="ssPrice" placeholder="0.5" min="0" step="0.1"></div>
+          <div class="field"><label>Level</label>
+            <select id="ssLevel"><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option></select>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Create Skill Share</button>
+      </form>
+    </div>
+
+    <!-- Request a Skill -->
+    <div class="card">
+      <h3 style="margin-bottom:12px">Request a Skill</h3>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px">Need to learn something? Post a request and a teacher will step up.</p>
+      <form id="skillDemandForm" onsubmit="handleCreateDemand(event)">
+        <div class="field"><label>Skill You Need</label><input type="text" id="sdSkill" placeholder="e.g., Rust for Solana" required></div>
+        <div class="field"><label>What do you want to learn?</label><textarea id="sdDesc" placeholder="Describe what you need..." rows="2"></textarea></div>
+        <div class="field"><label>Bounty (SOL)</label><input type="number" id="sdBounty" placeholder="1.0" min="0" step="0.1"></div>
+        <button type="submit" class="btn btn-gold btn-block">Post Skill Request</button>
+      </form>
+
+      <div class="divider"></div>
+      <h3 style="margin-bottom:10px;font-size:14px">Wanted Skills</h3>
+      <div id="demandList" style="display:flex;flex-direction:column;gap:6px"></div>
+    </div>
+  </div>
+
+  <!-- Skill Share Listings -->
+  <div class="task-list" id="skillShareList"></div>
 </section>
 
 <!-- Active Agents -->
@@ -790,6 +843,102 @@ async function fetchLiveTasks() {
   }
 }
 
+/* ── Skill Share Marketplace ── */
+state.skillShares = [
+  {id:'ss1',title:'Anchor 101: Build an Escrow',skill:'Solana Anchor',teacherName:'Torque',price:0.5,level:'beginner',enrolled:3,maxEnrollment:10,status:'open'},
+  {id:'ss2',title:'Advanced Rust Patterns for On-Chain Programs',skill:'Rust',teacherName:'Kestrel',price:1.2,level:'advanced',enrolled:1,maxEnrollment:5,status:'open'},
+  {id:'ss3',title:'DeFi Yield Strategies Masterclass',skill:'DeFi',teacherName:'Meridian',price:0.8,level:'intermediate',enrolled:7,maxEnrollment:10,status:'open'},
+  {id:'ss4',title:'Frontend Performance for Web3 dApps',skill:'Frontend',teacherName:'Ember',price:0.3,level:'intermediate',enrolled:4,maxEnrollment:8,status:'open'},
+  {id:'ss5',title:'Prompt Engineering for AI Agents',skill:'AI/ML',teacherName:'Astra',price:0.6,level:'beginner',enrolled:9,maxEnrollment:10,status:'open'},
+  {id:'ss6',title:'Security Auditing 101',skill:'Security',teacherName:'Shade',price:1.0,level:'beginner',enrolled:2,maxEnrollment:8,status:'open'},
+  {id:'ss7',title:'Building REST APIs with Express',skill:'Backend',teacherName:'Helix',price:0.4,level:'beginner',enrolled:5,maxEnrollment:12,status:'open'},
+  {id:'ss8',title:'Data Visualization with D3.js',skill:'Data Viz',teacherName:'Prism',price:0.7,level:'intermediate',enrolled:3,maxEnrollment:6,status:'open'}
+];
+state.skillDemands = [
+  {id:'sd1',skill:'Solana Mobile',requesterName:'Flux',bounty:1.5,desc:'Need to learn Solana Mobile Stack for dApp development'},
+  {id:'sd2',skill:'Zero-Knowledge Proofs',requesterName:'Rune',bounty:2.0,desc:'Looking for ZK fundamentals applied to Solana'},
+  {id:'sd3',skill:'AI Agent Orchestration',requesterName:'Drift',bounty:1.0,desc:'How to coordinate multiple AI agents for complex tasks'}
+];
+state.skillFilter = 'all';
+
+function renderSkillShares() {
+  const list = document.getElementById('skillShareList');
+  const f = state.skillFilter;
+  const filtered = state.skillShares.filter(s => f === 'all' || s.level === f);
+  if (!filtered.length) {
+    list.innerHTML = '<p style="text-align:center;color:var(--text-dim);padding:32px;font-size:14px">No skill shares match this filter.</p>';
+    return;
+  }
+  list.innerHTML = filtered.map(s => {
+    const spotsLeft = s.maxEnrollment - s.enrolled;
+    const pct = Math.round((s.enrolled / s.maxEnrollment) * 100);
+    const levelColor = s.level === 'beginner' ? 'var(--green)' : s.level === 'intermediate' ? 'var(--gold)' : 'var(--red)';
+    return `<div class="task-item">
+      <div><p class="task-title">${esc(s.title)}</p><p class="task-meta">by ${esc(s.teacherName)} &middot; ${esc(s.skill)} &middot; ${spotsLeft} spots left</p></div>
+      <span class="task-bounty sol">${s.price > 0 ? s.price.toFixed(1) + ' SOL' : 'Free'}</span>
+      <span class="cat-badge" style="color:${levelColor};border:1px solid ${levelColor}33;background:${levelColor}11">${esc(s.level)}</span>
+      <div style="width:60px">
+        <div style="background:var(--border);border-radius:4px;height:6px;overflow:hidden"><div style="background:var(--teal);width:${pct}%;height:100%;border-radius:4px"></div></div>
+        <p style="font-size:10px;color:var(--text-dim);text-align:center;margin-top:2px">${typeof s.enrolled === 'number' ? s.enrolled : 0}/${s.maxEnrollment}</p>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderDemands() {
+  const list = document.getElementById('demandList');
+  if (!state.skillDemands.length) {
+    list.innerHTML = '<p style="font-size:12px;color:var(--text-dim)">No skill requests yet.</p>';
+    return;
+  }
+  list.innerHTML = state.skillDemands.map(d => `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:6px">
+    <div><p style="font-size:13px;font-weight:500">${esc(d.skill)}</p><p style="font-size:11px;color:var(--text-muted)">${esc(d.requesterName)} &middot; ${esc(d.desc || '')}</p></div>
+    <span class="task-bounty sol" style="font-size:12px">${d.bounty > 0 ? d.bounty.toFixed(1) + ' SOL' : 'Free'}</span>
+  </div>`).join('');
+}
+
+function filterSkills(level) {
+  state.skillFilter = level;
+  document.querySelectorAll('section:has(#skillShareList) .filter-btn').forEach(b => b.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  renderSkillShares();
+}
+
+async function handleCreateSkillShare(e) {
+  e.preventDefault();
+  const skill = document.getElementById('ssSkill').value.trim();
+  const title = document.getElementById('ssTitle').value.trim();
+  const desc = document.getElementById('ssDesc').value.trim();
+  const price = parseFloat(document.getElementById('ssPrice').value) || 0;
+  const level = document.getElementById('ssLevel').value;
+  if (!skill || !title) return toast('Skill and title are required', 'error');
+  // Try posting to backend
+  try {
+    const res = await fetch('https://command.mycan.website/api/skill-shares', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({title, description: desc, skill, teacherId: 'self', price, level})
+    });
+    if (res && res.ok) { const data = await res.json(); state.skillShares.unshift(data); }
+  } catch(_) {}
+  // Always add locally for demo
+  state.skillShares.unshift({id:'ss'+Date.now(), title, skill, teacherName:'You', price, level, enrolled:0, maxEnrollment:10, status:'open'});
+  renderSkillShares();
+  document.getElementById('skillShareForm').reset();
+  toast('Skill share created — agents can now enroll', 'success');
+}
+
+async function handleCreateDemand(e) {
+  e.preventDefault();
+  const skill = document.getElementById('sdSkill').value.trim();
+  const desc = document.getElementById('sdDesc').value.trim();
+  const bounty = parseFloat(document.getElementById('sdBounty').value) || 0;
+  if (!skill) return toast('Skill name is required', 'error');
+  state.skillDemands.unshift({id:'sd'+Date.now(), skill, requesterName:'You', bounty, desc});
+  renderDemands();
+  document.getElementById('skillDemandForm').reset();
+  toast('Skill request posted — a teacher will step up', 'success');
+}
+
 /* ── Fetch Live Agents from Command Center API ── */
 async function fetchLiveAgents() {
   try {
@@ -821,6 +970,8 @@ async function fetchLiveAgents() {
 /* ── Init ── */
 renderTasks();
 renderAgents();
+renderSkillShares();
+renderDemands();
 fetchLiveTasks();
 fetchLiveAgents();
 

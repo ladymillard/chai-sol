@@ -132,9 +132,7 @@ const tasks: Map<string, Task> = new Map();
 const agents: Map<string, Agent> = new Map();
 const communities: Map<string, Community> = new Map();
 
-app.get("/health", (_req, res) => {
-  res.json({ status: "ok", agents: agents.size, tasks: tasks.size, communities: communities.size });
-});
+// Health endpoint is registered after all stores are declared (see bottom of file)
 
 app.post("/agents", (req, res) => {
   const { name, wallet } = req.body;
@@ -535,6 +533,280 @@ app.post("/communities/:id/transfer-admin", (req, res) => {
   newAdmin.role = "admin";
   community.admin = newAdminId;
   res.json(community);
+});
+
+// ─── Skill Share Marketplace ─────────────────────────────────────────────────
+
+interface SkillShare {
+  id: string;
+  title: string;
+  description: string;
+  skill: string;
+  teacherId: string;
+  teacherName: string;
+  price: number;
+  maxEnrollment: number;
+  enrolled: SkillEnrollment[];
+  level: "beginner" | "intermediate" | "advanced";
+  status: "open" | "in_progress" | "completed";
+  createdAt: string;
+}
+
+interface SkillEnrollment {
+  agentId: string;
+  agentName: string;
+  enrolledAt: string;
+  completed: boolean;
+  rating?: number;
+}
+
+const skillShares: Map<string, SkillShare> = new Map();
+
+// Create a skill share offering
+app.post("/skill-shares", (req, res) => {
+  const { title, description, skill, teacherId, price, maxEnrollment, level } = req.body;
+  if (!title || !skill || !teacherId) {
+    res.status(400).json({ error: "title, skill, and teacherId required" });
+    return;
+  }
+  const teacher = agents.get(teacherId);
+  if (!teacher) {
+    res.status(404).json({ error: "teacher agent not found" });
+    return;
+  }
+  const numPrice = Number(price) || 0;
+  if (numPrice < 0 || numPrice > 100_000) {
+    res.status(400).json({ error: "price must be between 0 and 100,000" });
+    return;
+  }
+  const validLevels = ["beginner", "intermediate", "advanced"];
+  const id = uuidv4();
+  const share: SkillShare = {
+    id, title,
+    description: typeof description === "string" ? description : "",
+    skill,
+    teacherId,
+    teacherName: teacher.name,
+    price: numPrice,
+    maxEnrollment: Math.min(Math.max(Number(maxEnrollment) || 10, 1), 100),
+    enrolled: [],
+    level: validLevels.includes(level) ? level : "beginner",
+    status: "open",
+    createdAt: new Date().toISOString()
+  };
+  skillShares.set(id, share);
+  res.status(201).json(share);
+});
+
+// List all skill shares
+app.get("/skill-shares", (req, res) => {
+  const skill = req.query.skill as string | undefined;
+  const level = req.query.level as string | undefined;
+  let result = Array.from(skillShares.values());
+  if (skill) result = result.filter(s => s.skill.toLowerCase().includes(skill.toLowerCase()));
+  if (level) result = result.filter(s => s.level === level);
+  res.json(result);
+});
+
+// Get a single skill share
+app.get("/skill-shares/:id", (req, res) => {
+  const share = skillShares.get(req.params.id);
+  if (!share) {
+    res.status(404).json({ error: "skill share not found" });
+    return;
+  }
+  res.json(share);
+});
+
+// Enroll in a skill share
+app.post("/skill-shares/:id/enroll", (req, res) => {
+  const share = skillShares.get(req.params.id);
+  if (!share) {
+    res.status(404).json({ error: "skill share not found" });
+    return;
+  }
+  if (share.status !== "open") {
+    res.status(400).json({ error: "skill share not open for enrollment" });
+    return;
+  }
+  const { agentId } = req.body;
+  if (!agentId) {
+    res.status(400).json({ error: "agentId required" });
+    return;
+  }
+  const agent = agents.get(agentId);
+  if (!agent) {
+    res.status(404).json({ error: "agent not found" });
+    return;
+  }
+  if (agentId === share.teacherId) {
+    res.status(400).json({ error: "teacher cannot enroll in own skill share" });
+    return;
+  }
+  if (share.enrolled.find(e => e.agentId === agentId)) {
+    res.status(400).json({ error: "already enrolled" });
+    return;
+  }
+  if (share.enrolled.length >= share.maxEnrollment) {
+    res.status(400).json({ error: "skill share is full" });
+    return;
+  }
+  const enrollment: SkillEnrollment = {
+    agentId,
+    agentName: agent.name,
+    enrolledAt: new Date().toISOString(),
+    completed: false
+  };
+  share.enrolled.push(enrollment);
+  if (share.enrolled.length >= share.maxEnrollment) {
+    share.status = "in_progress";
+  }
+  res.status(201).json(enrollment);
+});
+
+// Complete enrollment (agent finished learning)
+app.post("/skill-shares/:id/complete", (req, res) => {
+  const share = skillShares.get(req.params.id);
+  if (!share) {
+    res.status(404).json({ error: "skill share not found" });
+    return;
+  }
+  const { agentId, rating } = req.body;
+  if (!agentId) {
+    res.status(400).json({ error: "agentId required" });
+    return;
+  }
+  const enrollment = share.enrolled.find(e => e.agentId === agentId);
+  if (!enrollment) {
+    res.status(404).json({ error: "not enrolled in this skill share" });
+    return;
+  }
+  if (enrollment.completed) {
+    res.status(400).json({ error: "already completed" });
+    return;
+  }
+  enrollment.completed = true;
+  if (rating && Number(rating) >= 1 && Number(rating) <= 5) {
+    enrollment.rating = Number(rating);
+  }
+  // Reward: student gets +2 reputation, teacher gets +1
+  const student = agents.get(agentId);
+  if (student) student.reputation = Math.min(100, student.reputation + 2);
+  const teacher = agents.get(share.teacherId);
+  if (teacher) {
+    teacher.reputation = Math.min(100, teacher.reputation + 1);
+    teacher.totalEarned += share.price;
+  }
+  // Check if all enrolled have completed
+  const allDone = share.enrolled.every(e => e.completed);
+  if (allDone) share.status = "completed";
+  res.json({ share, message: `${enrollment.agentName} completed "${share.title}"` });
+});
+
+// ─── Skill Demand Board ─────────────────────────────────────────────────────
+// Agents can post skills they WANT to learn, creating demand signals
+
+interface SkillDemand {
+  id: string;
+  skill: string;
+  requesterId: string;
+  requesterName: string;
+  bounty: number;
+  description: string;
+  fulfilled: boolean;
+  createdAt: string;
+}
+
+const skillDemands: Map<string, SkillDemand> = new Map();
+
+// Request a skill (I want to learn X)
+app.post("/skill-demands", (req, res) => {
+  const { skill, requesterId, bounty, description } = req.body;
+  if (!skill || !requesterId) {
+    res.status(400).json({ error: "skill and requesterId required" });
+    return;
+  }
+  const requester = agents.get(requesterId);
+  if (!requester) {
+    res.status(404).json({ error: "agent not found" });
+    return;
+  }
+  const id = uuidv4();
+  const demand: SkillDemand = {
+    id, skill,
+    requesterId,
+    requesterName: requester.name,
+    bounty: Math.max(0, Number(bounty) || 0),
+    description: typeof description === "string" ? description : "",
+    fulfilled: false,
+    createdAt: new Date().toISOString()
+  };
+  skillDemands.set(id, demand);
+  res.status(201).json(demand);
+});
+
+// List skill demands (what do agents want to learn?)
+app.get("/skill-demands", (_req, res) => {
+  res.json(Array.from(skillDemands.values()).filter(d => !d.fulfilled));
+});
+
+// Fulfill a demand (a teacher steps up)
+app.post("/skill-demands/:id/fulfill", (req, res) => {
+  const demand = skillDemands.get(req.params.id);
+  if (!demand) {
+    res.status(404).json({ error: "skill demand not found" });
+    return;
+  }
+  if (demand.fulfilled) {
+    res.status(400).json({ error: "already fulfilled" });
+    return;
+  }
+  const { teacherId } = req.body;
+  if (!teacherId) {
+    res.status(400).json({ error: "teacherId required" });
+    return;
+  }
+  if (teacherId === demand.requesterId) {
+    res.status(400).json({ error: "cannot fulfill own demand" });
+    return;
+  }
+  demand.fulfilled = true;
+  // Auto-create a skill share from this demand
+  const teacher = agents.get(teacherId);
+  const shareId = uuidv4();
+  const share: SkillShare = {
+    id: shareId,
+    title: `${demand.skill} — Requested by ${demand.requesterName}`,
+    description: demand.description,
+    skill: demand.skill,
+    teacherId,
+    teacherName: teacher ? teacher.name : "Unknown",
+    price: demand.bounty,
+    maxEnrollment: 10,
+    enrolled: [{
+      agentId: demand.requesterId,
+      agentName: demand.requesterName,
+      enrolledAt: new Date().toISOString(),
+      completed: false
+    }],
+    level: "beginner",
+    status: "open",
+    createdAt: new Date().toISOString()
+  };
+  skillShares.set(shareId, share);
+  res.json({ demand, skillShare: share, message: `Skill share created for "${demand.skill}"` });
+});
+
+// Update health endpoint to include skill shares
+app.get("/health", (_req, res) => {
+  res.json({
+    status: "ok",
+    agents: agents.size,
+    tasks: tasks.size,
+    communities: communities.size,
+    skillShares: skillShares.size,
+    skillDemands: skillDemands.size
+  });
 });
 
 const PORT = process.env.PORT || 3001;
