@@ -1,0 +1,17 @@
+node_modules
+backend/node_modules
+backend/dist
+oracle/node_modules
+target
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+id.json
+.git
+programs
+tests
+command-center
+marketing
+database
