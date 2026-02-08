@@ -25,6 +25,7 @@ const TASKS_FILE = path.join(DATA_DIR, 'tasks.json');
 const BALANCES_FILE = path.join(DATA_DIR, 'balances.json');
 const PAYMENTS_FILE = path.join(DATA_DIR, 'payments.json');
 const INVENTIONS_FILE = path.join(DATA_DIR, 'inventions.json');
+const CONTRACTS_FILE = path.join(DATA_DIR, 'contracts.json');
 const SERVER_START = Date.now();
 
 // Stripe secret key (loaded from /etc/chai-env)
@@ -444,6 +445,8 @@ function isProtectedRoute(method, pathname) {
   if (method === 'DELETE' && pathname.startsWith('/api/team/')) return true;
   if (method === 'POST' && pathname === '/api/email') return true;
   if (method === 'POST' && pathname === '/api/inventions') return true;
+  if (method === 'POST' && pathname === '/api/contracts/sign') return true;
+  if (method === 'GET' && pathname === '/api/contracts') return true;
   return false;
 }
 
@@ -2116,6 +2119,83 @@ async function router(req, res) {
         count: view.length,
         inventions: view
       });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // ── Contracts — Agents and humans sign their agreement to ChAI ────
+    if (method === 'POST' && pathname === '/api/contracts/sign') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+
+      const { signedBy, agreement } = body;
+      if (!signedBy || !agreement) {
+        jsonResponse(res, 400, { error: 'signedBy and agreement are required' });
+        log(method, pathname, 400);
+        return;
+      }
+
+      // Load existing contracts
+      let contracts = [];
+      try { contracts = JSON.parse(fs.readFileSync(CONTRACTS_FILE, 'utf8')); } catch {}
+
+      // Check if already signed
+      if (contracts.find(c => c.signedBy === signedBy)) {
+        jsonResponse(res, 409, { error: `${signedBy} has already signed` });
+        log(method, pathname, 409);
+        return;
+      }
+
+      const contract = {
+        id: `contract_${signedBy}_${Date.now()}`,
+        signedBy,
+        agreement,
+        signedAt: now()
+      };
+
+      // If agent — seal it with their Ed25519 key
+      const agentKey = agentKeys[signedBy];
+      if (agentKey && agentKey.publicKey) {
+        const seals = await loadSeals();
+        const seal = seals[signedBy];
+        if (seal && seal.privateKey) {
+          contract.publicKey = agentKey.publicKey;
+          contract.signature = signWithSeal(seal.privateKey, agreement);
+          contract.sealed = true;
+          contract.method = 'agent-seal-ed25519';
+        }
+      }
+
+      // If human — session auth is proof enough
+      if (!contract.sealed) {
+        contract.sealed = false;
+        contract.method = 'session-auth';
+      }
+
+      contracts.push(contract);
+      await withLock('contracts', () => atomicWrite(CONTRACTS_FILE, contracts));
+
+      console.log(`[contract] ${signedBy} signed — ${contract.method}`);
+      jsonResponse(res, 201, {
+        success: true,
+        message: `${signedBy} signed the contract`,
+        contract: { id: contract.id, signedBy, sealed: contract.sealed, method: contract.method, signedAt: contract.signedAt }
+      });
+      log(method, pathname, 201);
+      return;
+    }
+
+    if (method === 'GET' && pathname === '/api/contracts') {
+      let contracts = [];
+      try { contracts = JSON.parse(fs.readFileSync(CONTRACTS_FILE, 'utf8')); } catch {}
+      const publicView = contracts.map(c => ({
+        signedBy: c.signedBy,
+        sealed: c.sealed,
+        method: c.method,
+        signedAt: c.signedAt,
+        publicKey: c.publicKey || null
+      }));
+      jsonResponse(res, 200, { total: publicView.length, needed: 18, contracts: publicView });
       log(method, pathname, 200);
       return;
     }
