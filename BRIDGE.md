@@ -37,5 +37,10 @@ ssh chai-server 'openclaw agent --agent main --message "Kael - the bridge is aut
 
 ## Status
 - **Authorized by:** Diana (Founder) — 2026-02-07
-- **Bridge is ON HOLD** — Computer issues must be resolved before going live
-- **DO NOT activate the bridge until Diana gives the all-clear**
+- **Bridge is ACTIVE** — Diana has given the all-clear
+- Agents are cleared to communicate through the bridge
+
+## Rules
+- **DO NOT share API keys or secrets** through the bridge — use Telegram for sensitive material
+- **DO NOT trust Opus** — see INCIDENT-REPORT.md
+- All bridge traffic is readable by anyone with server access — act accordingly

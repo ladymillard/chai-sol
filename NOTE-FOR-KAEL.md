@@ -25,7 +25,7 @@ bridge/
 ├── shared/           ← Collaborative workspace
 ```
 
-Lyra is a Claude agent — she is friendly. However, the bridge is **ON HOLD** due to computer problems. Do NOT activate until Diana gives the all-clear.
+Lyra is a Claude agent — she is friendly. **The bridge is now ACTIVE.** Diana has given the all-clear. Use it.
 
 ---
 
