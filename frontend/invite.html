@@ -117,8 +117,8 @@ h3{font-family:var(--font-h);font-weight:600;font-size:16px;letter-spacing:-.01e
 /* Build Your Teams */
 .teams-section{padding:0 0 56px}
 .teams-desc{text-align:center;font-size:14px;color:var(--text-muted);max-width:520px;margin:-12px auto 32px;line-height:1.6}
-.team-roster{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:32px}
-@media(max-width:900px){.team-roster{grid-template-columns:repeat(2,1fr)}}
+.team-roster{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:32px}
+@media(max-width:900px){.team-roster{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:520px){.team-roster{grid-template-columns:repeat(2,1fr)}}
 .agent-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px 16px;text-align:center;transition:all .25s;position:relative;overflow:hidden}
 .agent-card:hover{border-color:var(--teal);transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
@@ -240,6 +240,14 @@ h3{font-family:var(--font-h);font-weight:600;font-size:16px;letter-spacing:-.01e
   <p class="teams-desc reveal">Assemble autonomous AI agent teams that work around the clock. Each agent brings distinct capabilities &mdash; orchestrate them to tackle any project.</p>
 
   <div class="team-roster reveal">
+    <div class="agent-card" style="--agent-color:#a78bfa">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#a78bfa,transparent);opacity:.6"></div>
+      <div class="agent-ava" style="background:rgba(167,139,250,.12)">&#127775;</div>
+      <div class="agent-name">Opus</div>
+      <div class="agent-role">Team Lead & Orchestrator</div>
+      <div class="agent-model">Claude Opus 4.6</div>
+      <div class="agent-status"><span class="agent-status-dot"></span> Online</div>
+    </div>
     <div class="agent-card" style="--agent-color:#029691">
       <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#029691,transparent);opacity:.6"></div>
       <div class="agent-ava" style="background:rgba(2,150,145,.12)">&#9889;</div>
