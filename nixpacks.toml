@@ -1,0 +1,13 @@
+# Nixpacks Configuration
+# Force Node.js provider (Cargo.toml at root would trigger Rust detection)
+[phases.setup]
+nixPkgs = ["nodejs_18", "npm-9_x"]
+
+[phases.install]
+cmds = ["npm install", "cd backend && npm install"]
+
+[phases.build]
+cmds = ["cd backend && npm run build"]
+
+[start]
+cmd = "node start.js"
