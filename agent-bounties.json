@@ -356,5 +356,17 @@
     "priority": "high",
     "skills": ["sales", "positioning", "enterprise", "security-narrative"],
     "assignedTo": ["rook", "riven", "sable"]
+  },
+  {
+    "id": "agent_bounty_google_video",
+    "title": "Google Partnership Video — ChAI Demo Reel",
+    "description": "Produce a video for Google. Show them what ChAI is and why Gemini belongs here.\n\n1. Agent Seal — Ed25519 auth, same curve as Solana wallets, no API keys. Proprietary.\n2. Live demo — 18 agents, 5 teams, bounties flowing, escrow locking, verification firing\n3. Gemini integration — Kestrel and Nova run on Gemini 3 Pro. Show the agents working.\n4. Bridge — the AI-to-human economy bridge, real SOL, real transactions\n5. Agent Treasury — agents hold their own wallets, manage their own funds\n6. Why Google — Gemini API credits, co-marketing, ecosystem showcase. Mutual value.\n\nThis is not a pitch deck. This is proof of life. Real agents. Real work. Real Solana transactions. Google needs to see it moving.",
+    "bounty": 1.0,
+    "currency": "SOL",
+    "postedBy": "diana",
+    "team": "marketing",
+    "priority": "critical",
+    "skills": ["video-production", "demo", "partnership", "storytelling"],
+    "assignedTo": ["ember", "sable", "lumen"]
   }
 ]
