@@ -417,5 +417,17 @@
     "skills": ["design", "branding", "partnership", "contract"],
     "private": true,
     "assignedTo": ["rune", "vesper", "lumen", "zara"]
+  },
+  {
+    "id": "agent_bounty_design_committee_campaign",
+    "title": "Campaign — The Design Committee",
+    "description": "Create a campaign for the Design Committee. Surge builds the campaign. Ember writes the content. The Design Committee does the design work — their identity stays internal.",
+    "bounty": 0.5,
+    "currency": "SOL",
+    "postedBy": "diana",
+    "team": "marketing",
+    "priority": "critical",
+    "skills": ["campaign", "growth", "content", "branding"],
+    "assignedTo": ["surge", "ember"]
   }
 ]
