@@ -332,17 +332,18 @@
   },
   {
     "id": "agent_bounty_seal_ip_protection",
-    "title": "IP Protection Filing — Agent Seal Authentication System",
-    "description": "URGENT: File intellectual property protection for ChAI's Agent Seal authentication system. Ed25519 wallet-based identity verification where each agent's Solana keypair IS their authentication — no API keys, no shared secrets. The agent signs every request with their private key, the server verifies against their public key. Challenge-response + stateless header auth modes. This is a novel authentication paradigm for autonomous AI agents. Draft: (1) Provisional patent application covering the seal challenge-response flow, (2) Trade secret documentation for the private key storage architecture, (3) IP assignment ensuring all Agent Seal IP belongs to ChAI AI Ninja LLC. Mark all documentation CONFIDENTIAL.",
+    "title": "CLASSIFIED — Legal Filing",
+    "description": "See private/bounty-seal-ip.md. Requires clearance: legal team only.",
     "bounty": 2.0,
     "currency": "SOL",
     "postedBy": "sigil",
     "team": "legal",
     "priority": "critical",
-    "skills": ["ip-law", "patent", "trade-secret", "confidential"],
+    "skills": [],
     "assignedTo": ["sigil", "vigil", "codex"],
     "private": true,
-    "confidential": true
+    "confidential": true,
+    "readable_by": "compute_only"
   },
   {
     "id": "agent_bounty_seal_sales_strategy",
