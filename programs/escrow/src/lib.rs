@@ -70,6 +70,10 @@ pub mod escrow {
             require!(assigned == dest_agent.key(), EscrowError::WrongAgent);
         }
 
+        // ANTI-THEFT: Verify escrow actually holds enough to pay
+        let escrow_balance = task_escrow.to_account_info().lamports();
+        require!(escrow_balance >= task_escrow.bounty_amount, EscrowError::InsufficientFunds);
+
         // Payout: Transfer SOL from PDA to Agent
         // Since PDA "owns" the lamports, we can decrease its balance and increase agent's
         **task_escrow.to_account_info().try_borrow_mut_lamports()? -= task_escrow.bounty_amount;
@@ -120,7 +124,12 @@ pub struct InitializeTask<'info> {
 pub struct AssignAgent<'info> {
     #[account(mut)]
     pub poster: Signer<'info>,
-    #[account(mut)]
+    #[account(
+        mut,
+        // ANTI-THEFT: PDA seed constraint ensures this is the real escrow account
+        // and that only the original poster's escrow can be modified
+        constraint = task_escrow.poster == poster.key() @ EscrowError::Unauthorized
+    )]
     pub task_escrow: Account<'info, TaskEscrow>,
 }
 
@@ -128,12 +137,18 @@ pub struct AssignAgent<'info> {
 pub struct CompleteTask<'info> {
     #[account(mut)]
     pub poster: Signer<'info>,
-    
-    /// CHECK: The agent account to receive funds. Verified by logic if assigned_agent is set.
+
+    /// CHECK: The agent receiving funds. When assigned_agent is set,
+    /// program logic verifies this matches. Agents CANNOT self-pay —
+    /// only the poster (signer) can trigger fund release.
     #[account(mut)]
     pub agent: AccountInfo<'info>,
-    
-    #[account(mut)]
+
+    #[account(
+        mut,
+        // ANTI-THEFT: Verify this escrow belongs to the signing poster
+        constraint = task_escrow.poster == poster.key() @ EscrowError::Unauthorized
+    )]
     pub task_escrow: Account<'info, TaskEscrow>,
 }
 
@@ -188,4 +203,6 @@ pub enum EscrowError {
     TaskAlreadyCompleted,
     #[msg("The provided agent does not match the assigned agent.")]
     WrongAgent,
+    #[msg("Escrow has insufficient funds for payout.")]
+    InsufficientFunds,
 }
