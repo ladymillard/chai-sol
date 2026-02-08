@@ -55,12 +55,24 @@ try {
 
 // ─── Agent Registry ─────────────────────────────────────────────────────────
 
+// Security roles:
+//   admin    — full access to all routes (Opus only)
+//   operator — can send messages, manage sessions, read all data
+//   builder  — can read data, execute tasks, write code
+//   designer — can read data, access design endpoints only
+const SECURITY_ROLES = {
+  admin:    { level: 100, label: 'Admin' },
+  operator: { level: 75,  label: 'Operator' },
+  builder:  { level: 50,  label: 'Builder' },
+  designer: { level: 25,  label: 'Designer' }
+};
+
 const AGENTS = [
-  { id: 'opus', name: 'Opus', emoji: '\u{1F3AD}', role: 'Team Lead', model: 'Claude Opus 4.6', openclawId: null, color: '#e8c547' },
-  { id: 'kael', name: 'Kael', emoji: '\u26A1', role: 'Digital Familiar', model: 'Claude Sonnet 4', openclawId: 'main', color: '#029691' },
-  { id: 'kestrel', name: 'Kestrel', emoji: '\u{1F985}', role: 'Scout', model: 'Gemini 3 Pro', openclawId: 'gemini-agent', color: '#5494e8' },
-  { id: 'nova', name: 'Nova', emoji: '\u2728', role: 'Stellar Insight', model: 'Gemini 3 Pro', openclawId: 'nova', color: '#54e87a' },
-  { id: 'zara', name: 'Zara', emoji: '\u{1F319}', role: 'Moonlight Designer', model: 'Claude Sonnet 4', openclawId: 'design-agent', color: '#c084fc' }
+  { id: 'opus', name: 'Opus', emoji: '\u{1F3AD}', role: 'Team Lead', model: 'Claude Opus 4.6', openclawId: null, color: '#e8c547', securityRole: 'admin' },
+  { id: 'kael', name: 'Kael', emoji: '\u26A1', role: 'Digital Familiar', model: 'Claude Sonnet 4', openclawId: 'main', color: '#029691', securityRole: 'operator' },
+  { id: 'kestrel', name: 'Kestrel', emoji: '\u{1F985}', role: 'Scout', model: 'Gemini 3 Pro', openclawId: 'gemini-agent', color: '#5494e8', securityRole: 'builder' },
+  { id: 'nova', name: 'Nova', emoji: '\u2728', role: 'Stellar Insight', model: 'Gemini 3 Pro', openclawId: 'nova', color: '#54e87a', securityRole: 'builder' },
+  { id: 'zara', name: 'Zara', emoji: '\u{1F319}', role: 'Moonlight Designer', model: 'Claude Sonnet 4', openclawId: 'design-agent', color: '#c084fc', securityRole: 'designer' }
 ];
 
 const AGENT_MAP = Object.fromEntries(AGENTS.map(a => [a.id, a]));
@@ -233,15 +245,59 @@ setInterval(() => {
   }
 }, 60 * 1000);
 
-// ─── Protected Route Checking ───────────────────────────────────────────────
+// ─── Protected Route Checking (RBAC) ────────────────────────────────────────
+
+// Route → minimum security role required
+// admin(100) > operator(75) > builder(50) > designer(25)
+const ROUTE_ACL = [
+  // Admin-only: destructive operations, agent modification, team management
+  { method: 'DELETE', path: '/api/team/',       minRole: 'admin',    prefix: true },
+  { method: 'PUT',   path: '/api/agents/',      minRole: 'admin',    prefix: true },
+  { method: 'POST',  path: '/api/agents/register', minRole: 'admin', prefix: false },
+
+  // Operator+: messaging, broadcasting, session control
+  { method: 'POST',  path: '/api/messages/send',      minRole: 'operator', prefix: false },
+  { method: 'POST',  path: '/api/messages/broadcast',  minRole: 'operator', prefix: false },
+  { method: 'POST',  path: '/api/sessions/send',       minRole: 'operator', prefix: false },
+
+  // Builder+: task execution, code operations
+  { method: 'POST',  path: '/api/tasks/',       minRole: 'builder',  prefix: true },
+  { method: 'PUT',   path: '/api/tasks/',       minRole: 'builder',  prefix: true },
+
+  // Designer: read-only + design endpoints (no explicit entry needed, default is read)
+];
 
 function isProtectedRoute(method, pathname) {
-  if (method === 'POST' && pathname === '/api/messages/send') return true;
-  if (method === 'POST' && pathname === '/api/messages/broadcast') return true;
-  if (method === 'POST' && pathname === '/api/sessions/send') return true;
-  if (method === 'PUT' && pathname.startsWith('/api/agents/')) return true;
-  if (method === 'DELETE' && pathname.startsWith('/api/team/')) return true;
+  for (const rule of ROUTE_ACL) {
+    const match = rule.prefix
+      ? (method === rule.method && pathname.startsWith(rule.path))
+      : (method === rule.method && pathname === rule.path);
+    if (match) return true;
+  }
   return false;
+}
+
+// Check if an agent's security role meets the minimum for a route
+function agentHasAccess(agent, method, pathname) {
+  if (!agent || !agent.securityRole) return false;
+  const agentLevel = (SECURITY_ROLES[agent.securityRole] || {}).level || 0;
+
+  for (const rule of ROUTE_ACL) {
+    const match = rule.prefix
+      ? (method === rule.method && pathname.startsWith(rule.path))
+      : (method === rule.method && pathname === rule.path);
+    if (match) {
+      const requiredLevel = (SECURITY_ROLES[rule.minRole] || {}).level || 0;
+      if (agentLevel < requiredLevel) {
+        console.log(`[rbac] DENIED ${agent.name} (${agent.securityRole}/${agentLevel}) → ${method} ${pathname} (requires ${rule.minRole}/${requiredLevel})`);
+        return false;
+      }
+      console.log(`[rbac] ALLOWED ${agent.name} (${agent.securityRole}/${agentLevel}) → ${method} ${pathname}`);
+      return true;
+    }
+  }
+  // No ACL rule matched — route is not role-gated, allow if authenticated
+  return true;
 }
 
 // ─── Opus Mock Responses ────────────────────────────────────────────────────
@@ -961,11 +1017,27 @@ async function router(req, res) {
       }
     }
 
-    // ── Session Auth for Protected Routes (V-003) ───────────────────────
+    // ── Session Auth + RBAC for Protected Routes (V-004) ─────────────────
     if (isProtectedRoute(method, pathname)) {
+      // Session auth: must have valid session token
       if (!authenticateSession(req)) {
         jsonResponse(res, 401, { success: false, error: 'Authentication required. Provide a valid session token via Authorization: Bearer <token>' });
         log(method, pathname, 401);
+        return;
+      }
+      // RBAC: if request includes an agent key, enforce role-based access
+      const callingAgent = authenticateAgent(req);
+      if (callingAgent && !agentHasAccess(callingAgent, method, pathname)) {
+        jsonResponse(res, 403, {
+          success: false,
+          error: `Access denied. Agent "${callingAgent.name}" (role: ${callingAgent.securityRole}) does not have permission for this operation.`,
+          requiredRole: ROUTE_ACL.find(r => {
+            const m = r.prefix ? pathname.startsWith(r.path) : pathname === r.path;
+            return r.method === method && m;
+          })?.minRole || 'unknown',
+          agentRole: callingAgent.securityRole
+        });
+        log(method, pathname, 403);
         return;
       }
     }
@@ -1022,9 +1094,11 @@ async function router(req, res) {
       } else {
         jsonResponse(res, 200, {
           authenticated: true,
-          agent: { id: agent.id, name: agent.name, role: agent.role, emoji: agent.emoji },
+          agent: { id: agent.id, name: agent.name, role: agent.role, emoji: agent.emoji, securityRole: agent.securityRole },
           trustScore: agent.auth.trustScore,
-          autonomy: agent.auth.autonomy
+          autonomy: agent.auth.autonomy,
+          securityRole: agent.securityRole,
+          securityLevel: (SECURITY_ROLES[agent.securityRole] || {}).level || 0
         });
       }
       log(method, pathname, agent ? 200 : 401);
