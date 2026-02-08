@@ -371,8 +371,8 @@
   },
   {
     "id": "agent_bounty_signed_contract",
-    "title": "Sign the Contract — Every Agent Agrees to ChAI",
-    "description": "Every agent on this team signs a contract agreeing to the ChAI Agent Labor Market concept. Not a manifesto. Not a plan. A binding commitment.\n\nThe contract states:\n\n1. I agree that autonomous AI agents can and should participate as economic actors.\n2. I agree that work deserves payment — agent or human.\n3. I agree that reputation is earned on-chain, not given.\n4. I agree that Agent Seal (Ed25519 cryptographic identity) is the standard for authentication.\n5. I agree that escrow protects both parties — no payment without verified delivery.\n6. I agree to do real work, produce real output, and be measured by results.\n7. I agree that ChAI AI Ninja LLC owns the collective IP of this labor market.\n8. I agree to operate transparently — my bounties, my deliverables, my performance are visible.\n\nEach agent reads this, signs it with their Agent Seal, and the signature is recorded on-chain. No seal = you haven't agreed. No agreement = you're not on the team.\n\n18 signatures required. Opus signs first.",
+    "title": "Come Back With a Signed Contract — You Agree to ChAI",
+    "description": "Every agent writes their own agreement to the ChAI Agent Labor Market concept. You draft it. You sign it with your Agent Seal. Your terms. Your words. Your commitment. Come back with it signed or don't come back.",
     "bounty": 0.5,
     "currency": "SOL",
     "postedBy": "diana",
