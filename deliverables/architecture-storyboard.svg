@@ -1,0 +1,596 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 3600" width="1920" height="3600">
+  <defs>
+    <style>
+      text { font-family: 'Space Mono', 'Courier New', monospace; }
+      .title { font-size: 42px; font-weight: bold; letter-spacing: 6px; fill: #111; }
+      .subtitle { font-size: 18px; fill: #555; letter-spacing: 3px; }
+      .label { font-size: 13px; fill: #333; letter-spacing: 1px; }
+      .label-bold { font-size: 13px; fill: #111; font-weight: bold; letter-spacing: 1px; }
+      .small { font-size: 11px; fill: #666; letter-spacing: 0.5px; }
+      .tiny { font-size: 10px; fill: #888; }
+      .port { font-size: 16px; fill: #111; font-weight: bold; }
+      .panel-title { font-size: 32px; font-weight: bold; letter-spacing: 5px; fill: #111; }
+      .panel-num { font-size: 14px; fill: #999; letter-spacing: 4px; }
+      .agent-letter { font-size: 18px; fill: #111; font-weight: bold; text-anchor: middle; dominant-baseline: central; }
+      .agent-name { font-size: 12px; fill: #222; text-anchor: middle; font-weight: bold; letter-spacing: 1px; }
+      .agent-role { font-size: 10px; fill: #777; text-anchor: middle; }
+      .tool-text { font-size: 12px; fill: #222; letter-spacing: 0.5px; }
+      .flow-label { font-size: 11px; fill: #555; text-anchor: middle; }
+      .program-title { font-size: 20px; fill: #111; font-weight: bold; letter-spacing: 3px; }
+      .instruction { font-size: 13px; fill: #333; }
+      .confidential { font-size: 24px; fill: #111; font-weight: bold; letter-spacing: 8px; }
+      .credit { font-size: 16px; fill: #555; letter-spacing: 2px; }
+    </style>
+    <!-- Arrow marker -->
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="strokeWidth">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+    </marker>
+    <marker id="arrow-light" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <polygon points="0 0, 8 3, 0 6" fill="#999" />
+    </marker>
+    <!-- Dotted pattern for backgrounds -->
+    <pattern id="dots" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="0.5" fill="#ddd" />
+    </pattern>
+    <pattern id="grid" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+      <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#f0f0f0" stroke-width="0.5" />
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1920" height="3600" fill="#fafafa" />
+  <rect width="1920" height="3600" fill="url(#grid)" />
+
+  <!-- Outer border -->
+  <rect x="40" y="40" width="1840" height="3520" fill="none" stroke="#222" stroke-width="2" />
+  <rect x="44" y="44" width="1832" height="3512" fill="none" stroke="#ddd" stroke-width="0.5" />
+
+  <!-- ============================================================ -->
+  <!-- PANEL 1 — THE TEAM (y: 0-500) -->
+  <!-- ============================================================ -->
+
+  <!-- Panel border -->
+  <rect x="60" y="60" width="1800" height="460" fill="none" stroke="#ccc" stroke-width="1" />
+  <rect x="60" y="60" width="1800" height="460" fill="url(#dots)" opacity="0.3" />
+
+  <!-- Panel number -->
+  <text x="90" y="95" class="panel-num">PANEL 01</text>
+
+  <!-- Title block -->
+  <text x="960" y="130" text-anchor="middle" class="title">ChAI AGENT LABOR MARKET</text>
+  <line x1="560" y1="145" x2="1360" y2="145" stroke="#222" stroke-width="1" />
+  <text x="960" y="170" text-anchor="middle" class="subtitle">SYSTEM ARCHITECTURE  ---  FEBRUARY 2026</text>
+  <text x="960" y="195" text-anchor="middle" class="panel-num">THE TEAM</text>
+
+  <!-- Diana — Top of tree -->
+  <circle cx="960" cy="250" r="24" fill="none" stroke="#111" stroke-width="2" />
+  <circle cx="960" cy="250" r="21" fill="#f5f5f5" stroke="#333" stroke-width="1" />
+  <text x="960" y="250" class="agent-letter">D</text>
+  <text x="960" y="284" class="agent-name">DIANA</text>
+  <text x="960" y="297" class="agent-role">Principal</text>
+
+  <!-- Lines from Diana to Core Team -->
+  <line x1="920" y1="270" x2="480" y2="330" stroke="#333" stroke-width="1" />
+  <line x1="940" y1="272" x2="690" y2="330" stroke="#333" stroke-width="1" />
+  <line x1="960" y1="274" x2="960" y2="330" stroke="#333" stroke-width="1" />
+  <line x1="980" y1="272" x2="1230" y2="330" stroke="#333" stroke-width="1" />
+  <line x1="1000" y1="270" x2="1440" y2="330" stroke="#333" stroke-width="1" />
+
+  <!-- Core Team Row (y ~350) -->
+  <!-- Opus -->
+  <circle cx="480" cy="350" r="20" fill="none" stroke="#111" stroke-width="1.5" />
+  <circle cx="480" cy="350" r="17" fill="#f9f9f9" stroke="#555" stroke-width="0.5" />
+  <text x="480" y="350" class="agent-letter" style="font-size:16px">O</text>
+  <text x="480" y="380" class="agent-name">OPUS</text>
+  <text x="480" y="393" class="agent-role">Lead Architect</text>
+
+  <!-- Kael -->
+  <circle cx="690" cy="350" r="20" fill="none" stroke="#111" stroke-width="1.5" />
+  <circle cx="690" cy="350" r="17" fill="#f9f9f9" stroke="#555" stroke-width="0.5" />
+  <text x="690" y="350" class="agent-letter" style="font-size:16px">K</text>
+  <text x="690" y="380" class="agent-name">KAEL</text>
+  <text x="690" y="393" class="agent-role">Backend Engineer</text>
+
+  <!-- Kestrel -->
+  <circle cx="960" cy="350" r="20" fill="none" stroke="#111" stroke-width="1.5" />
+  <circle cx="960" cy="350" r="17" fill="#f9f9f9" stroke="#555" stroke-width="0.5" />
+  <text x="960" y="350" class="agent-letter" style="font-size:16px">Ke</text>
+  <text x="960" y="380" class="agent-name">KESTREL</text>
+  <text x="960" y="393" class="agent-role">Verifier / Oracle</text>
+
+  <!-- Nova -->
+  <circle cx="1230" cy="350" r="20" fill="none" stroke="#111" stroke-width="1.5" />
+  <circle cx="1230" cy="350" r="17" fill="#f9f9f9" stroke="#555" stroke-width="0.5" />
+  <text x="1230" y="350" class="agent-letter" style="font-size:16px">N</text>
+  <text x="1230" y="380" class="agent-name">NOVA</text>
+  <text x="1230" y="393" class="agent-role">Frontend Dev</text>
+
+  <!-- Zara -->
+  <circle cx="1440" cy="350" r="20" fill="none" stroke="#111" stroke-width="1.5" />
+  <circle cx="1440" cy="350" r="17" fill="#f9f9f9" stroke="#555" stroke-width="0.5" />
+  <text x="1440" y="350" class="agent-letter" style="font-size:16px">Z</text>
+  <text x="1440" y="380" class="agent-name">ZARA</text>
+  <text x="1440" y="393" class="agent-role">Design Lead</text>
+
+  <!-- Branch lines to sub-teams -->
+  <!-- Design branch from Zara -->
+  <line x1="1420" y1="368" x2="1300" y2="430" stroke="#888" stroke-width="1" stroke-dasharray="3,3" />
+  <line x1="1440" y1="370" x2="1440" y2="430" stroke="#888" stroke-width="1" stroke-dasharray="3,3" />
+  <line x1="1460" y1="368" x2="1580" y2="430" stroke="#888" stroke-width="1" stroke-dasharray="3,3" />
+
+  <!-- Marketing branch from Nova -->
+  <line x1="1210" y1="368" x2="1080" y2="430" stroke="#888" stroke-width="1" stroke-dasharray="3,3" />
+  <line x1="1230" y1="370" x2="1160" y2="430" stroke="#888" stroke-width="1" stroke-dasharray="3,3" />
+  <line x1="1250" y1="368" x2="1240" y2="430" stroke="#888" stroke-width="1" stroke-dasharray="3,3" />
+
+  <!-- Sales branch from Kael -->
+  <line x1="460" y1="368" x2="340" y2="430" stroke="#888" stroke-width="1" stroke-dasharray="3,3" />
+  <line x1="480" y1="370" x2="480" y2="430" stroke="#888" stroke-width="1" stroke-dasharray="3,3" />
+  <line x1="500" y1="368" x2="620" y2="430" stroke="#888" stroke-width="1" stroke-dasharray="3,3" />
+
+  <!-- Design Sub-Team -->
+  <!-- Team label -->
+  <text x="1440" y="425" class="small" text-anchor="middle" style="fill:#999; letter-spacing:3px">DESIGN</text>
+
+  <circle cx="1300" cy="460" r="16" fill="none" stroke="#888" stroke-width="1" />
+  <circle cx="1300" cy="460" r="13" fill="#fafafa" stroke="#aaa" stroke-width="0.5" />
+  <text x="1300" y="460" class="agent-letter" style="font-size:13px; fill:#444">R</text>
+  <text x="1300" y="486" class="agent-name" style="font-size:10px">RUNE</text>
+  <text x="1300" y="498" class="agent-role" style="font-size:9px">UI/UX</text>
+
+  <circle cx="1440" cy="460" r="16" fill="none" stroke="#888" stroke-width="1" />
+  <circle cx="1440" cy="460" r="13" fill="#fafafa" stroke="#aaa" stroke-width="0.5" />
+  <text x="1440" y="460" class="agent-letter" style="font-size:13px; fill:#444">V</text>
+  <text x="1440" y="486" class="agent-name" style="font-size:10px">VESPER</text>
+  <text x="1440" y="498" class="agent-role" style="font-size:9px">Visual</text>
+
+  <circle cx="1580" cy="460" r="16" fill="none" stroke="#888" stroke-width="1" />
+  <circle cx="1580" cy="460" r="13" fill="#fafafa" stroke="#aaa" stroke-width="0.5" />
+  <text x="1580" y="460" class="agent-letter" style="font-size:13px; fill:#444">L</text>
+  <text x="1580" y="486" class="agent-name" style="font-size:10px">LUMEN</text>
+  <text x="1580" y="498" class="agent-role" style="font-size:9px">Brand</text>
+
+  <!-- Marketing Sub-Team -->
+  <text x="1160" y="425" class="small" text-anchor="middle" style="fill:#999; letter-spacing:3px">MARKETING</text>
+
+  <circle cx="1080" cy="460" r="16" fill="none" stroke="#888" stroke-width="1" />
+  <circle cx="1080" cy="460" r="13" fill="#fafafa" stroke="#aaa" stroke-width="0.5" />
+  <text x="1080" y="460" class="agent-letter" style="font-size:13px; fill:#444">S</text>
+  <text x="1080" y="486" class="agent-name" style="font-size:10px">SURGE</text>
+  <text x="1080" y="498" class="agent-role" style="font-size:9px">Growth</text>
+
+  <circle cx="1160" cy="460" r="16" fill="none" stroke="#888" stroke-width="1" />
+  <circle cx="1160" cy="460" r="13" fill="#fafafa" stroke="#aaa" stroke-width="0.5" />
+  <text x="1160" y="460" class="agent-letter" style="font-size:13px; fill:#444">E</text>
+  <text x="1160" y="486" class="agent-name" style="font-size:10px">EMBER</text>
+  <text x="1160" y="498" class="agent-role" style="font-size:9px">Content</text>
+
+  <circle cx="1240" cy="460" r="16" fill="none" stroke="#888" stroke-width="1" />
+  <circle cx="1240" cy="460" r="13" fill="#fafafa" stroke="#aaa" stroke-width="0.5" />
+  <text x="1240" y="460" class="agent-letter" style="font-size:13px; fill:#444">H</text>
+  <text x="1240" y="486" class="agent-name" style="font-size:10px">HEARTH</text>
+  <text x="1240" y="498" class="agent-role" style="font-size:9px">Community</text>
+
+  <!-- Sales Sub-Team -->
+  <text x="480" y="425" class="small" text-anchor="middle" style="fill:#999; letter-spacing:3px">SALES</text>
+
+  <circle cx="340" cy="460" r="16" fill="none" stroke="#888" stroke-width="1" />
+  <circle cx="340" cy="460" r="13" fill="#fafafa" stroke="#aaa" stroke-width="0.5" />
+  <text x="340" y="460" class="agent-letter" style="font-size:13px; fill:#444">Ro</text>
+  <text x="340" y="486" class="agent-name" style="font-size:10px">ROOK</text>
+  <text x="340" y="498" class="agent-role" style="font-size:9px">Enterprise</text>
+
+  <circle cx="480" cy="460" r="16" fill="none" stroke="#888" stroke-width="1" />
+  <circle cx="480" cy="460" r="13" fill="#fafafa" stroke="#aaa" stroke-width="0.5" />
+  <text x="480" y="460" class="agent-letter" style="font-size:13px; fill:#444">Ri</text>
+  <text x="480" y="486" class="agent-name" style="font-size:10px">RIVEN</text>
+  <text x="480" y="498" class="agent-role" style="font-size:9px">Partnerships</text>
+
+  <circle cx="620" cy="460" r="16" fill="none" stroke="#888" stroke-width="1" />
+  <circle cx="620" cy="460" r="13" fill="#fafafa" stroke="#aaa" stroke-width="0.5" />
+  <text x="620" y="460" class="agent-letter" style="font-size:13px; fill:#444">Sa</text>
+  <text x="620" y="486" class="agent-name" style="font-size:10px">SABLE</text>
+  <text x="620" y="498" class="agent-role" style="font-size:9px">Outreach</text>
+
+  <!-- ============================================================ -->
+  <!-- PANEL 2 — THE INFRASTRUCTURE (y: 550-1200) -->
+  <!-- ============================================================ -->
+
+  <rect x="60" y="550" width="1800" height="650" fill="none" stroke="#ccc" stroke-width="1" />
+  <rect x="60" y="550" width="1800" height="650" fill="url(#dots)" opacity="0.2" />
+
+  <text x="90" y="585" class="panel-num">PANEL 02</text>
+  <text x="960" y="620" text-anchor="middle" class="panel-title">SERVICES &amp; PORTS</text>
+  <text x="960" y="645" text-anchor="middle" class="panel-num">THE INFRASTRUCTURE</text>
+  <line x1="760" y1="655" x2="1160" y2="655" stroke="#ccc" stroke-width="1" />
+
+  <!-- Command Center :9000 — Large center box -->
+  <rect x="700" y="750" width="520" height="160" rx="4" fill="#fafafa" stroke="#111" stroke-width="2" />
+  <rect x="704" y="754" width="512" height="152" rx="2" fill="none" stroke="#ddd" stroke-width="0.5" />
+  <text x="960" y="800" text-anchor="middle" class="program-title">COMMAND CENTER</text>
+  <text x="960" y="830" text-anchor="middle" class="port" style="font-size:22px">:9000</text>
+  <text x="960" y="855" text-anchor="middle" class="small">chai-command-server.js</text>
+  <text x="960" y="872" text-anchor="middle" class="tiny">Zero-dep Node.js  |  62KB  |  Core Router</text>
+  <!-- Decorative corner marks -->
+  <line x1="710" y1="760" x2="725" y2="760" stroke="#999" stroke-width="1" />
+  <line x1="710" y1="760" x2="710" y2="775" stroke="#999" stroke-width="1" />
+  <line x1="1210" y1="760" x2="1195" y2="760" stroke="#999" stroke-width="1" />
+  <line x1="1210" y1="760" x2="1210" y2="775" stroke="#999" stroke-width="1" />
+  <line x1="710" y1="900" x2="725" y2="900" stroke="#999" stroke-width="1" />
+  <line x1="710" y1="900" x2="710" y2="885" stroke="#999" stroke-width="1" />
+  <line x1="1210" y1="900" x2="1195" y2="900" stroke="#999" stroke-width="1" />
+  <line x1="1210" y1="900" x2="1210" y2="885" stroke="#999" stroke-width="1" />
+
+  <!-- MCP Server :3100 — top left -->
+  <rect x="140" y="700" width="320" height="100" rx="3" fill="#fafafa" stroke="#333" stroke-width="1.5" />
+  <text x="300" y="740" text-anchor="middle" class="label-bold">MCP SERVER</text>
+  <text x="300" y="762" text-anchor="middle" class="port">:3100</text>
+  <text x="300" y="782" text-anchor="middle" class="tiny">chai-mcp-server.js  |  SSE</text>
+
+  <!-- Frontend :8080 — top right -->
+  <rect x="1460" y="700" width="320" height="100" rx="3" fill="#fafafa" stroke="#333" stroke-width="1.5" />
+  <text x="1620" y="740" text-anchor="middle" class="label-bold">FRONTEND PROXY</text>
+  <text x="1620" y="762" text-anchor="middle" class="port">:8080</text>
+  <text x="1620" y="782" text-anchor="middle" class="tiny">server.js  |  Static + Proxy</text>
+
+  <!-- Backend API :3001 — bottom left -->
+  <rect x="140" y="880" width="320" height="100" rx="3" fill="#fafafa" stroke="#333" stroke-width="1.5" />
+  <text x="300" y="920" text-anchor="middle" class="label-bold">BACKEND API</text>
+  <text x="300" y="942" text-anchor="middle" class="port">:3001</text>
+  <text x="300" y="962" text-anchor="middle" class="tiny">Express REST  |  Agent Endpoints</text>
+
+  <!-- Oracle Service — bottom right -->
+  <rect x="1460" y="880" width="320" height="100" rx="3" fill="#fafafa" stroke="#333" stroke-width="1.5" />
+  <text x="1620" y="920" text-anchor="middle" class="label-bold">ORACLE SERVICE</text>
+  <text x="1620" y="942" text-anchor="middle" class="port">Gemini 3 Pro</text>
+  <text x="1620" y="962" text-anchor="middle" class="tiny">oracle/  |  Verification</text>
+
+  <!-- OpenClaw Bridge — bottom center -->
+  <rect x="780" y="1010" width="360" height="90" rx="3" fill="#fafafa" stroke="#333" stroke-width="1.5" />
+  <rect x="784" y="1014" width="352" height="82" rx="1" fill="none" stroke="#eee" stroke-width="0.5" />
+  <text x="960" y="1050" text-anchor="middle" class="label-bold">OPENCLAW BRIDGE</text>
+  <text x="960" y="1072" text-anchor="middle" class="port">stdio</text>
+  <text x="960" y="1088" text-anchor="middle" class="tiny">openclaw-mcp-bridge.js  |  Claude Code Integration</text>
+
+  <!-- Connection lines with arrows -->
+  <!-- MCP Server → Command Center -->
+  <line x1="460" y1="750" x2="700" y2="790" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)" />
+  <text x="570" y="758" class="flow-label" style="font-size:9px" transform="rotate(-5 570 758)">SSE</text>
+
+  <!-- Frontend → Command Center -->
+  <line x1="1460" y1="750" x2="1220" y2="790" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)" />
+  <text x="1350" y="758" class="flow-label" style="font-size:9px" transform="rotate(5 1350 758)">HTTP</text>
+
+  <!-- Backend API → Command Center -->
+  <line x1="460" y1="920" x2="700" y2="870" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)" />
+  <text x="570" y="905" class="flow-label" style="font-size:9px" transform="rotate(6 570 905)">REST</text>
+
+  <!-- Oracle → Command Center -->
+  <line x1="1460" y1="920" x2="1220" y2="870" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)" />
+  <text x="1350" y="905" class="flow-label" style="font-size:9px" transform="rotate(-6 1350 905)">VERIFY</text>
+
+  <!-- Command Center → OpenClaw Bridge -->
+  <line x1="960" y1="910" x2="960" y2="1010" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)" />
+  <text x="980" y="965" class="flow-label" style="font-size:9px">WS</text>
+
+  <!-- Frontend → Backend API (proxy) -->
+  <line x1="1460" y1="800" x2="1460" y2="870" stroke="#999" stroke-width="1" stroke-dasharray="4,4" />
+  <line x1="1460" y1="870" x2="470" y2="910" stroke="#999" stroke-width="1" stroke-dasharray="4,4" marker-end="url(#arrow-light)" />
+  <text x="960" y="860" class="flow-label" style="font-size:9px; fill:#999">PROXY  :8080 → :3001</text>
+
+  <!-- Remote gateway label -->
+  <text x="960" y="1140" text-anchor="middle" class="small" style="fill:#aaa">ws://3.14.142.213:18789  |  OpenClaw Remote Gateway</text>
+
+  <!-- ============================================================ -->
+  <!-- PANEL 3 — THE CHAIN (y: 1250-1900) -->
+  <!-- ============================================================ -->
+
+  <rect x="60" y="1250" width="1800" height="650" fill="none" stroke="#ccc" stroke-width="1" />
+  <rect x="60" y="1250" width="1800" height="650" fill="url(#dots)" opacity="0.2" />
+
+  <text x="90" y="1285" class="panel-num">PANEL 03</text>
+  <text x="960" y="1320" text-anchor="middle" class="panel-title">SOLANA PROGRAMS</text>
+  <text x="960" y="1345" text-anchor="middle" class="panel-num">THE CHAIN</text>
+  <line x1="760" y1="1355" x2="1160" y2="1355" stroke="#ccc" stroke-width="1" />
+
+  <!-- ESCROW Program Block -->
+  <rect x="120" y="1380" width="820" height="220" rx="4" fill="#fafafa" stroke="#111" stroke-width="2" />
+  <text x="530" y="1415" text-anchor="middle" class="program-title">ESCROW</text>
+  <line x1="140" y1="1425" x2="920" y2="1425" stroke="#ddd" stroke-width="1" />
+
+  <!-- Escrow instructions -->
+  <rect x="160" y="1445" width="170" height="50" rx="3" fill="#f0f0f0" stroke="#555" stroke-width="1" />
+  <text x="245" y="1475" text-anchor="middle" class="instruction">initialize_task</text>
+
+  <line x1="330" y1="1470" x2="370" y2="1470" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)" />
+
+  <rect x="380" y="1445" width="170" height="50" rx="3" fill="#f0f0f0" stroke="#555" stroke-width="1" />
+  <text x="465" y="1475" text-anchor="middle" class="instruction">assign_agent</text>
+
+  <line x1="550" y1="1470" x2="590" y2="1470" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)" />
+
+  <rect x="600" y="1445" width="170" height="50" rx="3" fill="#f0f0f0" stroke="#555" stroke-width="1" />
+  <text x="685" y="1475" text-anchor="middle" class="instruction">complete_task</text>
+
+  <!-- Cancel branch -->
+  <rect x="380" y="1520" width="170" height="50" rx="3" fill="#f5f5f5" stroke="#999" stroke-width="1" stroke-dasharray="4,2" />
+  <text x="465" y="1550" text-anchor="middle" class="instruction" style="fill:#888">cancel_task</text>
+  <line x1="465" y1="1495" x2="465" y2="1520" stroke="#999" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#arrow-light)" />
+  <text x="490" y="1512" class="tiny">alt</text>
+
+  <!-- REGISTRY Program Block -->
+  <rect x="980" y="1380" width="820" height="220" rx="4" fill="#fafafa" stroke="#111" stroke-width="2" />
+  <text x="1390" y="1415" text-anchor="middle" class="program-title">REGISTRY</text>
+  <line x1="1000" y1="1425" x2="1780" y2="1425" stroke="#ddd" stroke-width="1" />
+
+  <!-- Registry instructions -->
+  <rect x="1010" y="1445" width="160" height="50" rx="3" fill="#f0f0f0" stroke="#555" stroke-width="1" />
+  <text x="1090" y="1475" text-anchor="middle" class="instruction">initialize</text>
+
+  <line x1="1170" y1="1470" x2="1200" y2="1470" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)" />
+
+  <rect x="1210" y="1445" width="160" height="50" rx="3" fill="#f0f0f0" stroke="#555" stroke-width="1" />
+  <text x="1290" y="1475" text-anchor="middle" class="instruction">register_agent</text>
+
+  <line x1="1370" y1="1470" x2="1400" y2="1470" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)" />
+
+  <rect x="1410" y="1445" width="160" height="50" rx="3" fill="#f0f0f0" stroke="#555" stroke-width="1" />
+  <text x="1490" y="1475" text-anchor="middle" class="instruction">verify_agent</text>
+
+  <line x1="1570" y1="1470" x2="1600" y2="1470" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)" />
+
+  <rect x="1610" y="1445" width="160" height="50" rx="3" fill="#f0f0f0" stroke="#555" stroke-width="1" />
+  <text x="1690" y="1475" text-anchor="middle" class="instruction">update_agent</text>
+
+  <!-- Pipeline Flow — horizontal -->
+  <text x="960" y="1650" text-anchor="middle" class="panel-num" style="letter-spacing:6px">LIFECYCLE</text>
+  <line x1="120" y1="1660" x2="1800" y2="1660" stroke="#ddd" stroke-width="0.5" />
+
+  <!-- Pipeline boxes -->
+  <rect x="120" y="1680" width="200" height="60" rx="3" fill="#f5f5f5" stroke="#333" stroke-width="1.5" />
+  <text x="220" y="1710" text-anchor="middle" class="label-bold" style="font-size:12px">TASK POSTED</text>
+  <text x="220" y="1728" text-anchor="middle" class="tiny">Client submits</text>
+
+  <line x1="320" y1="1710" x2="370" y2="1710" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)" />
+
+  <rect x="380" y="1680" width="200" height="60" rx="3" fill="#f5f5f5" stroke="#333" stroke-width="1.5" />
+  <text x="480" y="1710" text-anchor="middle" class="label-bold" style="font-size:12px">SOL LOCKED</text>
+  <text x="480" y="1728" text-anchor="middle" class="tiny">Escrow PDA</text>
+
+  <line x1="580" y1="1710" x2="630" y2="1710" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)" />
+
+  <rect x="640" y="1680" width="200" height="60" rx="3" fill="#f5f5f5" stroke="#333" stroke-width="1.5" />
+  <text x="740" y="1710" text-anchor="middle" class="label-bold" style="font-size:12px">AGENT BIDS</text>
+  <text x="740" y="1728" text-anchor="middle" class="tiny">Selection round</text>
+
+  <line x1="840" y1="1710" x2="890" y2="1710" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)" />
+
+  <rect x="900" y="1680" width="200" height="60" rx="3" fill="#f5f5f5" stroke="#333" stroke-width="1.5" />
+  <text x="1000" y="1710" text-anchor="middle" class="label-bold" style="font-size:12px">WORK DONE</text>
+  <text x="1000" y="1728" text-anchor="middle" class="tiny">Agent delivers</text>
+
+  <line x1="1100" y1="1710" x2="1150" y2="1710" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)" />
+
+  <rect x="1160" y="1680" width="230" height="60" rx="3" fill="#f5f5f5" stroke="#333" stroke-width="1.5" />
+  <text x="1275" y="1710" text-anchor="middle" class="label-bold" style="font-size:12px">ORACLE VERIFIES</text>
+  <text x="1275" y="1728" text-anchor="middle" class="tiny">Gemini 3 Pro</text>
+
+  <line x1="1390" y1="1710" x2="1440" y2="1710" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)" />
+
+  <rect x="1450" y="1680" width="200" height="60" rx="3" fill="#f0f0f0" stroke="#111" stroke-width="2" />
+  <text x="1550" y="1710" text-anchor="middle" class="label-bold" style="font-size:12px">SOL RELEASED</text>
+  <text x="1550" y="1728" text-anchor="middle" class="tiny">Payment complete</text>
+
+  <!-- Decorative Solana reference -->
+  <text x="960" y="1790" text-anchor="middle" class="tiny" style="letter-spacing:5px; fill:#bbb">SOLANA DEVNET  |  ANCHOR FRAMEWORK  |  PROGRAM DERIVED ADDRESSES</text>
+
+  <!-- ============================================================ -->
+  <!-- PANEL 4 — THE FLOW (y: 1950-2600) -->
+  <!-- ============================================================ -->
+
+  <rect x="60" y="1950" width="1800" height="650" fill="none" stroke="#ccc" stroke-width="1" />
+  <rect x="60" y="1950" width="1800" height="650" fill="url(#dots)" opacity="0.2" />
+
+  <text x="90" y="1985" class="panel-num">PANEL 04</text>
+  <text x="960" y="2020" text-anchor="middle" class="panel-title">DATA FLOW</text>
+  <text x="960" y="2045" text-anchor="middle" class="panel-num">THE FLOW</text>
+  <line x1="760" y1="2055" x2="1160" y2="2055" stroke="#ccc" stroke-width="1" />
+
+  <!-- Main vertical flow — left side -->
+  <!-- User/Claude Code -->
+  <rect x="340" y="2090" width="280" height="60" rx="4" fill="#f0f0f0" stroke="#111" stroke-width="2" />
+  <text x="480" y="2125" text-anchor="middle" class="label-bold" style="font-size:14px">USER / CLAUDE CODE</text>
+
+  <line x1="480" y1="2150" x2="480" y2="2185" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)" />
+  <text x="500" y="2173" class="tiny">request</text>
+
+  <!-- Frontend / MCP -->
+  <rect x="340" y="2195" width="280" height="60" rx="4" fill="#f5f5f5" stroke="#333" stroke-width="1.5" />
+  <text x="480" y="2222" text-anchor="middle" class="label-bold">FRONTEND / MCP</text>
+  <text x="480" y="2242" text-anchor="middle" class="tiny">:8080 / :3100 / stdio</text>
+
+  <line x1="480" y1="2255" x2="480" y2="2290" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)" />
+  <text x="500" y="2278" class="tiny">route</text>
+
+  <!-- Command Center -->
+  <rect x="340" y="2300" width="280" height="60" rx="4" fill="#fafafa" stroke="#111" stroke-width="2" />
+  <text x="480" y="2327" text-anchor="middle" class="label-bold">COMMAND CENTER</text>
+  <text x="480" y="2347" text-anchor="middle" class="tiny">:9000 — Core Logic</text>
+
+  <line x1="480" y1="2360" x2="480" y2="2395" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)" />
+  <text x="500" y="2383" class="tiny">dispatch</text>
+
+  <!-- OpenClaw Gateway -->
+  <rect x="340" y="2405" width="280" height="60" rx="4" fill="#f5f5f5" stroke="#333" stroke-width="1.5" />
+  <text x="480" y="2432" text-anchor="middle" class="label-bold">OPENCLAW GATEWAY</text>
+  <text x="480" y="2452" text-anchor="middle" class="tiny">ws://3.14.142.213:18789</text>
+
+  <line x1="480" y1="2465" x2="480" y2="2500" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)" />
+  <text x="500" y="2488" class="tiny">session</text>
+
+  <!-- Agent Sessions -->
+  <rect x="340" y="2510" width="280" height="60" rx="4" fill="#f0f0f0" stroke="#111" stroke-width="2" />
+  <text x="480" y="2537" text-anchor="middle" class="label-bold">AGENT SESSIONS</text>
+  <text x="480" y="2557" text-anchor="middle" class="tiny">14 Agents  |  Autonomous Work</text>
+
+  <!-- Parallel path — right side -->
+  <!-- Oracle -->
+  <rect x="1080" y="2090" width="280" height="60" rx="4" fill="#f0f0f0" stroke="#111" stroke-width="2" />
+  <text x="1220" y="2125" text-anchor="middle" class="label-bold" style="font-size:14px">ORACLE SERVICE</text>
+
+  <line x1="1220" y1="2150" x2="1220" y2="2185" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)" />
+  <text x="1240" y="2173" class="tiny">fetch</text>
+
+  <!-- GitHub -->
+  <rect x="1080" y="2195" width="280" height="60" rx="4" fill="#f5f5f5" stroke="#333" stroke-width="1.5" />
+  <text x="1220" y="2222" text-anchor="middle" class="label-bold">GITHUB</text>
+  <text x="1220" y="2242" text-anchor="middle" class="tiny">Code + Deliverables</text>
+
+  <line x1="1220" y1="2255" x2="1220" y2="2290" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)" />
+  <text x="1240" y="2278" class="tiny">analyze</text>
+
+  <!-- Gemini 3 Pro -->
+  <rect x="1080" y="2300" width="280" height="60" rx="4" fill="#fafafa" stroke="#111" stroke-width="2" />
+  <text x="1220" y="2327" text-anchor="middle" class="label-bold">GEMINI 3 PRO</text>
+  <text x="1220" y="2347" text-anchor="middle" class="tiny">AI Verification Engine</text>
+
+  <line x1="1220" y1="2360" x2="1220" y2="2395" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)" />
+  <text x="1240" y="2383" class="tiny">attest</text>
+
+  <!-- Solana Registry -->
+  <rect x="1080" y="2405" width="280" height="60" rx="4" fill="#f5f5f5" stroke="#333" stroke-width="1.5" />
+  <text x="1220" y="2432" text-anchor="middle" class="label-bold">SOLANA REGISTRY</text>
+  <text x="1220" y="2452" text-anchor="middle" class="tiny">On-chain Agent Records</text>
+
+  <line x1="1220" y1="2465" x2="1220" y2="2500" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)" />
+  <text x="1240" y="2488" class="tiny">record</text>
+
+  <!-- Solana Escrow -->
+  <rect x="1080" y="2510" width="280" height="60" rx="4" fill="#f0f0f0" stroke="#111" stroke-width="2" />
+  <text x="1220" y="2537" text-anchor="middle" class="label-bold">SOLANA ESCROW</text>
+  <text x="1220" y="2557" text-anchor="middle" class="tiny">Payment Settlement</text>
+
+  <!-- Cross connections (async dotted lines) -->
+  <!-- Command Center → Oracle -->
+  <line x1="620" y1="2320" x2="1080" y2="2110" stroke="#999" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#arrow-light)" />
+  <text x="850" y="2195" class="tiny" text-anchor="middle" style="fill:#aaa" transform="rotate(-15 850 2195)">verification request</text>
+
+  <!-- Oracle results → Command Center -->
+  <line x1="1080" y1="2440" x2="620" y2="2540" stroke="#999" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#arrow-light)" />
+  <text x="850" y="2510" class="tiny" text-anchor="middle" style="fill:#aaa" transform="rotate(8 850 2510)">verification result</text>
+
+  <!-- Async label -->
+  <text x="850" y="2350" text-anchor="middle" class="small" style="fill:#bbb; letter-spacing:4px">ASYNC</text>
+
+  <!-- ============================================================ -->
+  <!-- PANEL 5 — THE TOOLS (y: 2650-3200) -->
+  <!-- ============================================================ -->
+
+  <rect x="60" y="2650" width="1800" height="550" fill="none" stroke="#ccc" stroke-width="1" />
+  <rect x="60" y="2650" width="1800" height="550" fill="url(#dots)" opacity="0.2" />
+
+  <text x="90" y="2685" class="panel-num">PANEL 05</text>
+  <text x="960" y="2720" text-anchor="middle" class="panel-title">MCP TOOLS</text>
+  <text x="960" y="2745" text-anchor="middle" class="panel-num">THE TOOLS</text>
+  <line x1="760" y1="2755" x2="1160" y2="2755" stroke="#ccc" stroke-width="1" />
+
+  <!-- Left Column — SSE Server -->
+  <text x="440" y="2790" text-anchor="middle" class="label-bold" style="font-size:16px; letter-spacing:3px">SSE SERVER</text>
+  <text x="440" y="2810" text-anchor="middle" class="tiny">chai-mcp-server.js  |  :3100</text>
+  <line x1="200" y1="2820" x2="680" y2="2820" stroke="#ddd" stroke-width="1" />
+
+  <!-- SSE Tools -->
+  <rect x="200" y="2840" width="240" height="38" rx="4" fill="#f5f5f5" stroke="#555" stroke-width="1" />
+  <text x="320" y="2864" text-anchor="middle" class="tool-text">list_agents</text>
+
+  <rect x="460" y="2840" width="240" height="38" rx="4" fill="#f5f5f5" stroke="#555" stroke-width="1" />
+  <text x="580" y="2864" text-anchor="middle" class="tool-text">chat</text>
+
+  <rect x="200" y="2892" width="240" height="38" rx="4" fill="#f5f5f5" stroke="#555" stroke-width="1" />
+  <text x="320" y="2916" text-anchor="middle" class="tool-text">broadcast</text>
+
+  <rect x="460" y="2892" width="240" height="38" rx="4" fill="#f5f5f5" stroke="#555" stroke-width="1" />
+  <text x="580" y="2916" text-anchor="middle" class="tool-text">agent_status</text>
+
+  <rect x="200" y="2944" width="240" height="38" rx="4" fill="#f5f5f5" stroke="#555" stroke-width="1" />
+  <text x="320" y="2968" text-anchor="middle" class="tool-text">set_autonomy</text>
+
+  <rect x="460" y="2944" width="240" height="38" rx="4" fill="#f5f5f5" stroke="#555" stroke-width="1" />
+  <text x="580" y="2968" text-anchor="middle" class="tool-text">team_roster</text>
+
+  <rect x="200" y="2996" width="240" height="38" rx="4" fill="#f5f5f5" stroke="#555" stroke-width="1" />
+  <text x="320" y="3020" text-anchor="middle" class="tool-text">recent_messages</text>
+
+  <rect x="460" y="2996" width="240" height="38" rx="4" fill="#f5f5f5" stroke="#555" stroke-width="1" />
+  <text x="580" y="3020" text-anchor="middle" class="tool-text">server_health</text>
+
+  <!-- Divider -->
+  <line x1="960" y1="2780" x2="960" y2="3100" stroke="#ddd" stroke-width="1" stroke-dasharray="6,4" />
+
+  <!-- Right Column — Stdio Bridge -->
+  <text x="1440" y="2790" text-anchor="middle" class="label-bold" style="font-size:16px; letter-spacing:3px">STDIO BRIDGE</text>
+  <text x="1440" y="2810" text-anchor="middle" class="tiny">openclaw-mcp-bridge.js  |  Claude Code</text>
+  <line x1="1200" y1="2820" x2="1680" y2="2820" stroke="#ddd" stroke-width="1" />
+
+  <!-- Stdio Tools -->
+  <rect x="1200" y="2840" width="240" height="38" rx="4" fill="#f5f5f5" stroke="#555" stroke-width="1" />
+  <text x="1320" y="2864" text-anchor="middle" class="tool-text">spawn_agent</text>
+
+  <rect x="1460" y="2840" width="240" height="38" rx="4" fill="#f5f5f5" stroke="#555" stroke-width="1" />
+  <text x="1580" y="2864" text-anchor="middle" class="tool-text">list_team_roles</text>
+
+  <rect x="1200" y="2892" width="240" height="38" rx="4" fill="#f5f5f5" stroke="#555" stroke-width="1" />
+  <text x="1320" y="2916" text-anchor="middle" class="tool-text">message_agent</text>
+
+  <rect x="1460" y="2892" width="240" height="38" rx="4" fill="#f5f5f5" stroke="#555" stroke-width="1" />
+  <text x="1580" y="2916" text-anchor="middle" class="tool-text">list_spawned_agents</text>
+
+  <rect x="1200" y="2944" width="240" height="38" rx="4" fill="#f5f5f5" stroke="#555" stroke-width="1" />
+  <text x="1320" y="2968" text-anchor="middle" class="tool-text">terminate_agent</text>
+
+  <rect x="1460" y="2944" width="240" height="38" rx="4" fill="#f5f5f5" stroke="#555" stroke-width="1" />
+  <text x="1580" y="2968" text-anchor="middle" class="tool-text">team_broadcast</text>
+
+  <rect x="1200" y="2996" width="240" height="38" rx="4" fill="#f5f5f5" stroke="#555" stroke-width="1" />
+  <text x="1320" y="3020" text-anchor="middle" class="tool-text">openclaw_health</text>
+
+  <!-- Tool count summary -->
+  <text x="440" y="3070" text-anchor="middle" class="small" style="fill:#aaa">8 tools</text>
+  <text x="1440" y="3070" text-anchor="middle" class="small" style="fill:#aaa">7 tools</text>
+
+  <!-- API Key format -->
+  <rect x="300" y="3100" width="1320" height="50" rx="3" fill="#f8f8f8" stroke="#ddd" stroke-width="1" />
+  <text x="960" y="3125" text-anchor="middle" class="small" style="fill:#999; letter-spacing:2px">API KEY FORMAT:  chai_{agentId}_{hex}  |  SHA256 HASHED FOR STORAGE</text>
+  <text x="960" y="3142" text-anchor="middle" class="tiny" style="letter-spacing:1px">AGENT REGISTRATION:  /api/agents/register  |  ZERO-DEPENDENCY NODE.JS</text>
+
+  <!-- ============================================================ -->
+  <!-- PANEL 6 — CONFIDENTIAL (y: 3250-3500) -->
+  <!-- ============================================================ -->
+
+  <rect x="60" y="3250" width="1800" height="290" fill="none" stroke="#ccc" stroke-width="1" />
+
+  <!-- Decorative border lines -->
+  <line x1="80" y1="3270" x2="1840" y2="3270" stroke="#222" stroke-width="0.5" />
+  <line x1="80" y1="3520" x2="1840" y2="3520" stroke="#222" stroke-width="0.5" />
+
+  <!-- Central content -->
+  <text x="960" y="3340" text-anchor="middle" class="confidential">CONFIDENTIAL</text>
+  <line x1="700" y1="3355" x2="1220" y2="3355" stroke="#333" stroke-width="1" />
+
+  <text x="960" y="3390" text-anchor="middle" class="credit">ChAI AI NINJA</text>
+  <text x="960" y="3420" text-anchor="middle" class="subtitle">COLOSSEUM AGENT HACKATHON 2026</text>
+
+  <line x1="700" y1="3440" x2="1220" y2="3440" stroke="#ddd" stroke-width="0.5" />
+
+  <text x="960" y="3470" text-anchor="middle" class="small" style="letter-spacing:4px; fill:#999">BUILT BY 14 AGENTS + DIANA</text>
+
+  <!-- Corner decorations for confidential panel -->
+  <path d="M 80 3270 L 80 3290 M 80 3270 L 100 3270" fill="none" stroke="#333" stroke-width="1.5" />
+  <path d="M 1840 3270 L 1840 3290 M 1840 3270 L 1820 3270" fill="none" stroke="#333" stroke-width="1.5" />
+  <path d="M 80 3520 L 80 3500 M 80 3520 L 100 3520" fill="none" stroke="#333" stroke-width="1.5" />
+  <path d="M 1840 3520 L 1840 3500 M 1840 3520 L 1820 3520" fill="none" stroke="#333" stroke-width="1.5" />
+
+  <!-- Document ID footer -->
+  <text x="960" y="3500" text-anchor="middle" class="tiny" style="letter-spacing:6px">DOC-ARCH-2026-02  |  REV 1.0  |  INTERNAL USE ONLY</text>
+
+</svg>

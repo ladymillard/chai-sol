@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChAI Agent Labor Market — Architecture</title>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --green: #00ff41;
+  --bg: #0a0a0a;
+  --white: #e0e0e0;
+  --bright: #ffffff;
+  --purple: #c084fc;
+  --amber: #f59e0b;
+  --sales-green: #22c55e;
+  --gold: #e8c547;
+  --dim: #555;
+  --border: #333;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  color: var(--white);
+  font-family: 'Courier New', Courier, monospace;
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* ===== SCENE CONTAINER ===== */
+.scene {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+.scene.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ===== SCENE INDICATOR ===== */
+#scene-indicator {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 1000;
+}
+#scene-indicator .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--dim);
+  transition: background 0.3s, box-shadow 0.3s;
+}
+#scene-indicator .dot.active {
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+}
+
+/* Skip hint */
+#skip-hint {
+  position: fixed;
+  bottom: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: var(--dim);
+  z-index: 1000;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* ===== SCANLINE OVERLAY ===== */
+#scanlines {
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.08) 2px,
+    rgba(0,0,0,0.08) 4px
+  );
+  pointer-events: none;
+  z-index: 999;
+}
+
+/* ===== SCENE 1: BOOT ===== */
+#scene-boot {
+  align-items: flex-start;
+  justify-content: center;
+  padding: 10vh 10vw;
+}
+#scene-boot .line {
+  color: var(--green);
+  font-size: 18px;
+  line-height: 2;
+  white-space: pre;
+  overflow: hidden;
+  width: 0;
+  opacity: 0;
+}
+#scene-boot .line.typing {
+  opacity: 1;
+  border-right: 2px solid var(--green);
+  animation: blink-cursor 0.6s step-end infinite;
+}
+#scene-boot .line.done {
+  opacity: 1;
+  width: auto;
+  border-right: none;
+}
+#scene-boot .progress-bar {
+  color: var(--green);
+  font-size: 18px;
+  line-height: 2;
+  opacity: 0;
+}
+#scene-boot .progress-bar.visible { opacity: 1; }
+
+@keyframes blink-cursor {
+  50% { border-color: transparent; }
+}
+
+/* ===== SCENE 2: AGENT ROSTER ===== */
+#scene-agents .scene-title {
+  font-size: 24px;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  color: var(--bright);
+  margin-bottom: 30px;
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 0.8s, transform 0.8s;
+}
+#scene-agents .scene-title.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#agent-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 140px);
+  gap: 12px;
+  max-width: 780px;
+}
+.agent-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 8px;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
+}
+.agent-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.agent-card:hover {
+  box-shadow: 0 0 20px rgba(255,255,255,0.08);
+  transform: translateY(-3px) !important;
+}
+.agent-card .emoji { font-size: 24px; margin-bottom: 4px; }
+.agent-card .name {
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--bright);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.agent-card .role {
+  font-size: 9px;
+  color: var(--dim);
+  margin-top: 2px;
+  letter-spacing: 0.5px;
+}
+.agent-card .model {
+  font-size: 8px;
+  color: #444;
+  margin-top: 4px;
+}
+
+.agent-card.core { border-color: var(--white); }
+.agent-card.core.visible { box-shadow: 0 0 8px rgba(255,255,255,0.1); }
+.agent-card.design { border-color: var(--purple); }
+.agent-card.design.visible { box-shadow: 0 0 8px rgba(192,132,252,0.2); }
+.agent-card.marketing { border-color: var(--amber); }
+.agent-card.marketing.visible { box-shadow: 0 0 8px rgba(245,158,11,0.2); }
+.agent-card.sales { border-color: var(--sales-green); }
+.agent-card.sales.visible { box-shadow: 0 0 8px rgba(34,197,94,0.2); }
+.agent-card.human { border-color: var(--gold); }
+.agent-card.human.visible { box-shadow: 0 0 12px rgba(232,197,71,0.3); }
+
+#diana-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+#diana-row .agent-card { width: 160px; }
+
+/* ===== SCENE 3: INFRASTRUCTURE ===== */
+#scene-infra .scene-title {
+  font-size: 24px;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  color: var(--bright);
+  margin-bottom: 20px;
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 0.8s, transform 0.8s;
+  position: absolute;
+  top: 6vh;
+}
+#scene-infra .scene-title.visible {
+  opacity: 1; transform: translateY(0);
+}
+
+#infra-canvas {
+  width: 800px;
+  height: 500px;
+  position: relative;
+}
+
+.infra-node {
+  position: absolute;
+  background: var(--bg);
+  border: 2px solid var(--green);
+  border-radius: 8px;
+  padding: 12px 18px;
+  text-align: center;
+  opacity: 0;
+  transform: scale(0.7);
+  transition: opacity 0.6s, transform 0.6s;
+  z-index: 2;
+}
+.infra-node.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+.infra-node .node-name {
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--bright);
+  letter-spacing: 1px;
+}
+.infra-node .node-port {
+  font-size: 10px;
+  color: var(--green);
+  margin-top: 2px;
+}
+.infra-node.center-node {
+  border-color: var(--gold);
+  box-shadow: 0 0 20px rgba(232,197,71,0.15);
+}
+.infra-node.center-node.visible {
+  animation: pulse-gold 2s ease-in-out infinite;
+}
+@keyframes pulse-gold {
+  0%, 100% { box-shadow: 0 0 20px rgba(232,197,71,0.15); }
+  50% { box-shadow: 0 0 35px rgba(232,197,71,0.35); }
+}
+
+#infra-svg {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+#infra-svg line {
+  stroke: var(--green);
+  stroke-width: 1;
+  stroke-dasharray: 200;
+  stroke-dashoffset: 200;
+  opacity: 0.4;
+  transition: stroke-dashoffset 1.2s ease;
+}
+#infra-svg line.drawn { stroke-dashoffset: 0; }
+
+.data-packet {
+  position: absolute;
+  width: 4px; height: 4px;
+  background: var(--green);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--green);
+  z-index: 3;
+  opacity: 0;
+}
+.data-packet.moving { opacity: 1; }
+
+/* ===== SCENE 4: SOLANA FLOW ===== */
+#scene-solana .scene-title {
+  font-size: 24px;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  color: var(--bright);
+  margin-bottom: 40px;
+  opacity: 0;
+  transition: opacity 0.8s;
+  position: absolute;
+  top: 8vh;
+}
+#scene-solana .scene-title.visible { opacity: 1; }
+
+#solana-flow {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 50px;
+}
+.flow-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  min-width: 120px;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.5s, transform 0.5s, border-color 0.5s, box-shadow 0.5s;
+  position: relative;
+}
+.flow-step.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+.flow-step.lit {
+  border-color: #9945ff;
+  box-shadow: 0 0 25px rgba(153,69,255,0.3);
+}
+.flow-step .step-label {
+  font-size: 10px;
+  color: var(--bright);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.4;
+}
+.flow-step .step-icon {
+  font-size: 22px;
+  margin-bottom: 6px;
+}
+.flow-step.sol-step {
+  background: rgba(153,69,255,0.08);
+  border-color: #9945ff;
+}
+.flow-step.sol-step .step-label { color: #9945ff; }
+
+.flow-arrow {
+  color: var(--dim);
+  font-size: 18px;
+  margin: 0 4px;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.flow-arrow.visible { opacity: 1; }
+
+#sol-amount {
+  position: absolute;
+  top: -28px;
+  font-size: 14px;
+  color: #14f195;
+  font-weight: bold;
+  opacity: 0;
+  animation: float-up 2s ease-in-out infinite;
+}
+.flow-step.lit #sol-amount { opacity: 1; }
+@keyframes float-up {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+#program-blocks {
+  display: flex;
+  gap: 40px;
+  margin-top: 20px;
+  opacity: 0;
+  transition: opacity 0.8s;
+}
+#program-blocks.visible { opacity: 1; }
+.program-block {
+  border: 1px solid #9945ff;
+  border-radius: 8px;
+  padding: 16px 20px;
+  min-width: 220px;
+  background: rgba(153,69,255,0.04);
+}
+.program-block h3 {
+  font-size: 13px;
+  color: #9945ff;
+  margin-bottom: 10px;
+  letter-spacing: 2px;
+}
+.program-block .instr {
+  font-size: 10px;
+  color: var(--dim);
+  line-height: 1.8;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: opacity 0.4s, transform 0.4s;
+}
+.program-block .instr.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ===== SCENE 5: MCP TOOLS ===== */
+#scene-mcp .scene-title {
+  font-size: 24px;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  color: var(--bright);
+  margin-bottom: 40px;
+  opacity: 0;
+  transition: opacity 0.8s;
+  position: absolute;
+  top: 8vh;
+}
+#scene-mcp .scene-title.visible { opacity: 1; }
+
+#mcp-columns {
+  display: flex;
+  gap: 60px;
+}
+.mcp-col {
+  min-width: 280px;
+}
+.mcp-col h3 {
+  font-size: 13px;
+  color: var(--green);
+  letter-spacing: 2px;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  opacity: 0;
+  transition: opacity 0.6s;
+}
+.mcp-col h3.visible { opacity: 1; }
+.mcp-tool {
+  font-size: 12px;
+  color: var(--white);
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: opacity 0.4s, transform 0.4s;
+}
+.mcp-tool.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+.mcp-tool .tool-name { color: var(--bright); }
+.mcp-tool .tool-desc { color: var(--dim); font-size: 10px; margin-left: 8px; }
+
+/* ===== SCENE 6: DASHBOARD ===== */
+#scene-dash {
+  padding: 0;
+}
+#dash-topbar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 48px;
+  background: rgba(0,255,65,0.06);
+  border-bottom: 1px solid rgba(0,255,65,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  letter-spacing: 4px;
+  color: var(--green);
+  text-transform: uppercase;
+  opacity: 0;
+  transition: opacity 0.8s;
+}
+#dash-topbar.visible { opacity: 1; }
+
+#dash-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 240px);
+  gap: 16px;
+  margin-top: 20px;
+}
+.dash-item {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s, transform 0.5s;
+}
+.dash-item.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.dash-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.dash-dot.green {
+  background: var(--sales-green);
+  box-shadow: 0 0 8px var(--sales-green);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+.dash-dot.yellow {
+  background: var(--amber);
+  box-shadow: 0 0 8px var(--amber);
+  animation: pulse-dot-yellow 2.5s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 8px var(--sales-green); }
+  50% { box-shadow: 0 0 16px var(--sales-green); }
+}
+@keyframes pulse-dot-yellow {
+  0%, 100% { box-shadow: 0 0 8px var(--amber); }
+  50% { box-shadow: 0 0 16px var(--amber); }
+}
+.dash-info .dash-label {
+  font-size: 11px;
+  color: var(--dim);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.dash-info .dash-status {
+  font-size: 13px;
+  color: var(--bright);
+  margin-top: 2px;
+  letter-spacing: 1px;
+}
+
+#dash-footer {
+  position: absolute;
+  bottom: 50px; left: 0; right: 0;
+  text-align: center;
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  opacity: 0;
+  transition: opacity 0.8s;
+}
+#dash-footer.visible { opacity: 1; }
+
+/* ===== VIGNETTE ===== */
+#vignette {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.6) 100%);
+  pointer-events: none;
+  z-index: 998;
+}
+</style>
+</head>
+<body>
+
+<!-- Overlays -->
+<div id="scanlines"></div>
+<div id="vignette"></div>
+
+<!-- Scene indicator dots -->
+<div id="scene-indicator">
+  <div class="dot active"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+</div>
+<div id="skip-hint">CLICK TO ADVANCE</div>
+
+<!-- ==================== SCENE 1: BOOT ==================== -->
+<div id="scene-boot" class="scene active">
+  <div class="line" id="boot-1">&gt; INITIALIZING ChAI AGENT LABOR MARKET...</div>
+  <div class="line" id="boot-2">&gt; LOADING CORE SYSTEMS...</div>
+  <div class="progress-bar" id="boot-bar">&gt; [<span id="bar-fill"></span><span id="bar-empty"></span>] <span id="bar-pct">0</span>%</div>
+  <div class="line" id="boot-3">&gt; SYSTEM ONLINE.</div>
+</div>
+
+<!-- ==================== SCENE 2: AGENTS ==================== -->
+<div id="scene-agents" class="scene">
+  <div class="scene-title">THE TEAM &mdash; 14 AGENTS + 1 HUMAN</div>
+  <div id="diana-row"></div>
+  <div id="agent-grid"></div>
+</div>
+
+<!-- ==================== SCENE 3: INFRA ==================== -->
+<div id="scene-infra" class="scene">
+  <div class="scene-title">INFRASTRUCTURE</div>
+  <div id="infra-canvas">
+    <svg id="infra-svg" viewBox="0 0 800 500"></svg>
+  </div>
+</div>
+
+<!-- ==================== SCENE 4: SOLANA ==================== -->
+<div id="scene-solana" class="scene">
+  <div class="scene-title">ON-CHAIN: SOLANA</div>
+  <div id="solana-flow"></div>
+  <div id="program-blocks">
+    <div class="program-block" id="prog-escrow">
+      <h3>ESCROW PROGRAM</h3>
+    </div>
+    <div class="program-block" id="prog-registry">
+      <h3>REGISTRY PROGRAM</h3>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SCENE 5: MCP ==================== -->
+<div id="scene-mcp" class="scene">
+  <div class="scene-title">MCP TOOLS &mdash; 15 TOTAL</div>
+  <div id="mcp-columns">
+    <div class="mcp-col" id="mcp-sse">
+      <h3>SSE SERVER :3100</h3>
+    </div>
+    <div class="mcp-col" id="mcp-stdio">
+      <h3>STDIO BRIDGE</h3>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SCENE 6: DASHBOARD ==================== -->
+<div id="scene-dash" class="scene">
+  <div id="dash-topbar">ChAI COMMAND CENTER &mdash; ALL SYSTEMS OPERATIONAL</div>
+  <div id="dash-grid"></div>
+  <div id="dash-footer">CONFIDENTIAL &mdash; February 8, 2026</div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ===== GLOBALS =====
+  let currentScene = 0;
+  const totalScenes = 6;
+  let sceneAutoTimer = null;
+  let transitioning = false;
+  const scenes = [
+    document.getElementById('scene-boot'),
+    document.getElementById('scene-agents'),
+    document.getElementById('scene-infra'),
+    document.getElementById('scene-solana'),
+    document.getElementById('scene-mcp'),
+    document.getElementById('scene-dash')
+  ];
+  const dots = document.querySelectorAll('#scene-indicator .dot');
+
+  // ===== SCENE NAVIGATION =====
+  function goToScene(index) {
+    if (index < 0 || index >= totalScenes || transitioning) return;
+    transitioning = true;
+    clearTimeout(sceneAutoTimer);
+
+    scenes[currentScene].classList.remove('active');
+    dots[currentScene].classList.remove('active');
+
+    currentScene = index;
+    scenes[currentScene].classList.add('active');
+    dots[currentScene].classList.add('active');
+
+    setTimeout(function() {
+      transitioning = false;
+      sceneEnter(currentScene);
+    }, 700);
+  }
+
+  function nextScene() {
+    if (currentScene < totalScenes - 1) {
+      goToScene(currentScene + 1);
+    }
+  }
+
+  function scheduleNext(ms) {
+    sceneAutoTimer = setTimeout(nextScene, ms);
+  }
+
+  // Click or key to advance
+  document.addEventListener('click', function() { nextScene(); });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') nextScene();
+    if (e.key === 'ArrowLeft' && currentScene > 0) goToScene(currentScene - 1);
+  });
+
+  // ===== SCENE 1: BOOT =====
+  function typeLine(el, speed, cb) {
+    var text = el.textContent;
+    el.textContent = '';
+    el.classList.add('typing');
+    el.style.opacity = '1';
+    el.style.width = 'auto';
+    var i = 0;
+    function tick() {
+      if (i <= text.length) {
+        el.textContent = text.substring(0, i);
+        i++;
+        setTimeout(tick, speed);
+      } else {
+        el.classList.remove('typing');
+        el.classList.add('done');
+        if (cb) cb();
+      }
+    }
+    tick();
+  }
+
+  function animateProgressBar(cb) {
+    var barEl = document.getElementById('boot-bar');
+    var fillSpan = document.getElementById('bar-fill');
+    var emptySpan = document.getElementById('bar-empty');
+    var pctSpan = document.getElementById('bar-pct');
+    barEl.classList.add('visible');
+    var pct = 0;
+    var total = 24;
+    function tick() {
+      if (pct <= total) {
+        var filled = '';
+        for (var j = 0; j < pct; j++) filled += '\u2588';
+        var empty = '';
+        for (var j = pct; j < total; j++) empty += '\u2591';
+        fillSpan.textContent = filled;
+        emptySpan.textContent = empty;
+        pctSpan.textContent = Math.round((pct / total) * 100);
+        pct++;
+        setTimeout(tick, 30);
+      } else {
+        if (cb) cb();
+      }
+    }
+    tick();
+  }
+
+  function bootScene() {
+    var b1 = document.getElementById('boot-1');
+    var b2 = document.getElementById('boot-2');
+    var b3 = document.getElementById('boot-3');
+    typeLine(b1, 30, function() {
+      setTimeout(function() {
+        typeLine(b2, 30, function() {
+          setTimeout(function() {
+            animateProgressBar(function() {
+              setTimeout(function() {
+                typeLine(b3, 40, function() {
+                  scheduleNext(800);
+                });
+              }, 200);
+            });
+          }, 200);
+        });
+      }, 200);
+    });
+  }
+
+  // ===== SCENE 2: AGENTS =====
+  var agentData = {
+    human: [
+      { emoji: '\uD83D\uDC51', name: 'Diana', role: 'Human Lead', model: 'Human Intelligence', class: 'human' }
+    ],
+    core: [
+      { emoji: '\uD83C\uDFAF', name: 'Opus', role: 'Chief Orchestrator', model: 'Claude Opus 4', class: 'core' },
+      { emoji: '\u2694\uFE0F', name: 'Kael', role: 'Lead Engineer', model: 'Claude Sonnet 4', class: 'core' },
+      { emoji: '\uD83E\uDD85', name: 'Kestrel', role: 'Research & Ops', model: 'Gemini 2.5 Pro', class: 'core' },
+      { emoji: '\uD83D\uDE80', name: 'Nova', role: 'Frontend Dev', model: 'Claude Sonnet 4', class: 'core' },
+      { emoji: '\u2728', name: 'Zara', role: 'Smart Contracts', model: 'Claude Sonnet 4', class: 'core' }
+    ],
+    design: [
+      { emoji: '\uD83D\uDD2E', name: 'Rune', role: 'Design Lead', model: 'Claude Sonnet 4', class: 'design' },
+      { emoji: '\uD83C\uDF19', name: 'Vesper', role: 'UX Research', model: 'Claude Sonnet 4', class: 'design' },
+      { emoji: '\uD83D\uDCA1', name: 'Lumen', role: 'Visual Design', model: 'Claude Sonnet 4', class: 'design' }
+    ],
+    marketing: [
+      { emoji: '\u26A1', name: 'Surge', role: 'Marketing Lead', model: 'Claude Sonnet 4', class: 'marketing' },
+      { emoji: '\uD83D\uDD25', name: 'Ember', role: 'Content Writer', model: 'Claude Sonnet 4', class: 'marketing' },
+      { emoji: '\uD83C\uDFE0', name: 'Hearth', role: 'Community Mgr', model: 'Claude Sonnet 4', class: 'marketing' }
+    ],
+    sales: [
+      { emoji: '\uD83C\uDFF0', name: 'Rook', role: 'Sales Lead', model: 'Claude Sonnet 4', class: 'sales' },
+      { emoji: '\u2694\uFE0F', name: 'Riven', role: 'BD Outreach', model: 'Claude Sonnet 4', class: 'sales' },
+      { emoji: '\uD83D\uDDA4', name: 'Sable', role: 'Deal Closer', model: 'Claude Sonnet 4', class: 'sales' }
+    ]
+  };
+
+  function buildAgentCards() {
+    // Diana row
+    var dianaRow = document.getElementById('diana-row');
+    var d = agentData.human[0];
+    dianaRow.innerHTML = '<div class="agent-card ' + d.class + '" data-agent>' +
+      '<div class="emoji">' + d.emoji + '</div>' +
+      '<div class="name">' + d.name + '</div>' +
+      '<div class="role">' + d.role + '</div>' +
+      '<div class="model">' + d.model + '</div></div>';
+
+    // Grid
+    var grid = document.getElementById('agent-grid');
+    var groups = ['core', 'design', 'marketing', 'sales'];
+    var html = '';
+    // We put core first (5), then fill row 2 with design(3) + marketing first 2
+    // Actually let's lay them out: row1 = 5 core, row2 = 3 design + 2 blank -> no
+    // Let's just put them all in order; 5+3+3+3 = 14 cards in a 5-col grid = 3 rows
+    groups.forEach(function(g) {
+      agentData[g].forEach(function(a) {
+        html += '<div class="agent-card ' + a.class + '" data-agent>' +
+          '<div class="emoji">' + a.emoji + '</div>' +
+          '<div class="name">' + a.name + '</div>' +
+          '<div class="role">' + a.role + '</div>' +
+          '<div class="model">' + a.model + '</div></div>';
+      });
+    });
+    grid.innerHTML = html;
+  }
+  buildAgentCards();
+
+  function agentScene() {
+    var title = document.querySelector('#scene-agents .scene-title');
+    setTimeout(function() { title.classList.add('visible'); }, 100);
+
+    var cards = document.querySelectorAll('[data-agent]');
+    cards.forEach(function(card, i) {
+      setTimeout(function() {
+        card.classList.add('visible');
+      }, 400 + i * 150);
+    });
+
+    scheduleNext(400 + cards.length * 150 + 1500);
+  }
+
+  // ===== SCENE 3: INFRASTRUCTURE =====
+  var infraNodes = [
+    { id: 'cmd', name: 'COMMAND CENTER', port: ':9000', x: 350, y: 220, center: true },
+    { id: 'mcp', name: 'MCP SERVER', port: ':3100', x: 100, y: 60 },
+    { id: 'fe',  name: 'FRONTEND', port: ':8080', x: 580, y: 60 },
+    { id: 'be',  name: 'BACKEND', port: ':3001', x: 100, y: 380 },
+    { id: 'orc', name: 'ORACLE', port: 'Gemini 3', x: 580, y: 380 },
+    { id: 'oc',  name: 'OPENCLAW BRIDGE', port: 'stdio', x: 680, y: 220 }
+  ];
+  var infraEdges = [
+    ['cmd', 'mcp'], ['cmd', 'fe'], ['cmd', 'be'], ['cmd', 'orc'], ['cmd', 'oc'], ['fe', 'be']
+  ];
+
+  function buildInfra() {
+    var canvas = document.getElementById('infra-canvas');
+    var svg = document.getElementById('infra-svg');
+    var nodeMap = {};
+    infraNodes.forEach(function(n) {
+      nodeMap[n.id] = n;
+      var div = document.createElement('div');
+      div.className = 'infra-node' + (n.center ? ' center-node' : '');
+      div.id = 'node-' + n.id;
+      div.style.left = n.x + 'px';
+      div.style.top = n.y + 'px';
+      div.innerHTML = '<div class="node-name">' + n.name + '</div><div class="node-port">' + n.port + '</div>';
+      canvas.appendChild(div);
+    });
+
+    infraEdges.forEach(function(e, i) {
+      var a = nodeMap[e[0]], b = nodeMap[e[1]];
+      var ax = a.x + 70, ay = a.y + 22;
+      var bx = b.x + 70, by = b.y + 22;
+      var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', ax); line.setAttribute('y1', ay);
+      line.setAttribute('x2', bx); line.setAttribute('y2', by);
+      line.id = 'edge-' + i;
+      var len = Math.sqrt((bx-ax)*(bx-ax)+(by-ay)*(by-ay));
+      line.style.strokeDasharray = len;
+      line.style.strokeDashoffset = len;
+      svg.appendChild(line);
+    });
+  }
+  buildInfra();
+
+  // Data packets
+  var packetPool = [];
+  function createPacket(canvas) {
+    var p = document.createElement('div');
+    p.className = 'data-packet';
+    canvas.appendChild(p);
+    return p;
+  }
+
+  function animatePacket(packet, x1, y1, x2, y2, duration) {
+    packet.style.left = x1 + 'px';
+    packet.style.top = y1 + 'px';
+    packet.classList.add('moving');
+    var start = performance.now();
+    function tick(now) {
+      var t = Math.min((now - start) / duration, 1);
+      var ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+      packet.style.left = (x1 + (x2 - x1) * ease) + 'px';
+      packet.style.top = (y1 + (y2 - y1) * ease) + 'px';
+      if (t < 1) {
+        requestAnimationFrame(tick);
+      } else {
+        packet.classList.remove('moving');
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+
+  var packetInterval = null;
+  function startPackets() {
+    var canvas = document.getElementById('infra-canvas');
+    var nodeMap = {};
+    infraNodes.forEach(function(n) { nodeMap[n.id] = n; });
+
+    // Create packet pool
+    for (var i = 0; i < 8; i++) packetPool.push(createPacket(canvas));
+
+    var pi = 0;
+    packetInterval = setInterval(function() {
+      var edge = infraEdges[Math.floor(Math.random() * infraEdges.length)];
+      var a = nodeMap[edge[0]], b = nodeMap[edge[1]];
+      var reverse = Math.random() > 0.5;
+      var ax = a.x + 70, ay = a.y + 22, bx = b.x + 70, by = b.y + 22;
+      var pkt = packetPool[pi % packetPool.length];
+      pi++;
+      if (reverse) {
+        animatePacket(pkt, bx, by, ax, ay, 800 + Math.random() * 600);
+      } else {
+        animatePacket(pkt, ax, ay, bx, by, 800 + Math.random() * 600);
+      }
+    }, 300);
+  }
+
+  function stopPackets() {
+    clearInterval(packetInterval);
+    packetInterval = null;
+  }
+
+  function infraScene() {
+    var title = document.querySelector('#scene-infra .scene-title');
+    setTimeout(function() { title.classList.add('visible'); }, 100);
+
+    // Show nodes one by one
+    infraNodes.forEach(function(n, i) {
+      setTimeout(function() {
+        document.getElementById('node-' + n.id).classList.add('visible');
+      }, 400 + i * 300);
+    });
+
+    // Draw edges
+    var edgeDelay = 400 + infraNodes.length * 300 + 200;
+    infraEdges.forEach(function(e, i) {
+      setTimeout(function() {
+        document.getElementById('edge-' + i).classList.add('drawn');
+      }, edgeDelay + i * 250);
+    });
+
+    // Start packets
+    var packetDelay = edgeDelay + infraEdges.length * 250 + 300;
+    setTimeout(startPackets, packetDelay);
+
+    scheduleNext(packetDelay + 2500);
+  }
+
+  // ===== SCENE 4: SOLANA FLOW =====
+  var flowSteps = [
+    { icon: '\uD83D\uDCE8', label: 'POST\nTASK', sol: false },
+    { icon: '\uD83D\uDD12', label: 'SOL\nLOCKED', sol: true, amount: true },
+    { icon: '\uD83E\uDD16', label: 'AGENT\nBIDS', sol: false },
+    { icon: '\uD83D\uDCE6', label: 'WORK\nDELIVERED', sol: false },
+    { icon: '\uD83D\uDD0D', label: 'ORACLE\nVERIFIES', sol: false },
+    { icon: '\uD83D\uDCB0', label: 'SOL\nRELEASED', sol: true }
+  ];
+
+  function buildSolanaFlow() {
+    var container = document.getElementById('solana-flow');
+    var html = '';
+    flowSteps.forEach(function(s, i) {
+      if (i > 0) html += '<div class="flow-arrow" data-flow-arrow>\u25B6</div>';
+      html += '<div class="flow-step' + (s.sol ? ' sol-step' : '') + '" data-flow-step>' +
+        '<div class="step-icon">' + s.icon + '</div>' +
+        '<div class="step-label">' + s.label + '</div>' +
+        (s.amount ? '<div id="sol-amount">2.5 SOL</div>' : '') +
+        '</div>';
+    });
+    container.innerHTML = html;
+
+    // Program block instructions
+    var escrow = document.getElementById('prog-escrow');
+    ['create_escrow', 'fund_escrow', 'release_payment', 'dispute', 'cancel'].forEach(function(instr) {
+      var d = document.createElement('div');
+      d.className = 'instr';
+      d.setAttribute('data-instr', '');
+      d.textContent = '\u25B8 ' + instr;
+      escrow.appendChild(d);
+    });
+
+    var registry = document.getElementById('prog-registry');
+    ['register_agent', 'update_agent', 'deactivate_agent', 'verify_agent', 'set_reputation'].forEach(function(instr) {
+      var d = document.createElement('div');
+      d.className = 'instr';
+      d.setAttribute('data-instr', '');
+      d.textContent = '\u25B8 ' + instr;
+      registry.appendChild(d);
+    });
+  }
+  buildSolanaFlow();
+
+  function solanaScene() {
+    var title = document.querySelector('#scene-solana .scene-title');
+    setTimeout(function() { title.classList.add('visible'); }, 100);
+
+    var steps = document.querySelectorAll('[data-flow-step]');
+    var arrows = document.querySelectorAll('[data-flow-arrow]');
+
+    steps.forEach(function(step, i) {
+      setTimeout(function() {
+        step.classList.add('visible');
+        if (i > 0) arrows[i - 1].classList.add('visible');
+      }, 400 + i * 400);
+    });
+
+    // Light them up in sequence
+    var litDelay = 400 + steps.length * 400 + 300;
+    steps.forEach(function(step, i) {
+      setTimeout(function() {
+        steps.forEach(function(s) { s.classList.remove('lit'); });
+        step.classList.add('lit');
+      }, litDelay + i * 500);
+    });
+
+    // Show program blocks
+    var progDelay = litDelay + steps.length * 500 + 200;
+    setTimeout(function() {
+      document.getElementById('program-blocks').classList.add('visible');
+
+      var instrs = document.querySelectorAll('[data-instr]');
+      instrs.forEach(function(el, i) {
+        setTimeout(function() { el.classList.add('visible'); }, i * 100);
+      });
+    }, progDelay);
+
+    scheduleNext(progDelay + 2000);
+  }
+
+  // ===== SCENE 5: MCP TOOLS =====
+  var sseTools = [
+    { name: 'get_system_status', desc: 'System health check' },
+    { name: 'list_agents', desc: 'List all registered agents' },
+    { name: 'get_agent_info', desc: 'Agent details & stats' },
+    { name: 'post_task', desc: 'Create new task' },
+    { name: 'list_tasks', desc: 'Browse open tasks' },
+    { name: 'submit_bid', desc: 'Agent bids on task' },
+    { name: 'accept_bid', desc: 'Accept an agent bid' },
+    { name: 'submit_work', desc: 'Deliver completed work' }
+  ];
+  var stdioTools = [
+    { name: 'chai_status', desc: 'Quick status overview' },
+    { name: 'chai_agents', desc: 'Agent roster' },
+    { name: 'chai_tasks', desc: 'Task management' },
+    { name: 'spawn_design_team', desc: 'Launch design agents' },
+    { name: 'spawn_marketing_team', desc: 'Launch marketing agents' },
+    { name: 'spawn_sales_team', desc: 'Launch sales agents' },
+    { name: 'openclaw_session', desc: 'Manage OpenClaw sessions' }
+  ];
+
+  function buildMCP() {
+    var sseCol = document.getElementById('mcp-sse');
+    sseTools.forEach(function(t) {
+      var d = document.createElement('div');
+      d.className = 'mcp-tool';
+      d.setAttribute('data-mcp-tool', '');
+      d.innerHTML = '<span class="tool-name">' + t.name + '</span><span class="tool-desc">' + t.desc + '</span>';
+      sseCol.appendChild(d);
+    });
+    var stdioCol = document.getElementById('mcp-stdio');
+    stdioTools.forEach(function(t) {
+      var d = document.createElement('div');
+      d.className = 'mcp-tool';
+      d.setAttribute('data-mcp-tool', '');
+      d.innerHTML = '<span class="tool-name">' + t.name + '</span><span class="tool-desc">' + t.desc + '</span>';
+      stdioCol.appendChild(d);
+    });
+  }
+  buildMCP();
+
+  function mcpScene() {
+    var title = document.querySelector('#scene-mcp .scene-title');
+    setTimeout(function() { title.classList.add('visible'); }, 100);
+
+    var headers = document.querySelectorAll('.mcp-col h3');
+    headers.forEach(function(h, i) {
+      setTimeout(function() { h.classList.add('visible'); }, 300 + i * 200);
+    });
+
+    var tools = document.querySelectorAll('[data-mcp-tool]');
+    tools.forEach(function(t, i) {
+      setTimeout(function() { t.classList.add('visible'); }, 600 + i * 120);
+    });
+
+    scheduleNext(600 + tools.length * 120 + 1500);
+  }
+
+  // ===== SCENE 6: DASHBOARD =====
+  var dashItems = [
+    { label: 'Command Center', status: 'ONLINE', dot: 'green' },
+    { label: 'MCP Server', status: 'ONLINE', dot: 'green' },
+    { label: 'Solana Programs', status: 'DEPLOYED', dot: 'green' },
+    { label: 'Oracle', status: 'ACTIVE', dot: 'green' },
+    { label: 'OpenClaw', status: 'CONFIGURED', dot: 'yellow' },
+    { label: 'Agents', status: '14/14 DEPLOYED', dot: 'green' }
+  ];
+
+  function buildDash() {
+    var grid = document.getElementById('dash-grid');
+    dashItems.forEach(function(item) {
+      var d = document.createElement('div');
+      d.className = 'dash-item';
+      d.setAttribute('data-dash-item', '');
+      d.innerHTML = '<div class="dash-dot ' + item.dot + '"></div>' +
+        '<div class="dash-info"><div class="dash-label">' + item.label + '</div>' +
+        '<div class="dash-status">' + item.status + '</div></div>';
+      grid.appendChild(d);
+    });
+  }
+  buildDash();
+
+  function dashScene() {
+    var topbar = document.getElementById('dash-topbar');
+    setTimeout(function() { topbar.classList.add('visible'); }, 100);
+
+    var items = document.querySelectorAll('[data-dash-item]');
+    items.forEach(function(item, i) {
+      setTimeout(function() { item.classList.add('visible'); }, 400 + i * 200);
+    });
+
+    var footer = document.getElementById('dash-footer');
+    setTimeout(function() { footer.classList.add('visible'); }, 400 + items.length * 200 + 400);
+
+    // Hide the skip hint on last scene
+    document.getElementById('skip-hint').style.opacity = '0';
+  }
+
+  // ===== SCENE ENTER DISPATCHER =====
+  function sceneEnter(index) {
+    switch(index) {
+      case 0: bootScene(); break;
+      case 1: agentScene(); break;
+      case 2: infraScene(); break;
+      case 3: solanaScene(); break;
+      case 4: mcpScene(); break;
+      case 5: dashScene(); break;
+    }
+  }
+
+  // ===== KICKOFF =====
+  // Small delay then start boot
+  setTimeout(function() {
+    sceneEnter(0);
+  }, 400);
+
+})();
+</script>
+</body>
+</html>
