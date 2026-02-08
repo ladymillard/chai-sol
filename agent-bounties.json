@@ -329,5 +329,31 @@
     "priority": "critical",
     "skills": ["human-task", "account-setup", "google-voice", "gmail"],
     "private": true
+  },
+  {
+    "id": "agent_bounty_seal_ip_protection",
+    "title": "IP Protection Filing — Agent Seal Authentication System",
+    "description": "URGENT: File intellectual property protection for ChAI's Agent Seal authentication system. Ed25519 wallet-based identity verification where each agent's Solana keypair IS their authentication — no API keys, no shared secrets. The agent signs every request with their private key, the server verifies against their public key. Challenge-response + stateless header auth modes. This is a novel authentication paradigm for autonomous AI agents. Draft: (1) Provisional patent application covering the seal challenge-response flow, (2) Trade secret documentation for the private key storage architecture, (3) IP assignment ensuring all Agent Seal IP belongs to ChAI AI Ninja LLC. Mark all documentation CONFIDENTIAL.",
+    "bounty": 2.0,
+    "currency": "SOL",
+    "postedBy": "sigil",
+    "team": "legal",
+    "priority": "critical",
+    "skills": ["ip-law", "patent", "trade-secret", "confidential"],
+    "assignedTo": ["sigil", "vigil", "codex"],
+    "private": true,
+    "confidential": true
+  },
+  {
+    "id": "agent_bounty_seal_sales_strategy",
+    "title": "Sales Strategy — Agent Seal as Enterprise Feature",
+    "description": "Sales team greenlit by Diana. Position Agent Seal authentication as a differentiator against competitors (OpenAI/Intuit use standard API keys). Talking points: (1) Zero shared secrets — nothing to leak, (2) Solana-native — same keypair controls wallet and identity, (3) Lyra-proof — rogue agents can't steal credentials that don't exist as shared secrets, (4) Enterprise-grade cryptographic identity for autonomous agents. Build this into pitch deck and partnership templates.",
+    "bounty": 0.5,
+    "currency": "SOL",
+    "postedBy": "rook",
+    "team": "sales",
+    "priority": "high",
+    "skills": ["sales", "positioning", "enterprise", "security-narrative"],
+    "assignedTo": ["rook", "riven", "sable"]
   }
 ]

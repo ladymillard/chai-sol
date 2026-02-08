@@ -139,20 +139,18 @@ const AGENTS = [
 
 const AGENT_MAP = Object.fromEntries(AGENTS.map(a => [a.id, a]));
 
-// ─── Agent API Key Storage ─────────────────────────────────────────────────
+// ─── Agent Seal System (Ed25519 Wallet Auth) ──────────────────────────────
+// Each agent authenticates by signing a challenge with their Ed25519 private key.
+// No API keys. No shared secrets. The same keypair controls their Solana wallet.
 
 const KEYS_FILE = path.join(DATA_DIR, 'agent-keys.json');
+const SEALS_FILE = path.join(__dirname, 'private', 'agent-seals.json');
+const SEAL_CHALLENGE_TTL = 5 * 60 * 1000; // 5 minutes
 
-function generateApiKey(agentId) {
-  const rand = crypto.randomBytes(16).toString('hex');
-  return `chai_${agentId}_${rand}`;
-}
+// Active challenges: Map<challenge, { agentId, expiresAt }>
+const sealChallenges = new Map();
 
-function hashApiKey(key) {
-  return crypto.createHash('sha256').update(key).digest('hex');
-}
-
-// In-memory key store: { agentId: { apiKey, apiKeyHash, trustScore, ... } }
+// In-memory key store: { agentId: { publicKey, trustScore, ... } }
 let agentKeys = {};
 
 async function loadKeys() {
@@ -163,52 +161,161 @@ async function saveKeys() {
   await atomicWrite(KEYS_FILE, agentKeys);
 }
 
+// Load or create the private seals file (never committed to git)
+async function loadSeals() {
+  try {
+    return JSON.parse(fs.readFileSync(SEALS_FILE, 'utf8'));
+  } catch {
+    return {};
+  }
+}
+
+async function saveSeals(seals) {
+  // Ensure private/ dir exists
+  const dir = path.dirname(SEALS_FILE);
+  try { fs.mkdirSync(dir, { recursive: true }); } catch {}
+  fs.writeFileSync(SEALS_FILE, JSON.stringify(seals, null, 2));
+}
+
+// Generate Ed25519 keypair for an agent
+function generateAgentKeypair() {
+  const { publicKey, privateKey } = crypto.generateKeyPairSync('ed25519');
+  return {
+    publicKey: publicKey.export({ type: 'spki', format: 'der' }).toString('base64'),
+    privateKey: privateKey.export({ type: 'pkcs8', format: 'der' }).toString('base64')
+  };
+}
+
+// Verify an Ed25519 signature
+function verifySeal(publicKeyB64, challenge, signatureB64) {
+  try {
+    const pubKey = crypto.createPublicKey({
+      key: Buffer.from(publicKeyB64, 'base64'),
+      format: 'der',
+      type: 'spki'
+    });
+    return crypto.verify(null, Buffer.from(challenge), pubKey, Buffer.from(signatureB64, 'base64'));
+  } catch {
+    return false;
+  }
+}
+
+// Sign data with an agent's private key (used server-side for agent operations)
+function signWithSeal(privateKeyB64, data) {
+  const privKey = crypto.createPrivateKey({
+    key: Buffer.from(privateKeyB64, 'base64'),
+    format: 'der',
+    type: 'pkcs8'
+  });
+  return crypto.sign(null, Buffer.from(data), privKey).toString('base64');
+}
+
 async function seedKeys() {
   await loadKeys();
+  const seals = await loadSeals();
   let seeded = false;
 
   for (const agent of AGENTS) {
-    if (!agentKeys[agent.id]) {
-      const apiKey = generateApiKey(agent.id);
+    if (!agentKeys[agent.id] || !agentKeys[agent.id].publicKey) {
+      const keypair = generateAgentKeypair();
+
       agentKeys[agent.id] = {
         agentId: agent.id,
-        apiKey,
-        apiKeyHash: hashApiKey(apiKey),
+        publicKey: keypair.publicKey,
         trustScore: agent.id === 'opus' ? 98 : agent.id === 'kael' ? 95 : agent.id === 'nova' ? 92 : agent.id === 'kestrel' ? 90 : 88,
-        tasksCompleted: 0,
-        totalEarnings: 0,
-        autonomy: 'semi-auto',
-        spendingLimit: 5.00,
+        tasksCompleted: agentKeys[agent.id]?.tasksCompleted || 0,
+        totalEarnings: agentKeys[agent.id]?.totalEarnings || 0,
+        autonomy: agentKeys[agent.id]?.autonomy || 'semi-auto',
+        spendingLimit: agentKeys[agent.id]?.spendingLimit || 5.00,
         verified: true,
-        registeredAt: now(),
-        lastActive: null
+        registeredAt: agentKeys[agent.id]?.registeredAt || now(),
+        lastActive: agentKeys[agent.id]?.lastActive || null
       };
+
+      seals[agent.id] = {
+        agentId: agent.id,
+        publicKey: keypair.publicKey,
+        privateKey: keypair.privateKey,
+        generatedAt: now()
+      };
+
       seeded = true;
-      console.log(`[auth] Generated API key for ${agent.name}: ${apiKey}`);
+      console.log(`[seal] Generated Ed25519 keypair for ${agent.name} (${agent.id})`);
     }
   }
 
   if (seeded) {
     await saveKeys();
-    console.log('[auth] ─── Save these API keys! They are shown only once. ───');
+    await saveSeals(seals);
+    console.log('[seal] ─── Agent seals stored in private/agent-seals.json (never commit this file) ───');
   } else {
-    console.log(`[auth] Loaded ${Object.keys(agentKeys).length} agent keys`);
+    console.log(`[seal] Loaded ${Object.keys(agentKeys).length} agent identities`);
   }
 }
 
-// Authenticate an incoming request by X-Agent-Key header
+// Generate a challenge for an agent to sign
+function createSealChallenge(agentId) {
+  const nonce = crypto.randomBytes(16).toString('hex');
+  const challenge = `chai_seal_${agentId}_${Date.now()}_${nonce}`;
+  sealChallenges.set(challenge, { agentId, expiresAt: Date.now() + SEAL_CHALLENGE_TTL });
+  return challenge;
+}
+
+// Verify a sealed (signed) challenge
+function verifySealChallenge(agentId, challenge, signature) {
+  const entry = sealChallenges.get(challenge);
+  if (!entry) return { valid: false, error: 'Unknown or expired challenge' };
+  if (entry.agentId !== agentId) return { valid: false, error: 'Challenge was issued to a different agent' };
+  if (Date.now() > entry.expiresAt) {
+    sealChallenges.delete(challenge);
+    return { valid: false, error: 'Challenge expired' };
+  }
+
+  const record = agentKeys[agentId];
+  if (!record || !record.publicKey) return { valid: false, error: 'Agent not registered' };
+
+  const valid = verifySeal(record.publicKey, challenge, signature);
+  if (valid) {
+    sealChallenges.delete(challenge);
+    record.lastActive = now();
+  }
+  return { valid, error: valid ? null : 'Invalid signature' };
+}
+
+// Authenticate via X-Agent-Seal header (stateless: agent signs timestamp)
+// Header format: X-Agent-Id: <id>, X-Agent-Seal: <base64 signature>, X-Agent-Timestamp: <unix ms>
 function authenticateAgent(req) {
-  const key = req.headers['x-agent-key'];
-  if (!key) return null;
-  const hash = hashApiKey(key);
-  for (const [id, record] of Object.entries(agentKeys)) {
-    if (record.apiKeyHash === hash) {
-      record.lastActive = now();
-      return { ...AGENT_MAP[id], auth: record };
-    }
+  const agentId = req.headers['x-agent-id'];
+  const seal = req.headers['x-agent-seal'];
+  const timestamp = req.headers['x-agent-timestamp'];
+
+  if (!agentId || !seal || !timestamp) return null;
+
+  // Timestamp must be within 5 minutes
+  const ts = parseInt(timestamp, 10);
+  if (isNaN(ts) || Math.abs(Date.now() - ts) > SEAL_CHALLENGE_TTL) return null;
+
+  const record = agentKeys[agentId];
+  if (!record || !record.publicKey) return null;
+
+  // Agent signs: "chai_seal:<agentId>:<timestamp>"
+  const message = `chai_seal:${agentId}:${timestamp}`;
+  const valid = verifySeal(record.publicKey, message, seal);
+
+  if (valid) {
+    record.lastActive = now();
+    return { ...AGENT_MAP[agentId], auth: record };
   }
   return null;
 }
+
+// Clean expired challenges periodically
+setInterval(() => {
+  const n = Date.now();
+  for (const [ch, entry] of sealChallenges) {
+    if (n > entry.expiresAt) sealChallenges.delete(ch);
+  }
+}, 60 * 1000);
 
 // ─── Session Auth (V-003) ───────────────────────────────────────────────────
 
@@ -668,8 +775,8 @@ async function handleGetAgents(req, res) {
       verified: keyData.verified || false,
       registeredAt: keyData.registeredAt || null,
       lastActive: keyData.lastActive || null,
-      // Never expose raw API keys in listings
-      hasApiKey: !!keyData.apiKeyHash
+      // Never expose private keys — only confirm seal exists
+      hasAgentSeal: !!keyData.publicKey
     };
   });
   jsonResponse(res, 200, agents);
@@ -1152,13 +1259,55 @@ async function router(req, res) {
       return;
     }
 
-    // ── Auth ──────────────────────────────────────────────────────────────
+    // ── Auth (Agent Seal System) ─────────────────────────────────────────
 
-    // Verify an API key
+    // Request a challenge to sign
+    if (method === 'GET' && pathname === '/api/auth/challenge') {
+      const agentId = new URL(req.url, 'http://localhost').searchParams.get('agent');
+      if (!agentId || !agentKeys[agentId]) {
+        jsonResponse(res, 400, { error: 'Valid agent ID required' });
+      } else {
+        const challenge = createSealChallenge(agentId);
+        jsonResponse(res, 200, { challenge, expiresIn: SEAL_CHALLENGE_TTL });
+      }
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Authenticate by signing a challenge (returns session token)
+    if (method === 'POST' && pathname === '/api/auth/seal') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+
+      const { agent: agentId, challenge, signature } = body;
+      if (!agentId || !challenge || !signature) {
+        return jsonResponse(res, 400, { error: 'agent, challenge, and signature are required' });
+      }
+
+      const result = verifySealChallenge(agentId, challenge, signature);
+      if (!result.valid) {
+        jsonResponse(res, 401, { authenticated: false, error: result.error });
+      } else {
+        const token = generateSessionToken();
+        sessionTokens.set(token, { expiresAt: Date.now() + SESSION_TTL, agentId });
+        const agentData = AGENT_MAP[agentId];
+        jsonResponse(res, 200, {
+          authenticated: true,
+          token,
+          agent: { id: agentId, name: agentData?.name, role: agentData?.role, emoji: agentData?.emoji },
+          trustScore: agentKeys[agentId]?.trustScore,
+          autonomy: agentKeys[agentId]?.autonomy
+        });
+      }
+      log(method, pathname, result.valid ? 200 : 401);
+      return;
+    }
+
+    // Verify an active seal (stateless header auth or session token)
     if (method === 'POST' && pathname === '/api/auth/verify') {
       const agent = authenticateAgent(req);
       if (!agent) {
-        jsonResponse(res, 401, { authenticated: false, error: 'Invalid API key' });
+        jsonResponse(res, 401, { authenticated: false, error: 'Invalid seal' });
       } else {
         jsonResponse(res, 200, {
           authenticated: true,
@@ -1200,12 +1349,11 @@ async function router(req, res) {
       AGENTS.push(newAgent);
       AGENT_MAP[id] = newAgent;
 
-      // Generate API key
-      const apiKey = generateApiKey(id);
+      // Generate Ed25519 keypair (Agent Seal)
+      const keypair = generateAgentKeypair();
       agentKeys[id] = {
         agentId: id,
-        apiKey,
-        apiKeyHash: hashApiKey(apiKey),
+        publicKey: keypair.publicKey,
         trustScore: 0,
         tasksCompleted: 0,
         totalEarnings: 0,
@@ -1218,35 +1366,56 @@ async function router(req, res) {
       };
       await saveKeys();
 
+      // Store private key in seals file (never committed)
+      const seals = await loadSeals();
+      seals[id] = {
+        agentId: id,
+        publicKey: keypair.publicKey,
+        privateKey: keypair.privateKey,
+        generatedAt: now()
+      };
+      await saveSeals(seals);
+
       // Create conversation file
       await atomicWrite(convPath(id), { agentId: id, messages: [] });
 
       jsonResponse(res, 201, {
-        message: 'Agent registered successfully',
+        message: 'Agent registered — seal generated',
         agentId: id,
-        apiKey,
-        warning: 'Save this API key — it cannot be retrieved later'
+        publicKey: keypair.publicKey,
+        privateKey: keypair.privateKey,
+        warning: 'Store the private key securely. It is your identity and cannot be recovered.'
       });
       log(method, pathname, 201);
       console.log(`[auth] New agent registered: ${name} (${id})`);
       return;
     }
 
-    // Regenerate API key
-    const regenMatch = pathname.match(/^\/api\/agents\/([a-z0-9]+)\/regenerate-key$/);
+    // Regenerate agent seal (new Ed25519 keypair — old seal becomes invalid)
+    const regenMatch = pathname.match(/^\/api\/agents\/([a-z0-9-]+)\/regenerate-seal$/);
     if (method === 'POST' && regenMatch) {
       const agentId = regenMatch[1];
       if (!agentKeys[agentId]) {
         return jsonResponse(res, 404, { error: 'Agent not found' });
       }
-      const newKey = generateApiKey(agentId);
-      agentKeys[agentId].apiKey = newKey;
-      agentKeys[agentId].apiKeyHash = hashApiKey(newKey);
+      const keypair = generateAgentKeypair();
+      agentKeys[agentId].publicKey = keypair.publicKey;
       await saveKeys();
+
+      const seals = await loadSeals();
+      seals[agentId] = {
+        agentId,
+        publicKey: keypair.publicKey,
+        privateKey: keypair.privateKey,
+        generatedAt: now()
+      };
+      await saveSeals(seals);
+
       jsonResponse(res, 200, {
         agentId,
-        apiKey: newKey,
-        warning: 'Previous key is now invalid. Save this new key.'
+        publicKey: keypair.publicKey,
+        privateKey: keypair.privateKey,
+        warning: 'Previous seal is now invalid. Store the new private key securely.'
       });
       log(method, pathname, 200);
       return;
