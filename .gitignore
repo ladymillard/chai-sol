@@ -1,3 +1,7 @@
 node_modules/
 dist/
 target/
+
+# Private — wallets and API keys
+data/wallets/
+data/agent-keys.json
