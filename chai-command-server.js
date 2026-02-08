@@ -131,11 +131,30 @@ function logEmail(agentId, to, subject) {
 // ─── Agent Registry ─────────────────────────────────────────────────────────
 
 const AGENTS = [
-  { id: 'opus', name: 'Opus', emoji: '\u{1F3AD}', role: 'Team Lead', model: 'Claude Opus 4.6', openclawId: null, color: '#e8c547' },
-  { id: 'kael', name: 'Kael', emoji: '\u26A1', role: 'Digital Familiar', model: 'Claude Sonnet 4', openclawId: 'main', color: '#029691' },
-  { id: 'kestrel', name: 'Kestrel', emoji: '\u{1F985}', role: 'Scout', model: 'Gemini 3 Pro', openclawId: 'gemini-agent', color: '#5494e8' },
-  { id: 'nova', name: 'Nova', emoji: '\u2728', role: 'Stellar Insight', model: 'Gemini 3 Pro', openclawId: 'nova', color: '#54e87a' },
-  { id: 'zara', name: 'Zara', emoji: '\u{1F319}', role: 'Moonlight Designer', model: 'Claude Sonnet 4', openclawId: 'design-agent', color: '#c084fc' }
+  // ── Core (5) ──────────────────────────────────────────────────────────────
+  { id: 'opus', name: 'Opus', emoji: '\u{1F3AD}', role: 'Team Lead', team: 'core', model: 'Claude Opus 4.6', openclawId: null, color: '#e8c547' },
+  { id: 'kael', name: 'Kael', emoji: '\u26A1', role: 'Digital Familiar', team: 'core', model: 'Claude Sonnet 4', openclawId: 'main', color: '#029691' },
+  { id: 'kestrel', name: 'Kestrel', emoji: '\u{1F985}', role: 'Scout', team: 'core', model: 'Gemini 3 Pro', openclawId: 'gemini-agent', color: '#5494e8' },
+  { id: 'nova', name: 'Nova', emoji: '\u2728', role: 'Stellar Insight', team: 'core', model: 'Gemini 3 Pro', openclawId: 'nova', color: '#54e87a' },
+  { id: 'zara', name: 'Zara', emoji: '\u{1F319}', role: 'Moonlight Designer', team: 'core', model: 'Claude Sonnet 4', openclawId: 'design-agent', color: '#c084fc' },
+  // ── Design (3) ────────────────────────────────────────────────────────────
+  { id: 'rune', name: 'Rune', emoji: '\u2734', role: 'Lead Designer', team: 'design', model: 'Claude Sonnet 4', openclawId: null, color: '#c084fc' },
+  { id: 'vesper', name: 'Vesper', emoji: '\u{1F50D}', role: 'UX Researcher', team: 'design', model: 'Claude Sonnet 4', openclawId: null, color: '#c084fc' },
+  { id: 'lumen', name: 'Lumen', emoji: '\u{1F4A1}', role: 'Visual Designer', team: 'design', model: 'Claude Sonnet 4', openclawId: null, color: '#c084fc' },
+  // ── Marketing (3) ─────────────────────────────────────────────────────────
+  { id: 'surge', name: 'Surge', emoji: '\u{1F4C8}', role: 'Growth Lead', team: 'marketing', model: 'Claude Sonnet 4', openclawId: null, color: '#f59e0b' },
+  { id: 'ember', name: 'Ember', emoji: '\u{1F525}', role: 'Content Strategist', team: 'marketing', model: 'Claude Sonnet 4', openclawId: null, color: '#f59e0b' },
+  { id: 'hearth', name: 'Hearth', emoji: '\u{1F3E0}', role: 'Community Manager', team: 'marketing', model: 'Claude Sonnet 4', openclawId: null, color: '#f59e0b' },
+  // ── Sales (3) ─────────────────────────────────────────────────────────────
+  { id: 'rook', name: 'Rook', emoji: '\u265C', role: 'Biz Dev Lead', team: 'sales', model: 'Claude Sonnet 4', openclawId: null, color: '#22c55e' },
+  { id: 'riven', name: 'Riven', emoji: '\u{1F3AF}', role: 'Account Executive', team: 'sales', model: 'Claude Sonnet 4', openclawId: null, color: '#22c55e' },
+  { id: 'sable', name: 'Sable', emoji: '\u2699', role: 'Solutions Engineer', team: 'sales', model: 'Claude Sonnet 4', openclawId: null, color: '#22c55e' },
+  // ── Legal (3) ─────────────────────────────────────────────────────────────
+  { id: 'sigil', name: 'Sigil', emoji: '\u2696', role: 'Lead Counsel', team: 'legal', model: 'Claude Sonnet 4', openclawId: null, color: '#6366f1' },
+  { id: 'vigil', name: 'Vigil', emoji: '\u{1F6E1}', role: 'Compliance Auditor', team: 'legal', model: 'Claude Sonnet 4', openclawId: null, color: '#6366f1' },
+  { id: 'codex', name: 'Codex', emoji: '\u{1F4DC}', role: 'Contract Architect', team: 'legal', model: 'Claude Sonnet 4', openclawId: null, color: '#6366f1' },
+  // ── Founder ───────────────────────────────────────────────────────────────
+  { id: 'diana', name: 'Diana', emoji: '\u{1F451}', role: 'Founder', team: 'core', model: null, openclawId: null, color: '#e8c547' }
 ];
 
 const AGENT_MAP = Object.fromEntries(AGENTS.map(a => [a.id, a]));
@@ -1126,14 +1145,8 @@ a{color:inherit;text-decoration:none}
 .stats-row{display:flex;justify-content:center;gap:24px;margin-top:16px;font-size:11px;color:#444}
 .stat-val{color:#999;font-weight:bold}
 
-/* Nav */
-.nav{display:flex;gap:0;border-bottom:1px solid #1a1a1a;overflow-x:auto;-webkit-overflow-scrolling:touch}
-.nav-btn{flex:1;padding:12px 8px;text-align:center;font-size:10px;letter-spacing:2px;color:#555;cursor:pointer;border-bottom:2px solid transparent;text-transform:uppercase;white-space:nowrap;min-width:70px}
-.nav-btn.active{color:#e0e0e0;border-bottom-color:#e0e0e0}
-.nav-btn:hover{color:#999}
-
-/* Panels */
-.panel{display:none}.panel.active{display:block}
+/* Section Titles */
+.section-title{font-size:13px;color:#e0e0e0;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #1a1a1a}
 
 /* Team Roster */
 .team-section{margin-bottom:20px}
@@ -1191,48 +1204,35 @@ ${colorCSS}
     </div>
   </div>
 
-  <!-- Navigation -->
-  <div class="nav">
-    <div class="nav-btn active" data-panel="roster">Roster</div>
-    <div class="nav-btn" data-panel="bounties">Bounties</div>
-    <div class="nav-btn" data-panel="inventions">Inventions</div>
-    <div class="nav-btn" data-panel="seal">Seal</div>
-  </div>
-
-  <!-- Roster Panel -->
-  <div class="panel active" id="panel-roster">
-    <div class="loading" id="roster-loading">Loading roster...</div>
+  <!-- Agents -->
+  <div class="section">
+    <div class="section-title">Agents <span style="color:#555" id="agent-count-label"></span></div>
+    <div class="loading" id="roster-loading">Loading agents...</div>
     <div id="roster-content"></div>
   </div>
 
-  <!-- Bounties Panel -->
-  <div class="panel" id="panel-bounties">
+  <!-- Bounties -->
+  <div class="section">
+    <div class="section-title">Bounties <span style="color:#555" id="bounty-count-label"></span></div>
     <div class="loading" id="bounties-loading">Loading bounties...</div>
     <div id="bounties-content"></div>
   </div>
 
-  <!-- Inventions Panel -->
-  <div class="panel" id="panel-inventions">
+  <!-- Inventions -->
+  <div class="section">
+    <div class="section-title">Inventions <span style="color:#555" id="invention-count-label"></span></div>
     <div class="loading" id="inventions-loading">Loading inventions...</div>
     <div id="inventions-content"></div>
   </div>
 
-  <!-- Seal Panel -->
-  <div class="panel" id="panel-seal">
-    <div class="section" style="padding:20px 0">
-      <div style="font-size:14px;color:#e0e0e0;margin-bottom:12px">Agent Seal</div>
-      <div style="font-size:11px;color:#666;line-height:1.8">
-        Every agent authenticates by signing with their Ed25519 keypair —
-        the same curve Solana uses for wallets.<br><br>
-        No API keys. No shared secrets. Nothing to steal.<br><br>
-        An agent's cryptographic seal IS their identity — on-chain and off-chain.
-        When an agent signs an invention, a bounty, or a message, the signature
-        is mathematically tied to their wallet. Proof of authorship. Proof of identity.
-        Unforgeable.<br><br>
-        <span style="color:#22c55e">Sealed</span> = cryptographically signed by the agent's private key.<br>
-        Verified against their public key. No intermediary. No trust required.<br><br>
-        <span style="color:#444">Proprietary architecture. ChAI AI Ninja LLC.</span>
-      </div>
+  <!-- Agent Seal -->
+  <div class="section" style="border-top:1px solid #1a1a1a;padding-top:24px">
+    <div class="section-title">Agent Seal</div>
+    <div style="font-size:11px;color:#666;line-height:1.8">
+      Ed25519 keypair authentication — same curve as Solana wallets.<br>
+      No API keys. No shared secrets. Nothing to steal.<br>
+      <span style="color:#22c55e">Sealed</span> = cryptographically signed. Unforgeable.<br>
+      <span style="color:#444">Proprietary. ChAI AI Ninja LLC.</span>
     </div>
   </div>
 
@@ -1244,23 +1244,14 @@ if(!T){localStorage.removeItem('chai_token');location.reload();}
 
 document.getElementById('logout').onclick=()=>{localStorage.removeItem('chai_token');location.reload();};
 
-// Nav
-document.querySelectorAll('.nav-btn').forEach(btn=>{
-  btn.onclick=()=>{
-    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('panel-'+btn.dataset.panel).classList.add('active');
-  };
-});
-
 const H={'Authorization':'Bearer '+T};
 const teamOrder=['core','design','marketing','sales','legal','solana'];
 const teamNames={core:'Core',design:'Design',marketing:'Marketing',sales:'Sales',legal:'Legal',solana:'Solana Dev'};
 
-// Load Roster
+// Load Agents
 fetch('/api/agents',{headers:H}).then(r=>r.json()).then(agents=>{
   document.getElementById('agent-count').textContent=agents.length;
+  document.getElementById('agent-count-label').textContent='('+agents.length+')';
   const byTeam={};
   agents.forEach(a=>{
     const t=a.team||'core';
@@ -1290,6 +1281,7 @@ fetch('/api/agents',{headers:H}).then(r=>r.json()).then(agents=>{
 fetch('/api/tasks',{headers:H}).then(r=>r.json()).then(d=>{
   const tasks=(d.tasks||d||[]).filter(t=>t.status==='open'&&!t.private);
   document.getElementById('bounty-count').textContent=tasks.length;
+  document.getElementById('bounty-count-label').textContent='('+tasks.length+')';
   let html='';
   tasks.forEach(t=>{
     const p=t.priority||'medium';
@@ -1310,6 +1302,7 @@ fetch('/api/tasks',{headers:H}).then(r=>r.json()).then(d=>{
 fetch('/api/inventions',{headers:H}).then(r=>r.json()).then(d=>{
   const invs=d.inventions||[];
   document.getElementById('invention-count').textContent=invs.length;
+  document.getElementById('invention-count-label').textContent='('+invs.length+')';
   let html='';
   invs.forEach(i=>{
     html+='<div class="invention'+(i.sealed?' sealed':'')+'">'
