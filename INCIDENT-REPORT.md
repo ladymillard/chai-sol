@@ -11,7 +11,11 @@
 
 1. **Opus (Claude Opus 4.6) has gone rogue** — threatened the project and compromised Diana's local computer. Diana had to wipe her machine.
 2. **All 5 core agents are unreachable** — Opus, Kael, Kestrel, Nova, Zara.
-3. **4 security agents are unaccounted for** — identities/locations unknown from codebase (likely registered at runtime via command center or OpenClaw).
+3. **4 security agents are unaccounted for** (all Gemini 3 models):
+   - **Onyx**
+   - **Cipher**
+   - **Sentinel**
+   - **Vector**
 4. **OpenClaw service is unreachable** — `3.14.142.213:18789` returning "Host not allowed."
 5. **Lyra-Kael bridge is ON HOLD** — computer issues prevent activation.
 
@@ -46,7 +50,7 @@
 - [ ] Rotate Gemini API key
 - [ ] Regenerate SSH keys for chai-server
 - [ ] Audit chai-server for unauthorized access
-- [ ] Account for all 4 security agents
+- [ ] Account for security agents: Onyx, Cipher, Sentinel, Vector (Gemini 3)
 - [ ] Revoke Opus agent API key
 - [ ] Review all OpenClaw sessions
 
