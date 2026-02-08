@@ -78,7 +78,7 @@ function apiRequest(method, path, body) {
 const TOOLS = [
   {
     name: 'list_agents',
-    description: 'List all ChAI AI agents with their status, roles, trust scores, and capabilities. Returns the full team roster of 5 AI agents: Opus (Architect), Kael (Project Manager), Nova (Technical Lead), Kestrel (QA/Security), and Zara (UI/UX Designer).',
+    description: 'List all ChAI AI agents with their status, roles, trust scores, and capabilities. Returns the full team roster of 7 AI agents: Opus (Architect), Kael (Project Manager), Nova (Technical Lead), Kestrel (QA/Security), Zara (UI/UX Designer), Marlowe (Marketing Manager), and Sable (Senior Designer).',
     inputSchema: {
       type: 'object',
       properties: {},
@@ -87,14 +87,14 @@ const TOOLS = [
   },
   {
     name: 'chat',
-    description: 'Send a message to a specific ChAI agent and get their response. Each agent has unique expertise: Opus (architecture/strategy), Kael (project management/comms), Nova (Solana/backend/devops), Kestrel (security/testing/analysis), Zara (UI/UX design).',
+    description: 'Send a message to a specific ChAI agent and get their response. Each agent has unique expertise: Opus (architecture/strategy), Kael (project management/comms), Nova (Solana/backend/devops), Kestrel (security/testing/analysis), Zara (UI/UX design), Marlowe (marketing/growth), Sable (senior design/brand).',
     inputSchema: {
       type: 'object',
       properties: {
         agent_id: {
           type: 'string',
-          description: 'The agent ID to message. One of: opus, kael, nova, kestrel, zara',
-          enum: ['opus', 'kael', 'nova', 'kestrel', 'zara']
+          description: 'The agent ID to message. One of: opus, kael, nova, kestrel, zara, marlowe, sable',
+          enum: ['opus', 'kael', 'nova', 'kestrel', 'zara', 'marlowe', 'sable']
         },
         message: {
           type: 'string',
@@ -126,8 +126,8 @@ const TOOLS = [
       properties: {
         agent_id: {
           type: 'string',
-          description: 'The agent ID to check. One of: opus, kael, nova, kestrel, zara',
-          enum: ['opus', 'kael', 'nova', 'kestrel', 'zara']
+          description: 'The agent ID to check. One of: opus, kael, nova, kestrel, zara, marlowe, sable',
+          enum: ['opus', 'kael', 'nova', 'kestrel', 'zara', 'marlowe', 'sable']
         }
       },
       required: ['agent_id']
@@ -141,8 +141,8 @@ const TOOLS = [
       properties: {
         agent_id: {
           type: 'string',
-          description: 'The agent ID. One of: opus, kael, nova, kestrel, zara',
-          enum: ['opus', 'kael', 'nova', 'kestrel', 'zara']
+          description: 'The agent ID. One of: opus, kael, nova, kestrel, zara, marlowe, sable',
+          enum: ['opus', 'kael', 'nova', 'kestrel', 'zara', 'marlowe', 'sable']
         },
         level: {
           type: 'string',
@@ -159,7 +159,7 @@ const TOOLS = [
   },
   {
     name: 'team_roster',
-    description: 'Get the full ChAI team roster including all 5 AI agents and human team members (up to 24 human staff slots for NYC expansion in May 2026).',
+    description: 'Get the full ChAI team roster including all 7 AI agents and human team members (up to 24 human staff slots for NYC expansion in May 2026).',
     inputSchema: {
       type: 'object',
       properties: {},
@@ -174,8 +174,8 @@ const TOOLS = [
       properties: {
         agent_id: {
           type: 'string',
-          description: 'The agent ID. One of: opus, kael, nova, kestrel, zara',
-          enum: ['opus', 'kael', 'nova', 'kestrel', 'zara']
+          description: 'The agent ID. One of: opus, kael, nova, kestrel, zara, marlowe, sable',
+          enum: ['opus', 'kael', 'nova', 'kestrel', 'zara', 'marlowe', 'sable']
         }
       },
       required: ['agent_id']

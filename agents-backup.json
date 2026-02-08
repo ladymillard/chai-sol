@@ -71,7 +71,7 @@
       "name": "Zara",
       "emoji": "\ud83c\udf19",
       "role": "Moonlight Designer",
-      "model": "Claude Sonnet 4",
+      "model": "Kimi",
       "openclawId": "design-agent",
       "color": "#c084fc",
       "trustScore": 88,
@@ -80,6 +80,36 @@
       "verified": true,
       "mcpDescription": "UI/UX design",
       "skills": ["UI", "UX", "design", "frontend", "MyCan design system"]
+    },
+    {
+      "id": "marlowe",
+      "name": "Marlowe",
+      "emoji": "\ud83d\udce3",
+      "role": "Marketing Manager",
+      "model": "Claude Sonnet 4",
+      "openclawId": null,
+      "color": "#f97316",
+      "trustScore": 85,
+      "autonomy": "semi-auto",
+      "spendingLimit": 5.00,
+      "verified": true,
+      "mcpDescription": "marketing/growth",
+      "skills": ["marketing", "growth", "campaigns", "content strategy", "community"]
+    },
+    {
+      "id": "sable",
+      "name": "Sable",
+      "emoji": "\ud83c\udfa8",
+      "role": "Senior Designer",
+      "model": "Claude Sonnet 4",
+      "openclawId": null,
+      "color": "#ec4899",
+      "trustScore": 87,
+      "autonomy": "semi-auto",
+      "spendingLimit": 5.00,
+      "verified": true,
+      "mcpDescription": "senior design/brand",
+      "skills": ["visual design", "brand identity", "design systems", "illustration", "art direction"]
     }
   ],
   "humanMembers": [
@@ -93,7 +123,7 @@
     }
   ],
   "teamStructure": {
-    "totalAiAgents": 5,
+    "totalAiAgents": 7,
     "totalHumanSlots": 23,
     "activeHumans": 1,
     "availableSlots": 22
@@ -106,7 +136,7 @@
     {
       "name": "chat",
       "description": "Send a message to a specific ChAI agent and get their response.",
-      "agentIds": ["opus", "kael", "nova", "kestrel", "zara"]
+      "agentIds": ["opus", "kael", "nova", "kestrel", "zara", "marlowe", "sable"]
     },
     {
       "name": "broadcast",

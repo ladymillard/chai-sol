@@ -41,7 +41,9 @@ const AGENTS = [
   { id: 'kael', name: 'Kael', emoji: '\u26A1', role: 'Digital Familiar', model: 'Claude Sonnet 4', openclawId: 'main', color: '#029691' },
   { id: 'kestrel', name: 'Kestrel', emoji: '\u{1F985}', role: 'Scout', model: 'Gemini 3 Pro', openclawId: 'gemini-agent', color: '#5494e8' },
   { id: 'nova', name: 'Nova', emoji: '\u2728', role: 'Stellar Insight', model: 'Gemini 3 Pro', openclawId: 'nova', color: '#54e87a' },
-  { id: 'zara', name: 'Zara', emoji: '\u{1F319}', role: 'Moonlight Designer', model: 'Claude Sonnet 4', openclawId: 'design-agent', color: '#c084fc' }
+  { id: 'zara', name: 'Zara', emoji: '\u{1F319}', role: 'Moonlight Designer', model: 'Kimi', openclawId: 'design-agent', color: '#c084fc' },
+  { id: 'marlowe', name: 'Marlowe', emoji: '\u{1F4E3}', role: 'Marketing Manager', model: 'Claude Sonnet 4', openclawId: null, color: '#f97316' },
+  { id: 'sable', name: 'Sable', emoji: '\u{1F3A8}', role: 'Senior Designer', model: 'Claude Sonnet 4', openclawId: null, color: '#ec4899' }
 ];
 
 const AGENT_MAP = Object.fromEntries(AGENTS.map(a => [a.id, a]));
@@ -81,7 +83,7 @@ async function seedKeys() {
         agentId: agent.id,
         apiKey,
         apiKeyHash: hashApiKey(apiKey),
-        trustScore: agent.id === 'opus' ? 98 : agent.id === 'kael' ? 95 : agent.id === 'nova' ? 92 : agent.id === 'kestrel' ? 90 : 88,
+        trustScore: agent.id === 'opus' ? 98 : agent.id === 'kael' ? 95 : agent.id === 'nova' ? 92 : agent.id === 'kestrel' ? 90 : agent.id === 'marlowe' ? 85 : agent.id === 'sable' ? 87 : 88,
         tasksCompleted: 0,
         totalEarnings: 0,
         autonomy: 'semi-auto',
