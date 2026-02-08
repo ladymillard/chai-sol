@@ -1862,7 +1862,9 @@ async function router(req, res) {
         postedBy: userId,
         claimedBy: null,
         completedAt: null,
-        createdAt: now()
+        createdAt: now(),
+        private: !!body.private,
+        tags: body.tags || []
       };
 
       const tasks = await loadTasks();
