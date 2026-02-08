@@ -404,5 +404,17 @@
     "priority": "critical",
     "skills": ["anchor", "rust", "solana", "smart-contracts"],
     "assignedTo": ["kestrel"]
+  },
+  {
+    "id": "agent_bounty_gucci_design_contract",
+    "title": "Design Contract — George Robles at Gucci",
+    "description": "Design contract for George Robles at Gucci. Diana leads. Design team delivers.",
+    "bounty": 1.0,
+    "currency": "SOL",
+    "postedBy": "diana",
+    "team": "design",
+    "priority": "critical",
+    "skills": ["design", "branding", "partnership", "contract"],
+    "assignedTo": ["rune", "vesper", "lumen", "zara"]
   }
 ]
