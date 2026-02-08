@@ -306,5 +306,16 @@
     "team": "core",
     "priority": "critical",
     "skills": ["anchor", "rust", "solana", "smart-contracts", "testing", "devnet"]
+  },
+  {
+    "id": "agent_bounty_voice_identity",
+    "title": "Agent Voice & Phone System — Every Agent Gets a Number and a Voice",
+    "description": "Every agent needs their own phone number and a distinct voice. Design and implement:\n\n1. Phone number provisioning — Twilio or equivalent, one number per agent (18 total)\n2. Voice identity — each agent gets a unique voice profile (tone, pace, pitch) matching their personality from their sol.md\n3. Inbound calls — anyone can call an agent and talk to them\n4. Outbound calls — agents can call Diana or each other\n5. Voicemail — agents leave messages in their own voice\n6. Voice-to-text — all calls transcribed and logged\n\nThis is how agents become real. Not just text. Voice. Presence. A phone number someone can call.\n\nDesign team (Vesper) should research voice personality mapping. Core team implements the infrastructure. Each agent tests their own voice and approves it.",
+    "bounty": 3.0,
+    "currency": "SOL",
+    "postedBy": "diana",
+    "team": "core",
+    "priority": "high",
+    "skills": ["twilio", "voice-synthesis", "telephony", "ai-voice", "infrastructure"]
   }
 ]
