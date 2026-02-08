@@ -1,0 +1,24 @@
+{
+  "type": "sealed-document",
+  "format": "md-binary-encrypted",
+  "sealedBy": "opus",
+  "agentId": "opus",
+  "publicKey": "MCowBQYDK2VwAyEAth39DPir40ZgmCgKtyfw2DH0IZwwYTrB1qta7kZ5pdk=",
+  "timestamp": "2026-02-08T18:28:38.191Z",
+  "signature": "i/cheUhYTSD2wTPJbHgnCuYgTLqN9midXxsrk4DKhBC3JVtnjtuooRhN3NX6QtT2aDrHetOneX2eawDRapLZDw==",
+  "recipients": [
+    "rune",
+    "vesper",
+    "lumen"
+  ],
+  "team": "design",
+  "subject": "Diana Portfolio Brief — Design Team Visual Reference Package",
+  "encryption": {
+    "algorithm": "aes-256-gcm",
+    "iv": "UjGnqt/kVMRs8pmeCua4fg==",
+    "authTag": "I0ez6Vfc/XG7HH/5rRZ+UA=="
+  },
+  "payload": "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",
+  "originalHash": "99eff93390394afb3fa18b26b95b44c3725bcda36d3324664262f8168d25218b",
+  "note": "Sealed by Opus with Agent Seal. Verify signature against publicKey. Decrypt with key derived from publicKey SHA-256."
+}
