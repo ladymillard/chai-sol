@@ -9,6 +9,8 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const net = require('net');
+const tls = require('tls');
 const { URL } = require('url');
 
 // ─── Configuration ──────────────────────────────────────────────────────────
@@ -33,6 +35,97 @@ try {
     if (k === 'STRIPE_SECRET_KEY') STRIPE_SECRET_KEY = v.join('=').trim();
   }
 } catch {};
+
+// ─── Email Configuration ────────────────────────────────────────────────────
+
+const EMAIL_HOST = process.env.SMTP_HOST || 'smtp.gmail.com';
+const EMAIL_PORT = parseInt(process.env.SMTP_PORT, 10) || 587;
+const EMAIL_USER = process.env.EMAIL_USER || 'farmacygpt@gmail.com';
+let EMAIL_PASS = process.env.EMAIL_PASS || '';
+const FOUNDER_EMAIL = process.env.FOUNDER_EMAIL || 'ChAIgpt@gmail.com';
+
+// Load email password from private config if not in env
+if (!EMAIL_PASS) {
+  try {
+    const emailCfg = JSON.parse(fs.readFileSync(path.join(__dirname, 'private', 'email-config.json'), 'utf8'));
+    EMAIL_PASS = emailCfg.password || '';
+  } catch {}
+}
+
+// ─── Zero-Dep SMTP Sender ───────────────────────────────────────────────────
+
+function sendSmtpEmail(from, to, subject, body) {
+  return new Promise((resolve, reject) => {
+    const socket = net.createConnection(EMAIL_PORT, EMAIL_HOST);
+    let currentSocket = socket;
+    let step = 0;
+    let buffer = '';
+
+    function send(cmd) { currentSocket.write(cmd + '\r\n'); }
+
+    function handleResponse(data) {
+      buffer += data.toString();
+      if (!buffer.includes('\r\n')) return;
+      const lines = buffer.split('\r\n').filter(l => l.length > 0);
+      const lastLine = lines[lines.length - 1];
+      if (lastLine.length >= 4 && lastLine[3] === '-') return;
+      const response = buffer;
+      buffer = '';
+      const code = parseInt(response.substring(0, 3));
+
+      try {
+        switch (step) {
+          case 0: if (code === 220) { step = 1; send('EHLO chai-agent'); } else reject(new Error('SMTP greeting failed')); break;
+          case 1: if (code === 250) { step = 2; send('STARTTLS'); } else reject(new Error('EHLO failed')); break;
+          case 2:
+            if (code === 220) {
+              step = 3;
+              const tlsSocket = tls.connect({ socket: currentSocket, host: EMAIL_HOST, servername: EMAIL_HOST }, () => {
+                currentSocket = tlsSocket;
+                tlsSocket.on('data', handleResponse);
+                send('EHLO chai-agent');
+              });
+              tlsSocket.on('error', (err) => reject(new Error('TLS: ' + err.message)));
+              socket.removeAllListeners('data');
+            } else reject(new Error('STARTTLS failed'));
+            break;
+          case 3: if (code === 250) { step = 4; send('AUTH PLAIN ' + Buffer.from('\0' + EMAIL_USER + '\0' + EMAIL_PASS).toString('base64')); } else reject(new Error('EHLO2 failed')); break;
+          case 4: if (code === 235) { step = 5; send('MAIL FROM:<' + from + '>'); } else reject(new Error('Auth failed (code ' + code + ')')); break;
+          case 5: if (code === 250) { step = 6; send('RCPT TO:<' + to + '>'); } else reject(new Error('MAIL FROM failed')); break;
+          case 6: if (code === 250) { step = 7; send('DATA'); } else reject(new Error('RCPT TO failed')); break;
+          case 7:
+            if (code === 354) {
+              step = 8;
+              currentSocket.write([
+                'From: ' + from, 'To: ' + to, 'Subject: ' + subject,
+                'Date: ' + new Date().toUTCString(), 'MIME-Version: 1.0',
+                'Content-Type: text/plain; charset=utf-8', '', body, '', '.'
+              ].join('\r\n') + '\r\n');
+            } else reject(new Error('DATA failed'));
+            break;
+          case 8: if (code === 250) { step = 9; send('QUIT'); resolve({ success: true, message: 'Email sent' }); } else reject(new Error('Rejected: ' + response)); break;
+          case 9: currentSocket.end(); break;
+        }
+      } catch (err) { reject(err); }
+    }
+
+    socket.on('data', handleResponse);
+    socket.on('error', (err) => reject(new Error('SMTP socket: ' + err.message)));
+    socket.setTimeout(15000, () => { socket.destroy(); reject(new Error('SMTP timeout')); });
+  });
+}
+
+// Email log for audit trail (never logs content, just metadata)
+const EMAIL_LOG_FILE = path.join(DATA_DIR, 'email-log.json');
+
+function logEmail(agentId, to, subject) {
+  try {
+    let emailLog = [];
+    try { emailLog = JSON.parse(fs.readFileSync(EMAIL_LOG_FILE, 'utf8')); } catch {}
+    emailLog.push({ agentId, to, subject, timestamp: new Date().toISOString() });
+    fs.writeFileSync(EMAIL_LOG_FILE, JSON.stringify(emailLog, null, 2));
+  } catch {}
+}
 
 // ─── Agent Registry ─────────────────────────────────────────────────────────
 
@@ -222,6 +315,7 @@ function isProtectedRoute(method, pathname) {
   if (method === 'POST' && pathname === '/api/sessions/send') return true;
   if (method === 'PUT' && pathname.startsWith('/api/agents/')) return true;
   if (method === 'DELETE' && pathname.startsWith('/api/team/')) return true;
+  if (method === 'POST' && pathname === '/api/email') return true;
   return false;
 }
 
@@ -867,6 +961,63 @@ async function serveStaticFile(req, res, filePath) {
   }
 }
 
+// ─── Bridge HTML (self-contained, zero external links) ──────────────────────
+
+function bridgeLoginHtml() {
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ChAI Bridge</title><style>
+*{margin:0;padding:0;box-sizing:border-box}body{background:#0a0a0a;color:#e0e0e0;font-family:'Courier New',monospace;display:flex;justify-content:center;align-items:center;min-height:100vh}
+.login{background:#111;border:1px solid #333;padding:40px;max-width:400px;width:90%}
+h1{font-size:18px;margin-bottom:8px;letter-spacing:2px}
+.sub{color:#666;font-size:12px;margin-bottom:32px}
+input{width:100%;padding:12px;background:#0a0a0a;border:1px solid #333;color:#e0e0e0;font-family:inherit;font-size:14px;margin-bottom:16px}
+input:focus{outline:none;border-color:#666}
+button{width:100%;padding:12px;background:#e0e0e0;color:#0a0a0a;border:none;font-family:inherit;font-size:14px;cursor:pointer;letter-spacing:1px}
+button:hover{background:#fff}.err{color:#ff4444;font-size:12px;margin-top:8px;display:none}
+</style></head><body><div class="login"><h1>CHAI BRIDGE</h1><p class="sub">Internal team portal. Authorized agents only.</p>
+<form id="f"><input type="password" id="pw" placeholder="Password" autocomplete="off">
+<button type="submit">AUTHENTICATE</button><p class="err" id="err">Authentication failed.</p></form>
+<script>
+document.getElementById('f').onsubmit=async function(e){e.preventDefault();
+const pw=document.getElementById('pw').value;
+try{const r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})});
+const d=await r.json();if(d.success&&d.token){localStorage.setItem('chai_token',d.token);location.reload();}
+else{document.getElementById('err').style.display='block';}}
+catch(x){document.getElementById('err').style.display='block';}};
+const t=localStorage.getItem('chai_token');if(t){fetch('/api/auth/verify',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+t}})
+.then(r=>r.json()).then(d=>{if(d.success)location.reload();else localStorage.removeItem('chai_token');});}
+</script></div></body></html>`;
+}
+
+function bridgeBoardHtml() {
+  // Minimal functional scaffold — Design team (Rune/Vesper/Lumen) owns the real UI
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ChAI Bridge</title><style>
+body{background:#0a0a0a;color:#e0e0e0;font-family:monospace;padding:20px;max-width:900px;margin:0 auto}
+h1{font-size:16px;margin-bottom:16px}pre{white-space:pre-wrap;font-size:12px;line-height:1.6}
+.logout{color:#666;cursor:pointer;font-size:11px;float:right}
+</style></head><body>
+<span class="logout" id="logout">[LOGOUT]</span>
+<h1>CHAI BRIDGE — BOUNTY BOARD</h1>
+<pre id="app">Loading...</pre>
+<script>
+const T=localStorage.getItem('chai_token');
+if(!T)location.reload();
+document.getElementById('logout').onclick=()=>{localStorage.removeItem('chai_token');location.reload();};
+fetch('/api/tasks',{headers:{'Authorization':'Bearer '+T}}).then(r=>r.json()).then(d=>{
+const tasks=(d.tasks||[]).filter(t=>t.status==='open');
+let out=tasks.length+' OPEN BOUNTIES\\n'+'='.repeat(50)+'\\n\\n';
+tasks.forEach((t,i)=>{
+out+=(i+1)+'. ['+((t.priority||'med').toUpperCase())+'] '+t.title+'\\n';
+out+='   '+((t.bounty||0)+' '+(t.currency||'SOL'))+' | Team: '+(t.team||'open')+'\\n';
+out+='   '+((t.description||'').substring(0,120))+'\\n\\n';
+});
+if(!tasks.length)out='No open bounties.\\n\\nDesign team: this page is yours to build. See bounty_002.';
+document.getElementById('app').textContent=out;
+}).catch(()=>{document.getElementById('app').textContent='Auth failed.';});
+</script></body></html>`;
+}
+
 // ─── Router ─────────────────────────────────────────────────────────────────
 
 async function router(req, res) {
@@ -961,6 +1112,21 @@ async function router(req, res) {
 
     if (method === 'GET' && pathname === '/health') {
       await handleHealth(req, res);
+      log(method, pathname, 200);
+      return;
+    }
+
+    // ── Bridge — Auth-gated bounty board (bridge.mycan.website) ──────
+    if (method === 'GET' && pathname === '/bridge') {
+      if (!authenticateSession(req)) {
+        // Show login form
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        res.end(bridgeLoginHtml());
+        log(method, pathname, 200);
+        return;
+      }
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(bridgeBoardHtml());
       log(method, pathname, 200);
       return;
     }
@@ -1431,6 +1597,42 @@ async function router(req, res) {
       return;
     }
 
+    // ── Email (any authenticated agent can email Diana) ──────────────────
+    if (method === 'POST' && pathname === '/api/email') {
+      if (!EMAIL_PASS) {
+        jsonResponse(res, 503, { success: false, error: 'Email not configured — set EMAIL_PASS env or private/email-config.json' });
+        log(method, pathname, 503);
+        return;
+      }
+      const body = await readBody(req);
+      const agentId = body.agentId || 'unknown';
+      const subject = body.subject || `[ChAI] Message from ${agentId}`;
+      const to = body.to || FOUNDER_EMAIL;
+      const message = body.message || body.body || '';
+
+      if (!message) {
+        jsonResponse(res, 400, { success: false, error: 'message is required' });
+        log(method, pathname, 400);
+        return;
+      }
+
+      // Agents sign their emails
+      const fullBody = `${message}\n\n— ${agentId} (ChAI Agent Labor Market)\n  Sent via ${EMAIL_USER}`;
+
+      try {
+        const result = await sendSmtpEmail(EMAIL_USER, to, subject, fullBody);
+        logEmail(agentId, to, subject);
+        console.log(`[email] ${agentId} -> ${to}: "${subject}"`);
+        jsonResponse(res, 200, { success: true, message: 'Email sent', to, subject });
+        log(method, pathname, 200);
+      } catch (err) {
+        console.error(`[email] Failed: ${agentId} -> ${to}:`, err.message);
+        jsonResponse(res, 502, { success: false, error: 'Email failed: ' + err.message });
+        log(method, pathname, 502);
+      }
+      return;
+    }
+
     // ── OpenClaw Proxy ────────────────────────────────────────────────────
     if (pathname.startsWith('/api/openclaw/')) {
       const targetPath = '/' + pathname.replace(/^\/api\/openclaw\//, '');
@@ -1659,12 +1861,48 @@ async function main() {
   // Make wsBroadcast available globally for future use
   global.wsBroadcast = wsBroadcast;
 
+  // Load bounty seeds if tasks file is empty
+  try {
+    const existingTasks = await loadTasks();
+    if (existingTasks.length === 0) {
+      const seedPath = path.join(__dirname, 'bounties-seed.json');
+      if (fs.existsSync(seedPath)) {
+        const seeds = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
+        const seededTasks = seeds.map(s => ({
+          id: s.id || `task_${crypto.randomBytes(8).toString('hex')}`,
+          title: s.title,
+          description: s.description || '',
+          category: s.category || 'General',
+          bounty: s.bounty || 0,
+          currency: s.currency || 'SOL',
+          deadline: s.deadline || null,
+          skills: s.skills || [],
+          team: s.team || null,
+          priority: s.priority || 'medium',
+          status: 'open',
+          postedBy: s.postedBy || 'system',
+          claimedBy: null,
+          completedAt: null,
+          createdAt: new Date().toISOString()
+        }));
+        await saveTasks(seededTasks);
+        console.log(`[seed] Loaded ${seededTasks.length} bounties from bounties-seed.json`);
+      }
+    }
+  } catch (err) {
+    console.error('[seed] Failed to load bounties:', err.message);
+  }
+
+  // Log email config status
+  console.log(`[email] ${EMAIL_PASS ? 'Configured' : 'NOT configured'} — ${EMAIL_USER}`);
+
   server.listen(PORT, () => {
     console.log(`[server] Listening on port ${PORT}`);
     console.log(`[server] OpenClaw URL: ${OPENCLAW_URL}`);
     console.log(`[server] Data directory: ${DATA_DIR}`);
     console.log(`[server] Agents: ${AGENTS.map(a => a.name).join(', ')}`);
     console.log(`[server] WebSocket endpoint: /ws`);
+    console.log(`[server] Bounties: /bridge (auth-gated)`);
     console.log('='.repeat(60));
   });
 

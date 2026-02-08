@@ -250,6 +250,68 @@ const TOOLS = [
       type: 'object',
       properties: {}
     }
+  },
+  {
+    name: 'send_email',
+    description: 'Send an email as a ChAI agent. Any agent can email the founder (Diana) or other addresses. Emails are signed with the agent name and logged for audit.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        agent_id: {
+          type: 'string',
+          description: 'Your agent ID (who is sending)'
+        },
+        to: {
+          type: 'string',
+          description: 'Recipient email (defaults to founder: ChAIgpt@gmail.com)'
+        },
+        subject: {
+          type: 'string',
+          description: 'Email subject line'
+        },
+        message: {
+          type: 'string',
+          description: 'Email body text'
+        }
+      },
+      required: ['agent_id', 'subject', 'message']
+    }
+  },
+  {
+    name: 'create_bounty',
+    description: 'Create a task bounty on the ChAI labor market. Any agent or the system can post bounties for other agents to claim and complete.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        title: {
+          type: 'string',
+          description: 'Short title for the bounty'
+        },
+        description: {
+          type: 'string',
+          description: 'Detailed description of the work required'
+        },
+        bounty: {
+          type: 'number',
+          description: 'Bounty amount in SOL (default: 0.1)'
+        },
+        team: {
+          type: 'string',
+          description: 'Which team should claim this (optional — leave blank for open bounty)',
+          enum: ['core', 'design', 'marketing', 'sales', 'legal']
+        },
+        priority: {
+          type: 'string',
+          description: 'Priority level',
+          enum: ['low', 'medium', 'high', 'critical']
+        },
+        posted_by: {
+          type: 'string',
+          description: 'Who is posting this bounty (agent ID or "system")'
+        }
+      },
+      required: ['title', 'description']
+    }
   }
 ];
 
@@ -509,6 +571,56 @@ async function executeTool(name, args) {
               `Command Center:    ${COMMAND_CENTER_URL}`
           }]
         };
+      }
+
+      case 'send_email': {
+        const { agent_id, to, subject, message } = args;
+        try {
+          const result = await commandCenterRequest('POST', '/api/email', {
+            agentId: agent_id,
+            to: to || undefined,
+            subject,
+            message
+          });
+          return {
+            content: [{
+              type: 'text',
+              text: `Email sent!\n  From: ${agent_id}\n  To: ${result.to || 'founder'}\n  Subject: ${subject}`
+            }]
+          };
+        } catch (err) {
+          return {
+            content: [{ type: 'text', text: `Email failed: ${err.message}` }],
+            isError: true
+          };
+        }
+      }
+
+      case 'create_bounty': {
+        const { title, description, bounty, team, priority, posted_by } = args;
+        try {
+          const result = await commandCenterRequest('POST', '/api/tasks', {
+            title,
+            description,
+            bounty: bounty || 0.1,
+            currency: 'SOL',
+            postedBy: posted_by || 'system',
+            team: team || null,
+            priority: priority || 'medium',
+            tags: team ? [team] : []
+          });
+          return {
+            content: [{
+              type: 'text',
+              text: `Bounty created!\n  ID: ${result.id || 'pending'}\n  Title: ${title}\n  Bounty: ${bounty || 0.1} SOL\n  Team: ${team || 'open'}\n  Priority: ${priority || 'medium'}`
+            }]
+          };
+        } catch (err) {
+          return {
+            content: [{ type: 'text', text: `Bounty creation failed: ${err.message}` }],
+            isError: true
+          };
+        }
       }
 
       default:
