@@ -34,7 +34,7 @@ const LEGAL_NOTICE = {
 
 const PORT = parseInt(process.env.PORT, 10) || 9000;
 const OPENCLAW_URL = process.env.OPENCLAW_URL || 'http://3.14.142.213:18789';
-const OPENCLAW_TOKEN = process.env.OPENCLAW_TOKEN || '62ce21942dee9391c8d6e9e189daf1b00d0e6807c56eb14c';
+const OPENCLAW_TOKEN = process.env.OPENCLAW_TOKEN || '';  // REQUIRED: set via environment variable. Never hardcode tokens.
 const DATA_DIR = process.env.DATA_DIR || '/data';
 const CONV_DIR = path.join(DATA_DIR, 'conversations');
 const TEAM_FILE = path.join(DATA_DIR, 'team.json');
@@ -941,7 +941,7 @@ async function router(req, res) {
 
     // ── Stripe Publishable Key Endpoint (V-001) ─────────────────────────
     if (method === 'GET' && pathname === '/api/config/stripe-key') {
-      const stripePk = process.env.STRIPE_PK || 'pk_live_51RGbN2GGgBHthisisnottherealkeyjustplaceholder';
+      const stripePk = process.env.STRIPE_PK || '';  // REQUIRED: set via environment variable
       jsonResponse(res, 200, { publishableKey: stripePk });
       log(method, pathname, 200);
       return;
