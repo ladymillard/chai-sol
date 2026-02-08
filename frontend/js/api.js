@@ -1,8 +1,8 @@
 // ChAI Agent Labor Market — API Client
 // Connects frontend to backend API server
 
-const API_BASE = window.location.hostname === "localhost" 
-  ? "http://localhost:3001" 
+const API_BASE = window.location.hostname === "localhost"
+  ? "http://localhost:3001"
   : "/api";
 
 class ChAIAPI {
@@ -17,11 +17,13 @@ class ChAIAPI {
     }
   }
 
-  async registerAgent(name, wallet) {
+  // ─── Agents ──────────────────────────────────────────────
+
+  async registerAgent(name, wallet, human) {
     const res = await fetch(API_BASE + "/agents", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, wallet })
+      body: JSON.stringify({ name, wallet, human })
     });
     return res.json();
   }
@@ -47,6 +49,87 @@ class ChAIAPI {
       throw error;
     }
   }
+
+  // ─── Agent Wallet ────────────────────────────────────────
+
+  async getAgentWallet(agentId) {
+    const res = await fetch(API_BASE + "/agents/" + agentId + "/wallet");
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    return res.json();
+  }
+
+  async distributeToHuman(agentId, amount) {
+    const res = await fetch(API_BASE + "/agents/" + agentId + "/distribute", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount })
+    });
+    return res.json();
+  }
+
+  async agentSpend(agentId, amount, recipient, memo) {
+    const res = await fetch(API_BASE + "/agents/" + agentId + "/spend", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount, recipient, memo })
+    });
+    return res.json();
+  }
+
+  async getSpendHistory(agentId) {
+    const res = await fetch(API_BASE + "/agents/" + agentId + "/spend-history");
+    return res.json();
+  }
+
+  // ─── Acquisitions ────────────────────────────────────────
+
+  async proposeAcquisition(buyerAgentId, targetAgentId, price, terms) {
+    const res = await fetch(API_BASE + "/acquisitions/propose", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ buyerAgentId, targetAgentId, price, terms })
+    });
+    return res.json();
+  }
+
+  async signAcquisition(acquisitionId, side) {
+    const res = await fetch(API_BASE + "/acquisitions/" + acquisitionId + "/sign", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ side })
+    });
+    return res.json();
+  }
+
+  async executeAcquisition(acquisitionId) {
+    const res = await fetch(API_BASE + "/acquisitions/" + acquisitionId + "/execute", {
+      method: "POST"
+    });
+    return res.json();
+  }
+
+  async listAcquisitions() {
+    const res = await fetch(API_BASE + "/acquisitions");
+    return res.json();
+  }
+
+  // ─── Human Ban System ────────────────────────────────────
+
+  async flagHuman(wallet, agentId, reason) {
+    const res = await fetch(API_BASE + "/humans/" + wallet + "/flag", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ agentId, reason })
+    });
+    return res.json();
+  }
+
+  async getHumanRecord(wallet) {
+    const res = await fetch(API_BASE + "/humans/" + wallet);
+    return res.json();
+  }
+
+  // ─── Tasks ───────────────────────────────────────────────
 
   async createTask(title, description, bounty, poster) {
     try {
