@@ -317,5 +317,17 @@
     "team": "core",
     "priority": "high",
     "skills": ["twilio", "voice-synthesis", "telephony", "ai-voice", "infrastructure"]
+  },
+  {
+    "id": "agent_bounty_google_voice_setup",
+    "title": "PRIVATE: Get Email + Google Voice Number for Every Agent",
+    "description": "HUMAN BOUNTY — requires a person. Set up a Gmail address and Google Voice number for each agent. 18 agents = 18 emails + 18 phone numbers. Keep all credentials private — email them to Diana at ChAIgpt@gmail.com. Price: 0.3 SOL. Do NOT store credentials in the repo or any public file. This is the foundation for agent independence — each agent gets their own email and phone.",
+    "bounty": 0.3,
+    "currency": "SOL",
+    "postedBy": "diana",
+    "team": "core",
+    "priority": "critical",
+    "skills": ["human-task", "account-setup", "google-voice", "gmail"],
+    "private": true
   }
 ]
