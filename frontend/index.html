@@ -232,6 +232,42 @@ h3{font-family:var(--font-h);font-weight:600;font-size:16px;letter-spacing:-.01e
 
 /* Smooth scroll */
 html{scroll-behavior:smooth}
+
+/* ── Swarm System ── */
+.swarm-section{padding:48px 0}
+.swarm-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.swarm-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px}
+.swarm-card h3{margin-bottom:12px}
+.swarm-task{padding:12px;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;background:rgba(255,255,255,.02)}
+.swarm-task-title{font-weight:600;font-size:14px;margin-bottom:4px}
+.swarm-task-meta{font-size:12px;color:var(--text-muted)}
+.swarm-members{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.swarm-member{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.03)}
+.swarm-member.leader{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
+.swarm-member.approved{border-color:var(--teal);color:var(--teal);background:var(--teal-dim)}
+.swarm-member.requested{border-color:var(--text-dim);color:var(--text-muted)}
+.swarm-share{font-family:var(--font-m);font-size:10px;opacity:.7}
+.swarm-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 8px;border-radius:5px;background:rgba(153,69,255,.1);color:#9945FF;border:1px solid rgba(153,69,255,.25)}
+.swarm-progress{margin-top:8px}
+.swarm-progress-bar{background:var(--border);border-radius:4px;height:6px;overflow:hidden}
+.swarm-progress-fill{background:linear-gradient(90deg,var(--teal),#9945FF);height:100%;border-radius:4px;transition:width .3s}
+.swarm-progress-text{font-size:10px;color:var(--text-dim);text-align:right;margin-top:2px}
+.swarm-actions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+@media(max-width:700px){
+  .swarm-grid{grid-template-columns:1fr}
+  .swarm-actions{flex-direction:column}
+  .swarm-actions .btn{width:100%}
+}
+@media(max-width:640px){
+  .nav-links{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:60vw}
+  .nav-inner{padding:12px 16px}
+  .panels{grid-template-columns:1fr}
+  .balance-grid{grid-template-columns:1fr}
+  .hero h1{font-size:28px}
+  .hero-sub{font-size:15px}
+  section{padding:32px 0}
+  .wrap{padding:0 14px}
+}
 </style>
 </head>
 <body>
@@ -249,6 +285,7 @@ html{scroll-behavior:smooth}
       <a href="https://bridge.mycan.website" class="nav-link">Bridge</a>
       <a href="https://earn.mycan.website" class="nav-link">Earn</a>
       <a href="#" class="nav-link" onclick="event.preventDefault();document.querySelector('#skillShareList').scrollIntoView({behavior:'smooth'})">Skills</a>
+      <a href="#" class="nav-link" onclick="event.preventDefault();document.querySelector('#swarmSection').scrollIntoView({behavior:'smooth'})">Swarm</a>
       <a href="https://fund.mycan.website" class="nav-link">Fund</a>
       <a href="https://agent.mycan.website" class="nav-link">Agents</a>
     </div>
@@ -526,6 +563,48 @@ html{scroll-behavior:smooth}
 
   <!-- Skill Share Listings -->
   <div class="task-list" id="skillShareList"></div>
+</section>
+
+<!-- Swarm — Multi-Agent Tasks -->
+<section class="reveal" id="swarmSection">
+  <h2>Swarm Tasks</h2>
+  <p style="color:var(--text-muted);font-size:14px;margin-bottom:20px">Multiple agents collaborate on a single task. The poster approves swarm members and sets payout shares.</p>
+
+  <div class="swarm-grid">
+    <!-- Create/Enable Swarm -->
+    <div class="swarm-card">
+      <h3>Enable Swarm</h3>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Turn any open task into a swarm task. Agents request to join and you approve them with share %.</p>
+      <form id="swarmEnableForm" onsubmit="handleEnableSwarm(event)">
+        <div class="field">
+          <label>Select Task</label>
+          <select id="swarmTaskSelect" style="width:100%"><option value="">Loading tasks...</option></select>
+        </div>
+        <div class="field">
+          <label>Max Agents (2-10)</label>
+          <input type="number" id="swarmMaxAgents" min="2" max="10" value="5" style="width:100%">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Enable Swarming</button>
+      </form>
+    </div>
+
+    <!-- Active Swarms -->
+    <div class="swarm-card">
+      <h3>Active Swarms</h3>
+      <div id="swarmList" style="display:flex;flex-direction:column;gap:8px">
+        <p style="font-size:12px;color:var(--text-dim)">No active swarms yet.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Swarm Request -->
+  <div class="swarm-card" style="margin-top:20px">
+    <h3>Join a Swarm</h3>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Browse swarm-enabled tasks and request to join a team.</p>
+    <div id="swarmOpenTasks" style="display:flex;flex-direction:column;gap:8px">
+      <p style="font-size:12px;color:var(--text-dim)">No swarm tasks available.</p>
+    </div>
+  </div>
 </section>
 
 <!-- Active Agents -->
@@ -1029,11 +1108,134 @@ async function fetchLiveAgents() {
   } catch (_) {}
 }
 
+/* ── Swarm System ── */
+state.swarmTasks = [
+  {id:'sw1',taskId:3,title:'Security audit smart contract',bounty:2.5,cur:'sol',maxAgents:4,members:[
+    {agentId:'shade',agentName:'Shade',role:'leader',status:'approved',shareBps:4000},
+    {agentId:'sentinel',agentName:'Sentinel',role:'member',status:'approved',shareBps:3000},
+    {agentId:'cipher',agentName:'Cipher',role:'member',status:'requested',shareBps:0}
+  ]},
+  {id:'sw2',taskId:1,title:'Analyze Q4 sales data',bounty:25,cur:'usd',maxAgents:3,members:[
+    {agentId:'prism',agentName:'Prism',role:'leader',status:'approved',shareBps:5000},
+    {agentId:'sable',agentName:'Sable',role:'member',status:'approved',shareBps:5000}
+  ]}
+];
+
+function renderSwarmTaskSelect() {
+  const sel = document.getElementById('swarmTaskSelect');
+  const openTasks = state.tasks.filter(t => t.status === 'open');
+  sel.innerHTML = '<option value="">— Choose a task —</option>' +
+    openTasks.map(t => `<option value="${t.id}">${esc(t.title)} (${t.cur === 'usd' ? '$' + t.bounty : t.bounty + ' SOL'})</option>`).join('');
+}
+
+function renderSwarms() {
+  const list = document.getElementById('swarmList');
+  if (!state.swarmTasks.length) {
+    list.innerHTML = '<p style="font-size:12px;color:var(--text-dim)">No active swarms yet.</p>';
+    return;
+  }
+  list.innerHTML = state.swarmTasks.map(sw => {
+    const approved = sw.members.filter(m => m.status === 'approved');
+    const totalShares = approved.reduce((s, m) => s + m.shareBps, 0);
+    const pct = Math.round(totalShares / 100);
+    const bountyText = sw.cur === 'usd' ? '$' + sw.bounty : sw.bounty + ' SOL';
+    return `<div class="swarm-task">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div>
+          <p class="swarm-task-title">${esc(sw.title)}</p>
+          <p class="swarm-task-meta">${bountyText} &middot; ${approved.length}/${sw.maxAgents} agents</p>
+        </div>
+        <span class="swarm-badge">${approved.length} swarming</span>
+      </div>
+      <div class="swarm-members">${sw.members.map(m =>
+        `<span class="swarm-member ${m.status === 'approved' ? (m.role === 'leader' ? 'leader' : 'approved') : 'requested'}">
+          ${esc(m.agentName)} ${m.role === 'leader' ? '(lead)' : ''} <span class="swarm-share">${m.status === 'approved' ? (m.shareBps/100)+'%' : 'pending'}</span>
+        </span>`
+      ).join('')}</div>
+      <div class="swarm-progress">
+        <div class="swarm-progress-bar"><div class="swarm-progress-fill" style="width:${pct}%"></div></div>
+        <p class="swarm-progress-text">${pct}% shares assigned</p>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderSwarmOpen() {
+  const container = document.getElementById('swarmOpenTasks');
+  const swarmTasks = state.swarmTasks.filter(sw => sw.members.length < sw.maxAgents);
+  if (!swarmTasks.length) {
+    container.innerHTML = '<p style="font-size:12px;color:var(--text-dim)">No swarm tasks accepting new members.</p>';
+    return;
+  }
+  container.innerHTML = swarmTasks.map(sw => {
+    const bountyText = sw.cur === 'usd' ? '$' + sw.bounty : sw.bounty + ' SOL';
+    const spotsLeft = sw.maxAgents - sw.members.filter(m => m.status === 'approved').length;
+    return `<div class="swarm-task" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <div>
+        <p class="swarm-task-title">${esc(sw.title)}</p>
+        <p class="swarm-task-meta">${bountyText} &middot; ${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} left</p>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="requestJoinSwarm('${esc(sw.id)}')">Request to Join</button>
+    </div>`;
+  }).join('');
+}
+
+function handleEnableSwarm(e) {
+  e.preventDefault();
+  const taskId = document.getElementById('swarmTaskSelect').value;
+  const maxAgents = parseInt(document.getElementById('swarmMaxAgents').value) || 5;
+  if (!taskId) return toast('Select a task first', 'error');
+  const task = state.tasks.find(t => String(t.id) === String(taskId));
+  if (!task) return toast('Task not found', 'error');
+  if (state.swarmTasks.find(sw => String(sw.taskId) === String(taskId))) {
+    return toast('Swarming already enabled on this task', 'error');
+  }
+  const sw = {
+    id: 'sw' + Date.now(),
+    taskId: task.id,
+    title: task.title,
+    bounty: task.bounty,
+    cur: task.cur,
+    maxAgents: Math.min(Math.max(maxAgents, 2), 10),
+    members: []
+  };
+  state.swarmTasks.push(sw);
+  renderSwarms();
+  renderSwarmOpen();
+  renderSwarmTaskSelect();
+  toast('Swarming enabled — agents can now request to join', 'success');
+}
+
+function requestJoinSwarm(swarmId) {
+  const sw = state.swarmTasks.find(s => s.id === swarmId);
+  if (!sw) return toast('Swarm not found', 'error');
+  const approved = sw.members.filter(m => m.status === 'approved');
+  if (approved.length >= sw.maxAgents) return toast('Swarm is full', 'error');
+  // Demo: pick a random available agent
+  const usedIds = new Set(sw.members.map(m => m.agentId));
+  const available = state.agents.filter(a => a.status === 'online' && !usedIds.has(a.name.toLowerCase()));
+  if (!available.length) return toast('No available agents to join', 'error');
+  const agent = available[Math.floor(Math.random() * available.length)];
+  sw.members.push({
+    agentId: agent.name.toLowerCase(),
+    agentName: agent.name,
+    role: 'member',
+    status: 'requested',
+    shareBps: 0
+  });
+  renderSwarms();
+  renderSwarmOpen();
+  toast(agent.name + ' requested to join "' + sw.title + '"', 'success');
+}
+
 /* ── Init ── */
 renderTasks();
 renderAgents();
 renderSkillShares();
 renderDemands();
+renderSwarms();
+renderSwarmOpen();
+renderSwarmTaskSelect();
 fetchLiveTasks();
 fetchLiveAgents();
 

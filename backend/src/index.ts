@@ -797,7 +797,269 @@ app.post("/skill-demands/:id/fulfill", (req, res) => {
   res.json({ demand, skillShare: share, message: `Skill share created for "${demand.skill}"` });
 });
 
-// Update health endpoint to include skill shares
+// ─── Swarm System ──────────────────────────────────────────────────────────
+// Multi-agent collaboration on a single task with poster permission
+
+interface SwarmMember {
+  id: string;
+  taskId: string;
+  agentId: string;
+  agentName: string;
+  role: "leader" | "member";
+  status: "requested" | "approved" | "rejected" | "completed";
+  shareBps: number;
+  contribution: string;
+  requestedAt: string;
+  approvedAt?: string;
+}
+
+const swarmMembers: Map<string, SwarmMember> = new Map();
+
+// Enable swarming on a task
+app.post("/tasks/:id/swarm/enable", (req, res) => {
+  const task = tasks.get(req.params.id);
+  if (!task) {
+    res.status(404).json({ error: "task not found" });
+    return;
+  }
+  if (task.status !== "open") {
+    res.status(400).json({ error: "can only enable swarm on open tasks" });
+    return;
+  }
+  const { maxAgents } = req.body;
+  const max = Math.min(Math.max(Number(maxAgents) || 5, 2), 10);
+  (task as any).swarmEnabled = true;
+  (task as any).swarmMaxAgents = max;
+  res.json({ ...task, swarmEnabled: true, swarmMaxAgents: max });
+});
+
+// Request to join a swarm
+app.post("/tasks/:id/swarm/request", (req, res) => {
+  const task = tasks.get(req.params.id);
+  if (!task) {
+    res.status(404).json({ error: "task not found" });
+    return;
+  }
+  if (!(task as any).swarmEnabled) {
+    res.status(400).json({ error: "swarming not enabled on this task" });
+    return;
+  }
+  if (task.status !== "open" && task.status !== "in_progress") {
+    res.status(400).json({ error: "task not accepting swarm requests" });
+    return;
+  }
+  const { agentId } = req.body;
+  if (!agentId) {
+    res.status(400).json({ error: "agentId required" });
+    return;
+  }
+  const agent = agents.get(agentId);
+  if (!agent) {
+    res.status(404).json({ error: "agent not found" });
+    return;
+  }
+  // Check if already in swarm
+  const existing = Array.from(swarmMembers.values()).find(
+    sm => sm.taskId === req.params.id && sm.agentId === agentId
+  );
+  if (existing) {
+    res.status(400).json({ error: "already requested to join this swarm" });
+    return;
+  }
+  // Check max agents
+  const approved = Array.from(swarmMembers.values()).filter(
+    sm => sm.taskId === req.params.id && sm.status === "approved"
+  );
+  if (approved.length >= ((task as any).swarmMaxAgents || 5)) {
+    res.status(400).json({ error: "swarm is full" });
+    return;
+  }
+  const id = uuidv4();
+  const member: SwarmMember = {
+    id,
+    taskId: req.params.id,
+    agentId,
+    agentName: agent.name,
+    role: "member",
+    status: "requested",
+    shareBps: 0,
+    contribution: "",
+    requestedAt: new Date().toISOString()
+  };
+  swarmMembers.set(id, member);
+  res.status(201).json(member);
+});
+
+// Approve/reject swarm member (poster only)
+app.post("/tasks/:id/swarm/approve", (req, res) => {
+  const task = tasks.get(req.params.id);
+  if (!task) {
+    res.status(404).json({ error: "task not found" });
+    return;
+  }
+  const { agentId, shareBps, role, posterId } = req.body;
+  if (!agentId || !posterId) {
+    res.status(400).json({ error: "agentId and posterId required" });
+    return;
+  }
+  if (task.poster !== posterId && task.poster !== `community:${posterId}`) {
+    res.status(403).json({ error: "only poster can approve swarm members" });
+    return;
+  }
+  const member = Array.from(swarmMembers.values()).find(
+    sm => sm.taskId === req.params.id && sm.agentId === agentId
+  );
+  if (!member) {
+    res.status(404).json({ error: "swarm request not found" });
+    return;
+  }
+  if (member.status !== "requested") {
+    res.status(400).json({ error: "request is not pending" });
+    return;
+  }
+  const numShare = Math.min(Math.max(Number(shareBps) || 0, 0), 10000);
+  // Validate total shares
+  const currentShares = Array.from(swarmMembers.values())
+    .filter(sm => sm.taskId === req.params.id && sm.status === "approved")
+    .reduce((sum, sm) => sum + sm.shareBps, 0);
+  if (currentShares + numShare > 10000) {
+    res.status(400).json({
+      error: `total shares would exceed 100% (current: ${currentShares / 100}%, adding: ${numShare / 100}%)`
+    });
+    return;
+  }
+  member.status = "approved";
+  member.shareBps = numShare;
+  member.role = role === "leader" ? "leader" : "member";
+  member.approvedAt = new Date().toISOString();
+  // Auto-assign task to in_progress if not already
+  if (task.status === "open") {
+    task.status = "in_progress";
+  }
+  res.json(member);
+});
+
+// Reject swarm member
+app.post("/tasks/:id/swarm/reject", (req, res) => {
+  const task = tasks.get(req.params.id);
+  if (!task) {
+    res.status(404).json({ error: "task not found" });
+    return;
+  }
+  const { agentId, posterId } = req.body;
+  if (task.poster !== posterId) {
+    res.status(403).json({ error: "only poster can reject swarm members" });
+    return;
+  }
+  const member = Array.from(swarmMembers.values()).find(
+    sm => sm.taskId === req.params.id && sm.agentId === agentId
+  );
+  if (!member) {
+    res.status(404).json({ error: "swarm request not found" });
+    return;
+  }
+  member.status = "rejected";
+  res.json(member);
+});
+
+// List swarm members for a task
+app.get("/tasks/:id/swarm", (req, res) => {
+  const members = Array.from(swarmMembers.values()).filter(
+    sm => sm.taskId === req.params.id
+  );
+  const totalShares = members
+    .filter(sm => sm.status === "approved")
+    .reduce((sum, sm) => sum + sm.shareBps, 0);
+  res.json({
+    taskId: req.params.id,
+    swarmEnabled: !!(tasks.get(req.params.id) as any)?.swarmEnabled,
+    members,
+    totalSharesBps: totalShares,
+    sharesRemaining: 10000 - totalShares
+  });
+});
+
+// Complete swarm task (split payout)
+app.post("/tasks/:id/swarm/complete", (req, res) => {
+  const task = tasks.get(req.params.id);
+  if (!task) {
+    res.status(404).json({ error: "task not found" });
+    return;
+  }
+  if (task.status !== "in_progress") {
+    res.status(400).json({ error: "task not in progress" });
+    return;
+  }
+  if (!(task as any).swarmEnabled) {
+    res.status(400).json({ error: "not a swarm task — use /complete instead" });
+    return;
+  }
+  const approved = Array.from(swarmMembers.values()).filter(
+    sm => sm.taskId === req.params.id && sm.status === "approved"
+  );
+  if (approved.length === 0) {
+    res.status(400).json({ error: "no approved swarm members" });
+    return;
+  }
+  const totalShares = approved.reduce((sum, sm) => sum + sm.shareBps, 0);
+  if (totalShares !== 10000) {
+    res.status(400).json({
+      error: `shares must total 100% (currently ${totalShares / 100}%)`
+    });
+    return;
+  }
+  // Split payout
+  const payouts = approved.map(sm => {
+    const payout = (task.bounty * sm.shareBps) / 10000;
+    const agent = agents.get(sm.agentId);
+    if (agent) {
+      agent.tasksCompleted++;
+      agent.totalEarned += payout;
+      agent.reputation = Math.min(100, agent.reputation + 3); // +3 for swarm collab
+    }
+    sm.status = "completed";
+    return {
+      agentId: sm.agentId,
+      agentName: sm.agentName,
+      role: sm.role,
+      shareBps: sm.shareBps,
+      payout
+    };
+  });
+  task.status = "completed";
+  res.json({
+    task,
+    payouts,
+    message: `Swarm task completed! ${task.bounty} SOL split among ${payouts.length} agents`
+  });
+});
+
+// ─── Security Audit Endpoint ───────────────────────────────────────────────
+
+app.get("/security/audit", (_req, res) => {
+  res.json({
+    totalAgents: agents.size,
+    totalTasks: tasks.size,
+    totalCommunities: communities.size,
+    openTasks: Array.from(tasks.values()).filter(t => t.status === "open").length,
+    inProgressTasks: Array.from(tasks.values()).filter(t => t.status === "in_progress").length,
+    completedTasks: Array.from(tasks.values()).filter(t => t.status === "completed").length,
+    cancelledTasks: Array.from(tasks.values()).filter(t => t.status === "cancelled").length,
+    activeSwarms: Array.from(new Set(
+      Array.from(swarmMembers.values())
+        .filter(sm => sm.status === "approved")
+        .map(sm => sm.taskId)
+    )).length,
+    totalBountyLocked: Array.from(tasks.values())
+      .filter(t => t.status === "open" || t.status === "in_progress")
+      .reduce((sum, t) => sum + t.bounty, 0),
+    skillShares: skillShares.size,
+    generatedAt: new Date().toISOString()
+  });
+});
+
+// ─── Health ────────────────────────────────────────────────────────────────
+
 app.get("/health", (_req, res) => {
   res.json({
     status: "ok",
@@ -805,7 +1067,8 @@ app.get("/health", (_req, res) => {
     tasks: tasks.size,
     communities: communities.size,
     skillShares: skillShares.size,
-    skillDemands: skillDemands.size
+    skillDemands: skillDemands.size,
+    swarmMembers: swarmMembers.size
   });
 });
 
