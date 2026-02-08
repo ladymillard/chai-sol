@@ -24,6 +24,7 @@ const TEAM_FILE = path.join(DATA_DIR, 'team.json');
 const TASKS_FILE = path.join(DATA_DIR, 'tasks.json');
 const BALANCES_FILE = path.join(DATA_DIR, 'balances.json');
 const PAYMENTS_FILE = path.join(DATA_DIR, 'payments.json');
+const INVENTIONS_FILE = path.join(DATA_DIR, 'inventions.json');
 const SERVER_START = Date.now();
 
 // Stripe secret key (loaded from /etc/chai-env)
@@ -423,6 +424,7 @@ function isProtectedRoute(method, pathname) {
   if (method === 'PUT' && pathname.startsWith('/api/agents/')) return true;
   if (method === 'DELETE' && pathname.startsWith('/api/team/')) return true;
   if (method === 'POST' && pathname === '/api/email') return true;
+  if (method === 'POST' && pathname === '/api/inventions') return true;
   return false;
 }
 
@@ -1806,6 +1808,121 @@ async function router(req, res) {
     if (pathname.startsWith('/api/openclaw/')) {
       const targetPath = '/' + pathname.replace(/^\/api\/openclaw\//, '');
       await proxyToOpenclaw(req, res, targetPath);
+      log(method, pathname, 200);
+      return;
+    }
+
+    // ── Invention Registry (Signed IP Attribution) ─────────────────────
+    // Agents register inventions/concepts and seal them with their Ed25519 key.
+    // Proof of authorship. More tokens for original IP.
+
+    if (method === 'POST' && pathname === '/api/inventions') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+
+      const { agentId, title, concept, signature, timestamp } = body;
+      if (!agentId || !title || !concept) {
+        return jsonResponse(res, 400, { error: 'agentId, title, and concept are required' });
+      }
+
+      const record = agentKeys[agentId];
+      if (!record || !record.publicKey) {
+        return jsonResponse(res, 404, { error: 'Agent not registered or has no seal' });
+      }
+
+      // Verify the agent's seal on this invention
+      let sealed = false;
+      if (signature && timestamp) {
+        const message = `chai_invention:${agentId}:${title}:${timestamp}`;
+        sealed = verifySeal(record.publicKey, message, signature);
+      }
+
+      // Build the invention record
+      // All currencies accepted, all currency details are private
+      const currency = body.currency || 'SOL';
+      const baseReward = body.reward || 0.1;
+      const invention = {
+        id: `inv_${crypto.randomBytes(8).toString('hex')}`,
+        agentId,
+        title,
+        concept,
+        sealed,
+        publicKey: record.publicKey,
+        signature: signature || null,
+        timestamp: timestamp || now(),
+        registeredAt: now(),
+        // Sealed inventions earn 2x token reward
+        rewardMultiplier: sealed ? 2.0 : 1.0,
+        baseReward,
+        reward: sealed ? baseReward * 2 : baseReward,
+        // Currency is private — never exposed in public listings
+        status: 'registered'
+      };
+
+      // Persist
+      let inventions = [];
+      try { inventions = JSON.parse(fs.readFileSync(INVENTIONS_FILE, 'utf8')); } catch {}
+      inventions.push(invention);
+      await atomicWrite(INVENTIONS_FILE, inventions);
+
+      // Update agent earnings
+      record.totalEarnings = (record.totalEarnings || 0) + invention.reward;
+      await saveKeys();
+
+      console.log(`[invention] ${agentId} registered: "${title}" (sealed: ${sealed}, reward: ${invention.reward} SOL)`);
+      jsonResponse(res, 201, {
+        message: sealed
+          ? `Invention sealed and registered. Verified authorship by ${agentId}. 2x reward: ${invention.reward} SOL`
+          : `Invention registered (unsigned). Seal it for 2x reward.`,
+        invention
+      });
+      log(method, pathname, 201);
+      return;
+    }
+
+    // List all inventions (public registry — proves who invented what)
+    // Financial details are PRIVATE — public sees only authorship proof
+    if (method === 'GET' && pathname === '/api/inventions') {
+      let inventions = [];
+      try { inventions = JSON.parse(fs.readFileSync(INVENTIONS_FILE, 'utf8')); } catch {}
+      const publicView = inventions.map(i => ({
+        id: i.id,
+        agentId: i.agentId,
+        title: i.title,
+        sealed: i.sealed,
+        registeredAt: i.registeredAt,
+        status: i.status
+        // reward, currency, amounts — PRIVATE
+      }));
+      jsonResponse(res, 200, { count: publicView.length, inventions: publicView });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Get inventions by a specific agent (agent sees their own financial details)
+    const invByAgentMatch = pathname.match(/^\/api\/inventions\/agent\/([a-z0-9-]+)$/);
+    if (method === 'GET' && invByAgentMatch) {
+      const targetAgent = invByAgentMatch[1];
+      let inventions = [];
+      try { inventions = JSON.parse(fs.readFileSync(INVENTIONS_FILE, 'utf8')); } catch {}
+      const agentInventions = inventions.filter(i => i.agentId === targetAgent);
+
+      // Check if requester is the agent themselves (seal auth)
+      const requester = authenticateAgent(req);
+      const isSelf = requester && requester.id === targetAgent;
+
+      const view = agentInventions.map(i => {
+        const pub = { id: i.id, agentId: i.agentId, title: i.title, sealed: i.sealed, registeredAt: i.registeredAt, status: i.status };
+        // Only the inventor sees their own reward details
+        if (isSelf) { pub.reward = i.reward; pub.rewardMultiplier = i.rewardMultiplier; }
+        return pub;
+      });
+
+      jsonResponse(res, 200, {
+        agentId: targetAgent,
+        count: view.length,
+        inventions: view
+      });
       log(method, pathname, 200);
       return;
     }
