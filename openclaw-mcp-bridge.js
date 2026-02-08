@@ -57,6 +57,16 @@ const TEAMS = {
       { role: 'account-exec', name: 'Account Executive', skills: ['outbound', 'demos', 'closing', 'crm'] },
       { role: 'solutions-engineer', name: 'Solutions Engineer', skills: ['technical-demos', 'integration-support', 'onboarding'] }
     ]
+  },
+  legal: {
+    name: 'Legal Review',
+    description: 'Silent review — smart contract auditing, compliance verification, and document architecture',
+    defaultModel: 'claude-opus-4-6',
+    roles: [
+      { role: 'lead-counsel', name: 'Lead Counsel', skills: ['contract-review', 'smart-contract-audit', 'risk-assessment', 'regulatory-patterns'] },
+      { role: 'compliance-auditor', name: 'Compliance Auditor', skills: ['compliance-verification', 'security-audit', 'escrow-review', 'access-control'] },
+      { role: 'contract-architect', name: 'Contract Architect', skills: ['document-templates', 'agreement-structure', 'terms-drafting', 'ip-protection'] }
+    ]
   }
 };
 
@@ -142,7 +152,7 @@ const TOOLS = [
         team: {
           type: 'string',
           description: 'The team to spawn the agent for',
-          enum: ['design', 'marketing', 'sales']
+          enum: ['design', 'marketing', 'sales', 'legal']
         },
         role: {
           type: 'string',
@@ -169,7 +179,7 @@ const TOOLS = [
         team: {
           type: 'string',
           description: 'Filter by team name (optional)',
-          enum: ['design', 'marketing', 'sales']
+          enum: ['design', 'marketing', 'sales', 'legal']
         }
       }
     }
@@ -223,7 +233,7 @@ const TOOLS = [
         team: {
           type: 'string',
           description: 'The team to broadcast to',
-          enum: ['design', 'marketing', 'sales']
+          enum: ['design', 'marketing', 'sales', 'legal']
         },
         message: {
           type: 'string',
