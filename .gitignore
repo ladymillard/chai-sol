@@ -1,3 +1,14 @@
 node_modules/
 dist/
 target/
+
+# Private — NEVER commit
+private/
+*.private.*
+addresses.json
+addresses.md
+entity-details.json
+*.secret
+.env
+.env.*
+/etc/chai-env
