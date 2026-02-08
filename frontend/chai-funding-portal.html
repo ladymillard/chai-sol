@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ChAI - Fund Your Agents</title>
+<script src="https://js.stripe.com/v3/" crossorigin="anonymous"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -921,7 +922,7 @@ html{scroll-behavior:smooth}
           <span class="pay-card-arrow">&rarr;</span>
         </a>
 
-        <div class="pay-card" onclick="showToast('Stripe integration coming soon. Use PayPal for now.')">
+        <div class="pay-card" onclick="showStripeCardForm()">
           <div class="pay-card-icon icon-card">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8888ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
           </div>
@@ -930,6 +931,18 @@ html{scroll-behavior:smooth}
             <div class="pay-card-desc">Visa, Mastercard, Amex via Stripe</div>
           </div>
           <span class="pay-card-arrow">&rarr;</span>
+        </div>
+
+        <!-- Stripe Card Form (hidden by default) -->
+        <div id="stripe-card-section" style="display:none; margin-top:4px; padding:18px; border:1px solid var(--card-border); border-radius:var(--radius-sm); background:rgba(0,0,0,0.2);">
+          <div style="margin-bottom:12px;">
+            <div style="font-size:12px;color:var(--text-sec);text-transform:uppercase;letter-spacing:0.8px;font-weight:500;margin-bottom:8px;">Card Details</div>
+            <div id="card-element" style="background:#fff;border:1px solid var(--card-border);border-radius:var(--radius-xs);padding:12px;"></div>
+            <p id="card-errors" style="color:var(--danger);font-size:12px;margin-top:6px;"></p>
+          </div>
+          <button class="pay-card" id="stripeSubmitBtn" onclick="handleStripeDeposit()" style="justify-content:center;border-color:var(--gold);background:var(--gold-dim);cursor:pointer;">
+            <span style="font-size:14px;font-weight:600;color:var(--gold);">Pay with Card</span>
+          </button>
         </div>
 
         <div class="pay-card" onclick="showToast('Bank transfer details will be emailed to you. Contact hello@mycan.website')">
@@ -1381,6 +1394,90 @@ const revealObs = new IntersectionObserver((entries) => {
   entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); revealObs.unobserve(e.target); } });
 }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
 document.querySelectorAll('.reveal, .stagger').forEach(el => revealObs.observe(el));
+
+/* ── Stripe Card Form ── */
+let stripe, cardElement, stripeReady = false;
+
+async function initStripe() {
+  if (stripeReady) return;
+  try {
+    const stripeKeyRes = await fetch('/api/config/stripe-key').catch(() => null);
+    const stripeKey = stripeKeyRes ? (await stripeKeyRes.json().catch(() => ({}))).publishableKey : null;
+    if (!stripeKey) throw new Error('Stripe not configured');
+    stripe = Stripe(stripeKey);
+    const elements = stripe.elements();
+    cardElement = elements.create('card', {
+      style: {
+        base: { fontSize: '14px', color: '#1a1a2e', '::placeholder': { color: '#9ca3af' }, fontFamily: 'Inter, sans-serif', iconColor: '#029691' },
+        invalid: { color: '#e05252', iconColor: '#e05252' }
+      }
+    });
+    cardElement.mount('#card-element');
+    cardElement.on('change', e => {
+      document.getElementById('card-errors').textContent = e.error ? e.error.message : '';
+    });
+    stripeReady = true;
+  } catch (err) {
+    console.warn('Stripe init failed:', err.message);
+    showToast('Could not load Stripe. Please try again later.');
+  }
+}
+
+function showStripeCardForm() {
+  const section = document.getElementById('stripe-card-section');
+  if (section.style.display === 'none') {
+    section.style.display = 'block';
+    initStripe();
+  } else {
+    section.style.display = 'none';
+  }
+}
+
+function getSelectedAmount() {
+  const customWrapper = document.getElementById('customAmountWrapper');
+  if (customWrapper.classList.contains('visible')) {
+    return parseFloat(document.getElementById('customAmountInput').value) || 0;
+  }
+  const selected = document.querySelector('#amountGrid .amount-btn.selected');
+  if (selected && selected.dataset.amount !== 'custom') {
+    return parseFloat(selected.dataset.amount);
+  }
+  return 0;
+}
+
+async function handleStripeDeposit() {
+  const amount = getSelectedAmount();
+  if (!amount || amount < 1) return showToast('Please select an amount of at least $1.00');
+  if (!stripe || !cardElement) return showToast('Stripe is not ready. Please wait a moment and try again.');
+
+  const btn = document.getElementById('stripeSubmitBtn');
+  btn.disabled = true;
+  btn.querySelector('span').textContent = 'Processing...';
+
+  try {
+    const { token, error } = await stripe.createToken(cardElement);
+    if (error) throw new Error(error.message);
+
+    const res = await fetch('/api/payments/deposit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: amount, currency: 'usd', stripeToken: token.id })
+    }).catch(() => null);
+
+    if (res && !res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || 'Payment failed');
+    }
+
+    showToast('$' + amount.toFixed(2) + ' deposited successfully!');
+    document.getElementById('stripe-card-section').style.display = 'none';
+  } catch (err) {
+    showToast('Payment failed: ' + (err.message || 'Please try again'));
+  }
+
+  btn.disabled = false;
+  btn.querySelector('span').textContent = 'Pay with Card';
+}
 </script>
 </body>
 </html>

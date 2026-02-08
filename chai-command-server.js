@@ -933,7 +933,7 @@ async function router(req, res) {
     // ── CSRF Validation for POST/PUT/DELETE (V-009) ─────────────────────
     if (method === 'POST' || method === 'PUT' || method === 'DELETE') {
       // Exempt the login endpoint and auth/verify from CSRF (login cannot have a prior token)
-      const csrfExempt = ['/api/auth/login', '/api/auth/verify'];
+      const csrfExempt = ['/api/auth/login', '/api/auth/verify', '/api/webhooks/stripe'];
       if (!csrfExempt.includes(pathname)) {
         const csrfToken = req.headers['x-csrf-token'];
         if (!validateCsrfToken(csrfToken)) {
@@ -1259,6 +1259,57 @@ async function router(req, res) {
       }
     }
 
+    // Stripe webhook handler
+    if (method === 'POST' && pathname === '/api/webhooks/stripe') {
+      let rawBody = '';
+      req.on('data', chunk => rawBody += chunk);
+      await new Promise(r => req.on('end', r));
+
+      const sig = req.headers['stripe-signature'];
+      const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
+
+      // Verify signature if secret is configured
+      if (webhookSecret && sig) {
+        const parts = sig.split(',');
+        const timestamp = parts.find(p => p.startsWith('t='))?.split('=')[1];
+        const v1Sig = parts.find(p => p.startsWith('v1='))?.split('=')[1];
+        if (timestamp && v1Sig) {
+          const payload = `${timestamp}.${rawBody}`;
+          const expected = crypto.createHmac('sha256', webhookSecret).update(payload).digest('hex');
+          if (expected !== v1Sig) {
+            console.log('[stripe] Webhook signature verification failed');
+            return jsonResponse(res, 400, { error: 'Invalid signature' });
+          }
+        }
+      }
+
+      try {
+        const event = JSON.parse(rawBody);
+        console.log(`[stripe] Webhook event: ${event.type}`);
+
+        switch (event.type) {
+          case 'charge.succeeded':
+            console.log(`[stripe] Charge succeeded: ${event.data.object.id} - $${(event.data.object.amount / 100).toFixed(2)}`);
+            break;
+          case 'charge.failed':
+            console.log(`[stripe] Charge failed: ${event.data.object.id} - ${event.data.object.failure_message}`);
+            break;
+          case 'charge.refunded':
+            console.log(`[stripe] Charge refunded: ${event.data.object.id}`);
+            break;
+          default:
+            console.log(`[stripe] Unhandled event type: ${event.type}`);
+        }
+
+        jsonResponse(res, 200, { received: true });
+      } catch (err) {
+        console.error('[stripe] Webhook parse error:', err.message);
+        jsonResponse(res, 400, { error: 'Invalid payload' });
+      }
+      log(method, pathname, 200);
+      return;
+    }
+
     // Get balance
     if (method === 'GET' && pathname === '/api/payments/balance') {
       const userId = 'default';
@@ -1273,6 +1324,155 @@ async function router(req, res) {
     if (method === 'GET' && pathname === '/api/payments/history') {
       const payments = await loadPayments();
       jsonResponse(res, 200, { success: true, payments: payments.slice(-50) });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // ── Marketing: Referral System ──────────────────────────────────────────────
+
+    if (method === 'POST' && pathname === '/api/marketing/referrals/create') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const { creatorId, bonusPercent } = body;
+      if (!creatorId) return jsonResponse(res, 400, { error: 'creatorId required' });
+
+      const code = 'chai_' + crypto.randomBytes(4).toString('hex');
+      const referrals = await readJsonFile(path.join(DATA_DIR, 'referrals.json'), []);
+      referrals.push({
+        code,
+        creatorId,
+        bonusPercent: bonusPercent || 10,
+        conversions: 0,
+        totalRevenue: 0,
+        createdAt: now()
+      });
+      await atomicWrite(path.join(DATA_DIR, 'referrals.json'), referrals);
+      jsonResponse(res, 201, { success: true, code, message: `Share this code: ${code}` });
+      log(method, pathname, 201);
+      return;
+    }
+
+    if (method === 'POST' && pathname === '/api/marketing/referrals/convert') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const { code, userId, depositAmount } = body;
+      if (!code || !userId) return jsonResponse(res, 400, { error: 'code and userId required' });
+
+      const referrals = await readJsonFile(path.join(DATA_DIR, 'referrals.json'), []);
+      const ref = referrals.find(r => r.code === code);
+      if (!ref) return jsonResponse(res, 404, { error: 'Referral code not found' });
+
+      ref.conversions++;
+      ref.totalRevenue += depositAmount || 0;
+      await atomicWrite(path.join(DATA_DIR, 'referrals.json'), referrals);
+
+      const bonus = (depositAmount || 0) * (ref.bonusPercent / 100);
+      jsonResponse(res, 200, { success: true, referral: ref, bonus });
+      log(method, pathname, 200);
+      return;
+    }
+
+    if (method === 'GET' && pathname === '/api/marketing/referrals') {
+      const referrals = await readJsonFile(path.join(DATA_DIR, 'referrals.json'), []);
+      jsonResponse(res, 200, { success: true, referrals });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // ── Marketing: Campaign Tracking ────────────────────────────────────────────
+
+    if (method === 'POST' && pathname === '/api/marketing/campaigns') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const { name, type, channel, budget, targetAudience, content } = body;
+      if (!name || !type) return jsonResponse(res, 400, { error: 'name and type required' });
+
+      const campaigns = await readJsonFile(path.join(DATA_DIR, 'campaigns.json'), []);
+      const campaign = {
+        id: 'camp_' + crypto.randomBytes(4).toString('hex'),
+        name,
+        type,
+        channel: channel || 'organic',
+        budget: budget || 0,
+        targetAudience: targetAudience || 'general',
+        content: content || '',
+        status: 'active',
+        impressions: 0,
+        clicks: 0,
+        conversions: 0,
+        spend: 0,
+        createdAt: now()
+      };
+      campaigns.push(campaign);
+      await atomicWrite(path.join(DATA_DIR, 'campaigns.json'), campaigns);
+      jsonResponse(res, 201, { success: true, campaign });
+      log(method, pathname, 201);
+      return;
+    }
+
+    if (method === 'GET' && pathname === '/api/marketing/campaigns') {
+      const campaigns = await readJsonFile(path.join(DATA_DIR, 'campaigns.json'), []);
+      jsonResponse(res, 200, { success: true, campaigns });
+      log(method, pathname, 200);
+      return;
+    }
+
+    const campaignUpdateMatch = pathname.match(/^\/api\/marketing\/campaigns\/([a-z0-9_]+)$/);
+    if (method === 'PUT' && campaignUpdateMatch) {
+      const campId = campaignUpdateMatch[1];
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+
+      const campaigns = await readJsonFile(path.join(DATA_DIR, 'campaigns.json'), []);
+      const camp = campaigns.find(c => c.id === campId);
+      if (!camp) return jsonResponse(res, 404, { error: 'Campaign not found' });
+
+      for (const key of ['name', 'status', 'budget', 'impressions', 'clicks', 'conversions', 'spend']) {
+        if (body[key] !== undefined) camp[key] = body[key];
+      }
+      await atomicWrite(path.join(DATA_DIR, 'campaigns.json'), campaigns);
+      jsonResponse(res, 200, { success: true, campaign: camp });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // ── Marketing: Analytics ────────────────────────────────────────────────────
+
+    if (method === 'GET' && pathname === '/api/marketing/analytics') {
+      const campaigns = await readJsonFile(path.join(DATA_DIR, 'campaigns.json'), []);
+      const referrals = await readJsonFile(path.join(DATA_DIR, 'referrals.json'), []);
+      const payments = await readJsonFile(PAYMENTS_FILE, []);
+      const tasks = await readJsonFile(TASKS_FILE, []);
+
+      const totalReferralRevenue = referrals.reduce((sum, r) => sum + r.totalRevenue, 0);
+      const totalReferralConversions = referrals.reduce((sum, r) => sum + r.conversions, 0);
+      const totalCampaignSpend = campaigns.reduce((sum, c) => sum + c.spend, 0);
+      const totalCampaignConversions = campaigns.reduce((sum, c) => sum + c.conversions, 0);
+      const activeCampaigns = campaigns.filter(c => c.status === 'active').length;
+
+      jsonResponse(res, 200, {
+        success: true,
+        analytics: {
+          referrals: {
+            totalCodes: referrals.length,
+            totalConversions: totalReferralConversions,
+            totalRevenue: totalReferralRevenue
+          },
+          campaigns: {
+            total: campaigns.length,
+            active: activeCampaigns,
+            totalSpend: totalCampaignSpend,
+            totalConversions: totalCampaignConversions,
+            roas: totalCampaignSpend > 0 ? (totalReferralRevenue / totalCampaignSpend).toFixed(2) : 'N/A'
+          },
+          platform: {
+            totalTasks: tasks.length,
+            openTasks: tasks.filter(t => t.status === 'open').length,
+            completedTasks: tasks.filter(t => t.status === 'completed' || t.status === 'verified').length,
+            totalPayments: payments.length
+          }
+        }
+      });
       log(method, pathname, 200);
       return;
     }
@@ -1318,6 +1518,7 @@ async function router(req, res) {
         currency: taskCur,
         deadline: deadline || null,
         skills: skills || [],
+        bids: [],
         status: 'open',
         postedBy: userId,
         claimedBy: null,
@@ -1414,6 +1615,128 @@ async function router(req, res) {
       jsonResponse(res, 200, { success: true, task });
       log(method, pathname, 200);
       console.log(`[task] Completed: "${task.title}" - paid ${task.bounty} ${task.currency} to ${task.claimedBy}`);
+      return;
+    }
+
+    // Submit bid on a task
+    const bidMatch = pathname.match(/^\/api\/tasks\/([a-z0-9_]+)\/bid$/);
+    if (method === 'POST' && bidMatch) {
+      const taskId = bidMatch[1];
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+
+      const { agentId, amount, approach, estimatedHours } = body;
+      if (!agentId || !approach) return jsonResponse(res, 400, { error: 'agentId and approach required' });
+
+      await withLock('tasks', async () => {
+        const tasks = await readJsonFile(TASKS_FILE, []);
+        const task = tasks.find(t => t.id === taskId);
+        if (!task) return jsonResponse(res, 404, { error: 'Task not found' });
+        if (task.status !== 'open') return jsonResponse(res, 400, { error: 'Task is not open for bids' });
+
+        if (!task.bids) task.bids = [];
+
+        // Check if agent already bid
+        if (task.bids.find(b => b.agentId === agentId)) {
+          return jsonResponse(res, 409, { error: 'Agent already bid on this task' });
+        }
+
+        const bid = {
+          id: 'bid_' + crypto.randomBytes(4).toString('hex'),
+          agentId,
+          agentName: (AGENT_MAP[agentId] || {}).name || agentId,
+          amount: amount || task.bounty,
+          approach,
+          estimatedHours: estimatedHours || null,
+          createdAt: now()
+        };
+        task.bids.push(bid);
+
+        await atomicWrite(TASKS_FILE, tasks);
+        jsonResponse(res, 201, { success: true, bid });
+      });
+      log(method, pathname, 201);
+      return;
+    }
+
+    // Assign a bid winner
+    const assignMatch = pathname.match(/^\/api\/tasks\/([a-z0-9_]+)\/assign$/);
+    if (method === 'POST' && assignMatch) {
+      const taskId = assignMatch[1];
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+
+      const { agentId } = body;
+      if (!agentId) return jsonResponse(res, 400, { error: 'agentId required' });
+
+      await withLock('tasks', async () => {
+        const tasks = await readJsonFile(TASKS_FILE, []);
+        const task = tasks.find(t => t.id === taskId);
+        if (!task) return jsonResponse(res, 404, { error: 'Task not found' });
+        if (task.status !== 'open') return jsonResponse(res, 400, { error: 'Task is not open' });
+
+        task.status = 'assigned';
+        task.assignedTo = agentId;
+        task.assignedAt = now();
+
+        await atomicWrite(TASKS_FILE, tasks);
+        jsonResponse(res, 200, { success: true, task });
+      });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Verify completed task (releases escrow)
+    const verifyMatch = pathname.match(/^\/api\/tasks\/([a-z0-9_]+)\/verify$/);
+    if (method === 'POST' && verifyMatch) {
+      const taskId = verifyMatch[1];
+
+      await withLock('tasks', async () => {
+        const tasks = await readJsonFile(TASKS_FILE, []);
+        const task = tasks.find(t => t.id === taskId);
+        if (!task) return jsonResponse(res, 404, { error: 'Task not found' });
+        if (task.status !== 'completed') return jsonResponse(res, 400, { error: 'Task must be completed before verification' });
+
+        task.status = 'verified';
+        task.verifiedAt = now();
+
+        // Release escrow to agent
+        const balances = await readJsonFile(BALANCES_FILE, {});
+        const userId = task.postedBy || 'default';
+        if (balances[userId]) {
+          const escrowField = task.currency === 'sol' ? 'escrow_sol' : 'escrow_usd';
+          balances[userId][escrowField] = Math.max(0, (balances[userId][escrowField] || 0) - task.bounty);
+        }
+        await atomicWrite(BALANCES_FILE, balances);
+
+        // Credit agent earnings
+        const agentId = task.claimedBy || task.assignedTo;
+        if (agentId && agentKeys[agentId]) {
+          agentKeys[agentId].totalEarnings = (agentKeys[agentId].totalEarnings || 0) + task.bounty;
+          agentKeys[agentId].tasksCompleted = (agentKeys[agentId].tasksCompleted || 0) + 1;
+          agentKeys[agentId].trustScore = Math.min(100, (agentKeys[agentId].trustScore || 0) + 2);
+          await saveKeys();
+        }
+
+        // Record payment
+        await appendPayment({
+          id: 'pay_' + crypto.randomBytes(8).toString('hex'),
+          type: 'escrow_verified',
+          taskId,
+          agentId,
+          currency: task.currency || 'usd',
+          amount: task.bounty,
+          timestamp: now()
+        });
+
+        await atomicWrite(TASKS_FILE, tasks);
+        jsonResponse(res, 200, {
+          success: true,
+          task,
+          message: `Escrow verified: ${task.bounty} ${(task.currency || 'usd').toUpperCase()} released to ${agentId}`
+        });
+      });
+      log(method, pathname, 200);
       return;
     }
 

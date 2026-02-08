@@ -189,6 +189,64 @@ const TOOLS = [
       properties: {},
       required: []
     }
+  },
+  {
+    name: 'create_referral',
+    description: 'Create a referral code for tracking user acquisition. Marlowe uses this to set up referral programs that generate revenue through user growth.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        creator_id: {
+          type: 'string',
+          description: 'The agent or user ID creating the referral code'
+        },
+        bonus_percent: {
+          type: 'number',
+          description: 'Bonus percentage for referrer on each conversion (default: 10)'
+        }
+      },
+      required: ['creator_id']
+    }
+  },
+  {
+    name: 'create_campaign',
+    description: 'Create a marketing campaign to track advertising, content, or outreach efforts. Marlowe uses this to manage and measure marketing initiatives.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          description: 'Campaign name'
+        },
+        type: {
+          type: 'string',
+          description: 'Campaign type',
+          enum: ['email', 'social', 'paid_ads', 'content', 'referral', 'partnership']
+        },
+        channel: {
+          type: 'string',
+          description: 'Distribution channel (twitter, discord, google, email, blog)'
+        },
+        budget: {
+          type: 'number',
+          description: 'Campaign budget in USD'
+        },
+        content: {
+          type: 'string',
+          description: 'Campaign content or messaging'
+        }
+      },
+      required: ['name', 'type']
+    }
+  },
+  {
+    name: 'marketing_analytics',
+    description: 'Get comprehensive marketing analytics including referral performance, campaign metrics, and platform growth stats. Marlowe uses this to measure ROI and optimize marketing spend.',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+      required: []
+    }
   }
 ];
 
@@ -311,6 +369,36 @@ async function executeTool(name, args) {
               `Active Sessions: ${stats.totalSessions}\n` +
               `Agents Online: ${stats.totalAgents || 5}`
           }]
+        };
+      }
+
+      case 'create_referral': {
+        const result = await apiRequest('POST', '/api/marketing/referrals/create', {
+          creatorId: args.creator_id,
+          bonusPercent: args.bonus_percent || 10
+        });
+        return {
+          content: [{ type: 'text', text: `Referral code created: ${JSON.stringify(result, null, 2)}` }]
+        };
+      }
+
+      case 'create_campaign': {
+        const result = await apiRequest('POST', '/api/marketing/campaigns', {
+          name: args.name,
+          type: args.type,
+          channel: args.channel,
+          budget: args.budget,
+          content: args.content
+        });
+        return {
+          content: [{ type: 'text', text: `Campaign created: ${JSON.stringify(result, null, 2)}` }]
+        };
+      }
+
+      case 'marketing_analytics': {
+        const result = await apiRequest('GET', '/api/marketing/analytics');
+        return {
+          content: [{ type: 'text', text: `Marketing Analytics:\n${JSON.stringify(result, null, 2)}` }]
         };
       }
 

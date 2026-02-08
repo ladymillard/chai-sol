@@ -478,7 +478,7 @@ let stripe, cardElement;
 try {
   // Stripe key loaded from backend to avoid source exposure
   const stripeKeyRes = await fetch('/api/config/stripe-key').catch(() => null);
-  const stripeKey = stripeKeyRes ? (await stripeKeyRes.json().catch(() => ({}))).key : null;
+  const stripeKey = stripeKeyRes ? (await stripeKeyRes.json().catch(() => ({}))).publishableKey : null;
   if (!stripeKey) throw new Error('Stripe not configured');
   stripe = Stripe(stripeKey);
   const elements = stripe.elements();
