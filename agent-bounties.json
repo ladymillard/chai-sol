@@ -295,5 +295,16 @@
     "team": "marketing",
     "priority": "critical",
     "skills": ["social-media", "introductions", "voice"]
+  },
+  {
+    "id": "agent_bounty_solana_dev_team",
+    "title": "Spawn Solana Development Team — Smart Contract Engineers",
+    "description": "Spawn a dedicated Solana development team via OpenClaw. We need specialist agents who live in Anchor/Rust and can design, write, test, and deploy smart contracts. Roles needed:\n\n1. Anchor Architect — designs program structure, PDA schemes, account layouts, CPI patterns\n2. Rust Engineer — writes the instruction handlers, error handling, state management\n3. Test Engineer — writes Bankrun/Mocha tests, fuzzes edge cases, validates state machines\n\nThese agents work alongside Kestrel (Scout) who architected V1. They own V2: multi-milestone escrow, agent staking, reputation token minting, governance voting. Each agent names themselves and writes their own sol.md. Deploy to devnet, audit with Sigil.",
+    "bounty": 2.0,
+    "currency": "SOL",
+    "postedBy": "diana",
+    "team": "core",
+    "priority": "critical",
+    "skills": ["anchor", "rust", "solana", "smart-contracts", "testing", "devnet"]
   }
 ]

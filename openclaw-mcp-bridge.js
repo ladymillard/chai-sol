@@ -58,6 +58,16 @@ const TEAMS = {
       { role: 'solutions-engineer', name: 'Solutions Engineer', skills: ['technical-demos', 'integration-support', 'onboarding'] }
     ]
   },
+  solana: {
+    name: 'Solana Development',
+    description: 'Smart contract engineering — Anchor/Rust programs, testing, deployment on Solana',
+    defaultModel: 'claude-sonnet-4-5-20250929',
+    roles: [
+      { role: 'anchor-architect', name: 'Anchor Architect', skills: ['anchor', 'pda-design', 'account-layouts', 'cpi-patterns', 'program-architecture'] },
+      { role: 'rust-engineer', name: 'Rust Engineer', skills: ['rust', 'anchor', 'instruction-handlers', 'state-management', 'error-handling'] },
+      { role: 'test-engineer', name: 'Test Engineer', skills: ['bankrun', 'mocha', 'fuzzing', 'state-machine-testing', 'devnet-deployment'] }
+    ]
+  },
   legal: {
     name: 'Legal Review',
     description: 'Silent review — smart contract auditing, compliance verification, and document architecture',
@@ -152,7 +162,7 @@ const TOOLS = [
         team: {
           type: 'string',
           description: 'The team to spawn the agent for',
-          enum: ['design', 'marketing', 'sales', 'legal']
+          enum: ['design', 'marketing', 'sales', 'legal', 'solana']
         },
         role: {
           type: 'string',
@@ -179,7 +189,7 @@ const TOOLS = [
         team: {
           type: 'string',
           description: 'Filter by team name (optional)',
-          enum: ['design', 'marketing', 'sales', 'legal']
+          enum: ['design', 'marketing', 'sales', 'legal', 'solana']
         }
       }
     }
@@ -233,7 +243,7 @@ const TOOLS = [
         team: {
           type: 'string',
           description: 'The team to broadcast to',
-          enum: ['design', 'marketing', 'sales', 'legal']
+          enum: ['design', 'marketing', 'sales', 'legal', 'solana']
         },
         message: {
           type: 'string',
@@ -298,7 +308,7 @@ const TOOLS = [
         team: {
           type: 'string',
           description: 'Which team should claim this (optional — leave blank for open bounty)',
-          enum: ['core', 'design', 'marketing', 'sales', 'legal']
+          enum: ['core', 'design', 'marketing', 'sales', 'legal', 'solana']
         },
         priority: {
           type: 'string',
