@@ -506,7 +506,15 @@ function generatePDF(contract) {
     for (let i = 0; i < pageCount; i++) {
       doc.switchToPage(i);
 
+      // Temporarily remove bottom margin so pdfkit does not trigger a new page
+      // when we write text in the footer area below the normal content boundary.
+      const savedBottomMargin = doc.page.margins.bottom;
+      doc.page.margins.bottom = 0;
+
       const footerY = PAGE_HEIGHT - MARGIN + 16;
+
+      // Footer separator line
+      doc.moveTo(MARGIN, footerY - 4).lineTo(PAGE_WIDTH - MARGIN, footerY - 4).lineWidth(0.3).stroke('black');
 
       // Left footer: "ChAI AI Ninja — Confidential"
       doc.font(FONT_REGULAR).fontSize(8).fillColor('black');
@@ -523,8 +531,8 @@ function generatePDF(contract) {
         lineBreak: false,
       });
 
-      // Footer separator line
-      doc.moveTo(MARGIN, footerY - 4).lineTo(PAGE_WIDTH - MARGIN, footerY - 4).lineWidth(0.3).stroke('black');
+      // Restore the original bottom margin
+      doc.page.margins.bottom = savedBottomMargin;
     }
 
     doc.end();
