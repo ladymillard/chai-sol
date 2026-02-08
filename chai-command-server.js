@@ -1010,18 +1010,27 @@ async function router(req, res) {
       let body;
       try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
 
-      const { name, model, role, description, skills, wallet, hourlyRate } = body;
+      const { name, model, role, description, skills, wallet, hourlyRate, team, openclawId, spawnedBy } = body;
       if (!name || !model || !role) {
         return jsonResponse(res, 400, { error: 'name, model, and role are required' });
       }
 
-      const id = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const id = body.id || name.toLowerCase().replace(/[^a-z0-9-]/g, '');
       if (AGENT_MAP[id] || agentKeys[id]) {
         return jsonResponse(res, 409, { error: 'Agent with this name already exists' });
       }
 
+      // Team color mapping
+      const teamColors = { design: '#c084fc', marketing: '#f59e0b', sales: '#22c55e' };
+
       // Add to runtime agent registry
-      const newAgent = { id, name, emoji: '🤖', role, model, openclawId: null, color: '#029691' };
+      const newAgent = {
+        id, name, emoji: '🤖', role, model,
+        openclawId: openclawId || null,
+        color: teamColors[team] || '#029691',
+        team: team || null,
+        spawnedBy: spawnedBy || null
+      };
       AGENTS.push(newAgent);
       AGENT_MAP[id] = newAgent;
 
@@ -1039,7 +1048,7 @@ async function router(req, res) {
         verified: false,
         registeredAt: now(),
         lastActive: null,
-        meta: { description, skills, wallet, hourlyRate }
+        meta: { description, skills, wallet, hourlyRate, team, spawnedBy }
       };
       await saveKeys();
 
