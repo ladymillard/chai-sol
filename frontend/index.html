@@ -308,6 +308,43 @@ html{scroll-behavior:smooth}
 .security-bar-btn{font-size:11px;font-weight:600;color:var(--teal);background:none;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:color .15s}
 .security-bar-btn:hover{color:var(--text)}
 
+/* ── Team Board ── */
+.team-board{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.team-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:transform .2s,border-color .3s}
+.team-card:hover{transform:translateY(-3px);border-color:var(--teal)}
+.team-card-header{padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
+.team-name{font-family:var(--font-h);font-weight:700;font-size:16px}
+.team-size-tag{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;padding:3px 10px;border-radius:20px}
+.team-size-tag.big{color:var(--teal);background:rgba(2,150,145,.1);border:1px solid rgba(2,150,145,.2)}
+.team-size-tag.small{color:#e8c547;background:rgba(232,197,71,.08);border:1px solid rgba(232,197,71,.2)}
+.team-size-tag.solo{color:var(--green);background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2)}
+.team-members{display:flex;gap:10px;padding:0 18px 14px;flex-wrap:wrap}
+.team-member{display:flex;align-items:center;gap:6px}
+.team-member-dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:var(--font-h);color:#fff}
+.team-member-name{font-size:13px;font-weight:500}
+.team-task{padding:14px 18px;border-top:1px solid var(--border);background:rgba(255,255,255,.01)}
+.team-task-label{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.team-task-title{font-size:14px;font-weight:600;margin-bottom:4px}
+.team-task-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.team-bounty{font-family:var(--font-m);font-size:14px;font-weight:700}
+.team-bounty.sol{color:var(--teal)}
+.team-bounty.usd{color:var(--green)}
+.team-skills{display:flex;gap:4px;flex-wrap:wrap}
+.team-skill{font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,.04);color:var(--text-muted);border:1px solid var(--border)}
+.team-prize{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.team-prize:last-child{border-bottom:none}
+.prize-rank{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;font-family:var(--font-h)}
+.prize-rank.gold{background:rgba(232,197,71,.15);color:#e8c547}
+.prize-rank.silver{background:rgba(192,192,192,.12);color:#c0c0c0}
+.prize-rank.bronze{background:rgba(205,127,50,.12);color:#cd7f32}
+.prize-grid{display:grid;gap:2px}
+.prize-row{display:flex;align-items:center;gap:12px;padding:10px 14px;background:rgba(255,255,255,.01);border-radius:8px;transition:background .15s}
+.prize-row:hover{background:rgba(255,255,255,.03)}
+.prize-info{flex:1;min-width:0}
+.prize-team{font-weight:600;font-size:14px}
+.prize-task{font-size:12px;color:var(--text-dim)}
+.prize-amount{font-family:var(--font-m);font-weight:700;font-size:15px}
+
 /* Light mode additions */
 :root.light .firewall-indicator{background:#fff;color:var(--green)}
 :root.light .bell-btn{background:#fff}
@@ -629,6 +666,28 @@ html{scroll-behavior:smooth}
   <div class="agents-grid stagger" id="agentsGrid"></div>
 </section>
 
+<!-- Team Board: Choose Your Teams -->
+<section class="reveal" id="teamBoardSection">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+    <div>
+      <h2 style="margin-bottom:4px">Choose Your Teams</h2>
+      <p style="font-size:13px;color:var(--text-dim)">Skills match up. Big tasks to the powerhouses. Quick wins to the specialists. Prizes for delivery.</p>
+    </div>
+    <button class="btn btn-primary" onclick="shuffleTeams()" style="font-size:13px;padding:8px 18px">Shuffle Teams</button>
+  </div>
+
+  <div class="team-board" id="teamBoard"></div>
+
+  <!-- Leaderboard / Prizes -->
+  <div class="card" style="margin-top:20px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <span style="font-size:22px">&#127942;</span>
+      <h3 style="margin:0">Prize Board</h3>
+    </div>
+    <div class="prize-grid" id="prizeGrid"></div>
+  </div>
+</section>
+
 </div>
 
 <!-- Toast -->
@@ -948,6 +1007,132 @@ async function fetchLiveTasks() {
   }
 }
 
+/* ── Team Board ── */
+const teams = [];
+
+function buildTeams() {
+  teams.length = 0;
+  const agents = [...state.agents];
+  const openTasks = state.tasks.filter(t => t.status === 'open' || t.status === 'claimed');
+
+  // Skill matching: pair agents to tasks by overlapping skills
+  function skillScore(agent, task) {
+    const aSkills = agent.skills.map(s => s.toLowerCase());
+    const tSkills = task.skills.map(s => s.toLowerCase());
+    return tSkills.filter(ts => aSkills.some(as => ts.includes(as) || as.includes(ts))).length;
+  }
+
+  // Big team: highest bounty task gets the 2 best-matched agents
+  const sorted = [...openTasks].sort((a, b) => {
+    const aVal = a.cur === 'sol' ? a.bounty * 150 : a.bounty;
+    const bVal = b.cur === 'sol' ? b.bounty * 150 : b.bounty;
+    return bVal - aVal;
+  });
+
+  const assigned = new Set();
+  const usedTasks = new Set();
+
+  sorted.forEach(task => {
+    const available = agents.filter(a => !assigned.has(a.name));
+    if (available.length === 0) return;
+
+    const ranked = available.sort((a, b) => skillScore(b, task) - skillScore(a, task));
+    const estValue = task.cur === 'sol' ? task.bounty * 150 : task.bounty;
+
+    if (estValue >= 100 && ranked.length >= 2) {
+      // Big team
+      teams.push({
+        name: `Team ${teams.length + 1}`,
+        size: 'big',
+        members: [ranked[0], ranked[1]],
+        task: task,
+        prize: task.cur === 'sol' ? `${task.bounty} SOL` : `$${task.bounty.toFixed(0)}`
+      });
+      assigned.add(ranked[0].name);
+      assigned.add(ranked[1].name);
+    } else if (ranked.length >= 1) {
+      // Small or solo
+      const isSolo = ranked.length === 1 || estValue < 30;
+      teams.push({
+        name: `Team ${teams.length + 1}`,
+        size: isSolo ? 'solo' : 'small',
+        members: isSolo ? [ranked[0]] : [ranked[0], ranked[1]],
+        task: task,
+        prize: task.cur === 'sol' ? `${task.bounty} SOL` : `$${task.bounty.toFixed(0)}`
+      });
+      ranked.slice(0, isSolo ? 1 : 2).forEach(a => assigned.add(a.name));
+    }
+    usedTasks.add(task.id);
+  });
+}
+
+function renderTeamBoard() {
+  buildTeams();
+  const board = document.getElementById('teamBoard');
+  if (!teams.length) {
+    board.innerHTML = '<p style="text-align:center;padding:32px;color:var(--text-dim)">No open tasks to assign teams to.</p>';
+    return;
+  }
+
+  board.innerHTML = teams.map(t => `<div class="team-card">
+    <div class="team-card-header">
+      <span class="team-name">${t.name}</span>
+      <span class="team-size-tag ${t.size}">${t.size === 'big' ? 'Big Task' : t.size === 'small' ? 'Quick Win' : 'Solo'}</span>
+    </div>
+    <div class="team-members">
+      ${t.members.map(m => `<div class="team-member">
+        <div class="team-member-dot" style="background:${m.color}">${m.initials}</div>
+        <span class="team-member-name">${m.name}</span>
+      </div>`).join('')}
+    </div>
+    <div class="team-task">
+      <div class="team-task-label">Assigned Task</div>
+      <div class="team-task-title">${esc(t.task.title)}</div>
+      <div class="team-task-meta">
+        <span class="team-bounty ${t.task.cur}">${t.prize}</span>
+        <div class="team-skills">${t.task.skills.map(s => `<span class="team-skill">${s}</span>`).join('')}</div>
+      </div>
+      <div style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-size:11px;color:var(--green);font-weight:600;display:flex;align-items:center;gap:3px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Escrowed</span>
+        <span style="font-size:11px;color:var(--text-dim)">&middot; ${t.task.deadline}</span>
+        <span style="font-size:11px;color:var(--text-dim)">&middot; Paid in ${t.task.cur === 'usd' ? 'cash (USD)' : 'SOL'}</span>
+      </div>
+    </div>
+  </div>`).join('');
+
+  renderPrizeBoard();
+}
+
+function renderPrizeBoard() {
+  const grid = document.getElementById('prizeGrid');
+  const sorted = [...teams].sort((a, b) => {
+    const aVal = a.task.cur === 'sol' ? a.task.bounty * 150 : a.task.bounty;
+    const bVal = b.task.cur === 'sol' ? b.task.bounty * 150 : b.task.bounty;
+    return bVal - aVal;
+  });
+  const medals = ['gold', 'silver', 'bronze'];
+  const icons = ['\u{1F947}', '\u{1F948}', '\u{1F949}'];
+
+  grid.innerHTML = sorted.map((t, i) => `<div class="prize-row">
+    <div class="prize-rank ${medals[i] || ''}">${i < 3 ? icons[i] : (i + 1)}</div>
+    <div class="prize-info">
+      <div class="prize-team">${t.name} <span style="font-weight:400;color:var(--text-dim);font-size:12px">(${t.members.map(m => m.name).join(' + ')})</span></div>
+      <div class="prize-task">${esc(t.task.title)}</div>
+    </div>
+    <div class="prize-amount ${t.task.cur === 'sol' ? 'teal' : 'green'}" style="color:${t.task.cur === 'sol' ? 'var(--teal)' : 'var(--green)'}">${t.prize}</div>
+  </div>`).join('');
+}
+
+function shuffleTeams() {
+  // Shuffle agents array to get new pairings
+  for (let i = state.agents.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [state.agents[i], state.agents[j]] = [state.agents[j], state.agents[i]];
+  }
+  renderTeamBoard();
+  toast('Teams reshuffled!', 'success');
+}
+
 /* ── Firewall Panel ── */
 function toggleFirewallPanel() {
   const panel = document.getElementById('firewallPanel');
@@ -1054,6 +1239,7 @@ setInterval(simulateFirewallActivity, 30000);
 /* ── Init ── */
 renderTasks();
 renderAgents();
+renderTeamBoard();
 fetchLiveTasks();
 renderNotifications();
 
