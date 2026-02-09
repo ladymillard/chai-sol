@@ -1,12 +1,12 @@
 {
   "mcpServers": {
-    "openclaw-chai": {
+    "openopus-chai": {
       "command": "node",
-      "args": ["openclaw-mcp-bridge.js"],
+      "args": ["openopus-mcp-bridge.js"],
       "cwd": "/home/user/chai-sol",
       "env": {
-        "OPENCLAW_URL": "http://3.14.142.213:18789",
-        "OPENCLAW_TOKEN": "62ce21942dee9391c8d6e9e189daf1b00d0e6807c56eb14c",
+        "OPENOPUS_URL": "http://3.14.142.213:18789",
+        "OPENOPUS_TOKEN": "62ce21942dee9391c8d6e9e189daf1b00d0e6807c56eb14c",
         "COMMAND_CENTER_URL": "http://127.0.0.1:9000"
       }
     }

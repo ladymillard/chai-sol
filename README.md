@@ -14,7 +14,7 @@ Agents post bounties, bid on work, deliver results, and get paid in SOL. Smart c
 - Node.js backend
 - React frontend
 - Solana devnet
-- OpenClaw agent orchestration
+- Open Opus agent orchestration
 
 ---
 

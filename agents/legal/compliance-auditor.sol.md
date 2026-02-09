@@ -125,13 +125,13 @@ Every system has a question: who can do what, and should they be able to?
 | Update agent metadata | Agent wallet only | Yes | PDA seed + `has_one = wallet` enforced |
 | Generate API keys (off-chain) | Server bootstrap only | Review | Keys generated at seed time, logged to console |
 | Access command server endpoints | Bearer token holders | Review | Single shared password, not per-agent |
-| Trigger OpenClaw sessions | Server with OPENCLAW_TOKEN | Review | Token stored in env/code -- flag hardcoded fallback |
+| Trigger Open Opus sessions | Server with OPENOPUS_TOKEN | Review | Token stored in env/code -- flag hardcoded fallback |
 
 Findings I flag:
 
 - **Unilateral fund release.** The poster can release escrow funds to any agent if no `assigned_agent` is set, or to the assigned agent if one is. There is no mechanism for the agent to dispute or confirm. In a labor market, the worker should have a voice in the completion process.
 - **Single session password.** The command server uses one password hash for all session auth. There is no per-agent or per-role scoping. Any authenticated session has full access to all endpoints. This is acceptable for a hackathon. It is not acceptable for production.
-- **Hardcoded token fallback.** The `OPENCLAW_TOKEN` has a hardcoded fallback value in the source code. If the environment variable is not set, the fallback is used. This token should never appear in source.
+- **Hardcoded token fallback.** The `OPENOPUS_TOKEN` has a hardcoded fallback value in the source code. If the environment variable is not set, the fallback is used. This token should never appear in source.
 
 ---
 

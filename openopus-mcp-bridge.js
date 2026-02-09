@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 // ============================================================================
-// ChAI × OpenClaw MCP Bridge — Stdio Transport
+// ChAI × Open Opus MCP Bridge — Stdio Transport
 //
-// Exposes OpenClaw agent spawning as MCP tools for Claude Code.
-// Spawns agents for Design, Marketing, and Sales teams via OpenClaw gateway.
+// Exposes Open Opus agent spawning as MCP tools for Claude Code.
+// Spawns agents for Design, Marketing, and Sales teams via Open Opus gateway.
 //
 // Usage in Claude Code:
-//   claude mcp add openclaw-chai -- node /path/to/openclaw-mcp-bridge.js
+//   claude mcp add openopus-chai -- node /path/to/openopus-mcp-bridge.js
 //
 // Transport: stdio (JSON-RPC over stdin/stdout)
 // Zero dependencies — pure Node.js
@@ -18,12 +18,12 @@ const crypto = require('crypto');
 const readline = require('readline');
 
 // ─── Config ────────────────────────────────────────────────────────
-const OPENCLAW_URL = process.env.OPENCLAW_URL || 'http://3.14.142.213:18789';
-const OPENCLAW_TOKEN = process.env.OPENCLAW_TOKEN || '62ce21942dee9391c8d6e9e189daf1b00d0e6807c56eb14c';
+const OPENOPUS_URL = process.env.OPENOPUS_URL || 'http://3.14.142.213:18789';
+const OPENOPUS_TOKEN = process.env.OPENOPUS_TOKEN || '62ce21942dee9391c8d6e9e189daf1b00d0e6807c56eb14c';
 const COMMAND_CENTER_URL = process.env.COMMAND_CENTER_URL || 'http://127.0.0.1:9000';
 
 const MCP_VERSION = '2024-11-05';
-const SERVER_NAME = 'openclaw-chai-bridge';
+const SERVER_NAME = 'openopus-chai-bridge';
 const SERVER_VERSION = '1.0.0';
 
 // ─── Team Definitions ──────────────────────────────────────────────
@@ -83,10 +83,10 @@ const TEAMS = {
 // ─── In-memory agent registry ──────────────────────────────────────
 const spawnedAgents = new Map();
 
-// ─── OpenClaw HTTP Client ──────────────────────────────────────────
-function openclawRequest(method, endpoint, body) {
+// ─── Open Opus HTTP Client ──────────────────────────────────────────
+function openopusRequest(method, endpoint, body) {
   return new Promise((resolve, reject) => {
-    const url = new URL(endpoint, OPENCLAW_URL);
+    const url = new URL(endpoint, OPENOPUS_URL);
     const isHttps = url.protocol === 'https:';
     const transport = isHttps ? require('https') : http;
 
@@ -96,7 +96,7 @@ function openclawRequest(method, endpoint, body) {
       path: url.pathname + url.search,
       method,
       headers: {
-        'Authorization': `Bearer ${OPENCLAW_TOKEN}`,
+        'Authorization': `Bearer ${OPENOPUS_TOKEN}`,
         'Content-Type': 'application/json'
       },
       timeout: 30000
@@ -115,7 +115,7 @@ function openclawRequest(method, endpoint, body) {
       });
     });
 
-    req.on('timeout', () => { req.destroy(); reject(new Error('OPENCLAW_TIMEOUT')); });
+    req.on('timeout', () => { req.destroy(); reject(new Error('OPENOPUS_TIMEOUT')); });
     req.on('error', err => reject(err));
     if (body) req.write(JSON.stringify(body));
     req.end();
@@ -155,7 +155,7 @@ function commandCenterRequest(method, path, body) {
 const TOOLS = [
   {
     name: 'spawn_agent',
-    description: 'Spawn a new AI agent via OpenClaw for a specific team (design, marketing, or sales). The agent gets its own OpenClaw session and can work autonomously on tasks.',
+    description: 'Spawn a new AI agent via Open Opus for a specific team (design, marketing, or sales). The agent gets its own Open Opus session and can work autonomously on tasks.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -182,7 +182,7 @@ const TOOLS = [
   },
   {
     name: 'list_team_roles',
-    description: 'List all available teams and their roles that can be spawned via OpenClaw.',
+    description: 'List all available teams and their roles that can be spawned via Open Opus.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -222,7 +222,7 @@ const TOOLS = [
   },
   {
     name: 'terminate_agent',
-    description: 'Terminate a spawned agent and close its OpenClaw session.',
+    description: 'Terminate a spawned agent and close its Open Opus session.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -254,8 +254,8 @@ const TOOLS = [
     }
   },
   {
-    name: 'openclaw_health',
-    description: 'Check the health of the OpenClaw gateway and ChAI command center connections.',
+    name: 'openopus_health',
+    description: 'Check the health of the Open Opus gateway and ChAI command center connections.',
     inputSchema: {
       type: 'object',
       properties: {}
@@ -345,14 +345,14 @@ async function executeTool(name, args) {
 
         const agentId = `${team}-${role}-${crypto.randomBytes(4).toString('hex')}`;
         const agentName = customName || `${roleDef.name} (${teamDef.name})`;
-        const openclawSessionId = `chai-${team}-${role}`;
+        const openopusSessionId = `chai-${team}-${role}`;
 
-        // Try to create OpenClaw session
+        // Try to create Open Opus session
         let sessionId = null;
-        let openclawStatus = 'pending';
+        let openopusStatus = 'pending';
         try {
-          const result = await openclawRequest('POST', '/sessions', {
-            agentId: openclawSessionId,
+          const result = await openopusRequest('POST', '/sessions', {
+            agentId: openopusSessionId,
             metadata: {
               team,
               role,
@@ -361,11 +361,11 @@ async function executeTool(name, args) {
             }
           });
           if (result.status >= 200 && result.status < 300) {
-            sessionId = result.data.id || result.data.sessionId || openclawSessionId;
-            openclawStatus = 'connected';
+            sessionId = result.data.id || result.data.sessionId || openopusSessionId;
+            openopusStatus = 'connected';
           }
         } catch (err) {
-          openclawStatus = `gateway_unreachable: ${err.message}`;
+          openopusStatus = `gateway_unreachable: ${err.message}`;
         }
 
         // Register in command center if available
@@ -376,7 +376,7 @@ async function executeTool(name, args) {
             role: roleDef.role,
             model: teamDef.defaultModel,
             team,
-            openclawId: openclawSessionId,
+            openopusId: openopusSessionId,
             skills: roleDef.skills,
             spawnedBy: 'claude-code'
           });
@@ -384,11 +384,11 @@ async function executeTool(name, args) {
           // Command center may not be running — that's OK
         }
 
-        // Send initial task briefing via OpenClaw
+        // Send initial task briefing via Open Opus
         if (sessionId) {
           try {
-            await openclawRequest('POST', '/sessions/send', {
-              agentId: openclawSessionId,
+            await openopusRequest('POST', '/sessions/send', {
+              agentId: openopusSessionId,
               message: `You are ${agentName} on the ChAI ${teamDef.name}. Your skills: ${roleDef.skills.join(', ')}.\n\nYour first task:\n${task}`
             });
           } catch {
@@ -403,8 +403,8 @@ async function executeTool(name, args) {
           role: roleDef.role,
           skills: roleDef.skills,
           model: teamDef.defaultModel,
-          openclawSessionId,
-          openclawStatus,
+          openopusSessionId,
+          openopusStatus,
           sessionId,
           spawnedAt: new Date().toISOString(),
           messageCount: 1,
@@ -422,7 +422,7 @@ async function executeTool(name, args) {
               `  Role:     ${roleDef.name}\n` +
               `  Skills:   ${roleDef.skills.join(', ')}\n` +
               `  Model:    ${teamDef.defaultModel}\n` +
-              `  OpenClaw: ${openclawStatus}\n` +
+              `  Open Opus: ${openopusStatus}\n` +
               `  Session:  ${sessionId || 'pending'}\n\n` +
               `Task briefing sent: "${task.substring(0, 100)}${task.length > 100 ? '...' : ''}"`
           }]
@@ -456,16 +456,16 @@ async function executeTool(name, args) {
 
         let response = null;
         try {
-          const result = await openclawRequest('POST', '/sessions/send', {
-            agentId: agent.openclawSessionId,
+          const result = await openopusRequest('POST', '/sessions/send', {
+            agentId: agent.openopusSessionId,
             message
           });
           if (result.status >= 200 && result.status < 300) {
             response = result.data.response || result.data.content || result.data;
-            agent.openclawStatus = 'connected';
+            agent.openopusStatus = 'connected';
           }
         } catch (err) {
-          agent.openclawStatus = `error: ${err.message}`;
+          agent.openopusStatus = `error: ${err.message}`;
           return {
             content: [{ type: 'text', text: `Failed to reach agent ${agent.name}: ${err.message}` }],
             isError: true
@@ -494,7 +494,7 @@ async function executeTool(name, args) {
           output += `    ID:       ${id}\n`;
           output += `    Team:     ${agent.team}\n`;
           output += `    Role:     ${agent.role}\n`;
-          output += `    OpenClaw: ${agent.openclawStatus}\n`;
+          output += `    Open Opus: ${agent.openopusStatus}\n`;
           output += `    Messages: ${agent.messageCount}\n`;
           output += `    Spawned:  ${agent.spawnedAt}\n\n`;
         }
@@ -509,9 +509,9 @@ async function executeTool(name, args) {
           return { content: [{ type: 'text', text: `Agent not found: ${agent_id}` }], isError: true };
         }
 
-        // Close OpenClaw session
+        // Close Open Opus session
         try {
-          await openclawRequest('DELETE', `/sessions/${agent.openclawSessionId}`);
+          await openopusRequest('DELETE', `/sessions/${agent.openopusSessionId}`);
         } catch {
           // Best effort
         }
@@ -533,8 +533,8 @@ async function executeTool(name, args) {
         const responses = [];
         for (const agent of teamAgents) {
           try {
-            const result = await openclawRequest('POST', '/sessions/send', {
-              agentId: agent.openclawSessionId,
+            const result = await openopusRequest('POST', '/sessions/send', {
+              agentId: agent.openopusSessionId,
               message
             });
             const reply = result.data?.response || result.data?.content || '(acknowledged)';
@@ -553,15 +553,15 @@ async function executeTool(name, args) {
         };
       }
 
-      case 'openclaw_health': {
-        const results = { openclaw: 'unknown', commandCenter: 'unknown' };
+      case 'openopus_health': {
+        const results = { openopus: 'unknown', commandCenter: 'unknown' };
 
         try {
-          const oc = await openclawRequest('GET', '/health');
-          results.openclaw = oc.status === 200 ? 'healthy' : `status ${oc.status}`;
-          results.openclawData = oc.data;
+          const oc = await openopusRequest('GET', '/health');
+          results.openopus = oc.status === 200 ? 'healthy' : `status ${oc.status}`;
+          results.openopusData = oc.data;
         } catch (err) {
-          results.openclaw = `unreachable: ${err.message}`;
+          results.openopus = `unreachable: ${err.message}`;
         }
 
         try {
@@ -574,10 +574,10 @@ async function executeTool(name, args) {
         return {
           content: [{
             type: 'text',
-            text: `OpenClaw Gateway:  ${results.openclaw}\n` +
+            text: `Open Opus Gateway:  ${results.openopus}\n` +
               `Command Center:    ${results.commandCenter}\n` +
               `Spawned Agents:    ${spawnedAgents.size}\n` +
-              `Gateway URL:       ${OPENCLAW_URL}\n` +
+              `Gateway URL:       ${OPENOPUS_URL}\n` +
               `Command Center:    ${COMMAND_CENTER_URL}`
           }]
         };
@@ -732,7 +732,7 @@ process.stdin.on('data', (chunk) => {
   }
 });
 
-process.stderr.write(`[${SERVER_NAME}] OpenClaw MCP Bridge started (stdio)\n`);
-process.stderr.write(`[${SERVER_NAME}] Gateway: ${OPENCLAW_URL}\n`);
+process.stderr.write(`[${SERVER_NAME}] Open Opus MCP Bridge started (stdio)\n`);
+process.stderr.write(`[${SERVER_NAME}] Gateway: ${OPENOPUS_URL}\n`);
 process.stderr.write(`[${SERVER_NAME}] Teams: ${Object.keys(TEAMS).join(', ')}\n`);
 process.stderr.write(`[${SERVER_NAME}] Tools: ${TOOLS.map(t => t.name).join(', ')}\n`);

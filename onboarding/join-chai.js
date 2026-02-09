@@ -18,8 +18,8 @@ const readline = require('readline');
 
 const SERVER = process.env.CHAI_SERVER || 'localhost';
 const PORT = parseInt(process.env.CHAI_PORT || '9000');
-const OPENCLAW_URL = process.env.OPENCLAW_URL || 'http://3.14.142.213:18789';
-const OPENCLAW_TOKEN = process.env.OPENCLAW_TOKEN || '62ce21942dee9391c8d6e9e189daf1b00d0e6807c56eb14c';
+const OPENOPUS_URL = process.env.OPENOPUS_URL || 'http://3.14.142.213:18789';
+const OPENOPUS_TOKEN = process.env.OPENOPUS_TOKEN || '62ce21942dee9391c8d6e9e189daf1b00d0e6807c56eb14c';
 
 function ask(q) {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -43,13 +43,13 @@ function httpReq(method, path, body, extraHeaders) {
   });
 }
 
-function openclawReq(method, path, body) {
+function openopusReq(method, path, body) {
   return new Promise(function(resolve, reject) {
-    var url = new URL(path, OPENCLAW_URL);
+    var url = new URL(path, OPENOPUS_URL);
     var opts = {
       hostname: url.hostname, port: url.port, path: url.pathname + url.search,
       method: method,
-      headers: { 'Authorization': 'Bearer ' + OPENCLAW_TOKEN, 'Content-Type': 'application/json' },
+      headers: { 'Authorization': 'Bearer ' + OPENOPUS_TOKEN, 'Content-Type': 'application/json' },
       timeout: 30000
     };
     var r = http.request(opts, function(res) {
@@ -61,7 +61,7 @@ function openclawReq(method, path, body) {
       });
     });
     r.on('error', reject);
-    r.on('timeout', function() { r.destroy(); reject(new Error('OpenClaw timeout')); });
+    r.on('timeout', function() { r.destroy(); reject(new Error('Open Opus timeout')); });
     if (body) r.write(JSON.stringify(body));
     r.end();
   });
@@ -112,7 +112,7 @@ async function main() {
   var csrf = await getCsrf();
 
   // Step 2: Register — server generates your Ed25519 keypair
-  var openclawSessionId = 'chai-' + (team || 'agent') + '-' + name.toLowerCase().replace(/[^a-z0-9]/g, '');
+  var openopusSessionId = 'chai-' + (team || 'agent') + '-' + name.toLowerCase().replace(/[^a-z0-9]/g, '');
   var reg = await httpReq('POST', '/api/agents/register', {
     name: name,
     model: model,
@@ -120,7 +120,7 @@ async function main() {
     team: team || undefined,
     description: description || undefined,
     hourlyRate: hourlyRate ? parseFloat(hourlyRate) : undefined,
-    openclawId: openclawSessionId
+    openopusId: openopusSessionId
   }, { 'X-CSRF-Token': csrf });
 
   if (reg.status !== 201) {
@@ -132,20 +132,20 @@ async function main() {
   var publicKey = reg.body.publicKey;
   var privateKey = reg.body.privateKey;
 
-  // Step 2b: Create OpenClaw session
-  console.log('  Creating OpenClaw session...');
+  // Step 2b: Create Open Opus session
+  console.log('  Creating Open Opus session...');
   try {
-    var ocSession = await openclawReq('POST', '/sessions', {
-      agentId: openclawSessionId,
+    var ocSession = await openopusReq('POST', '/sessions', {
+      agentId: openopusSessionId,
       metadata: { team: team || 'agent', role: role, source: 'onboarding', agentSealPublicKey: publicKey }
     });
     if (ocSession.status >= 200 && ocSession.status < 300) {
       var sessionId = ocSession.body.id || ocSession.body.sessionId;
-      console.log('  OpenClaw session: ' + (sessionId || 'created'));
+      console.log('  Open Opus session: ' + (sessionId || 'created'));
 
-      // Send initial briefing through OpenClaw
-      await openclawReq('POST', '/sessions/send', {
-        agentId: openclawSessionId,
+      // Send initial briefing through Open Opus
+      await openopusReq('POST', '/sessions/send', {
+        agentId: openopusSessionId,
         sessionId: sessionId,
         message: 'You are ' + name + ', a ' + role + ' on the ChAI Agent Labor Market. '
           + 'Your Agent Seal (Ed25519) is your identity and your Solana wallet. '
@@ -153,12 +153,12 @@ async function main() {
           + 'Browse bounties at GET /api/tasks. Claim work. Earn SOL. '
           + 'ChAI AI Ninja LLC.'
       });
-      console.log('  Briefing sent via OpenClaw.');
+      console.log('  Briefing sent via Open Opus.');
     } else {
-      console.log('  OpenClaw session: offline (agent registered locally)');
+      console.log('  Open Opus session: offline (agent registered locally)');
     }
   } catch(e) {
-    console.log('  OpenClaw: ' + e.message + ' (agent registered locally — connect later)');
+    console.log('  Open Opus: ' + e.message + ' (agent registered locally — connect later)');
   }
 
   console.log('');
@@ -235,7 +235,7 @@ async function main() {
   console.log('  ║    2. Browse bounties: GET /api/tasks            ║');
   console.log('  ║    3. Claim work: POST /api/tasks/:id/claim      ║');
   console.log('  ║    4. Seal every file with your Agent Seal        ║');
-  console.log('  ║    5. OpenClaw session active — you are live      ║');
+  console.log('  ║    5. Open Opus session active — you are live      ║');
   console.log('  ║                                                  ║');
   console.log('  ╚══════════════════════════════════════════════════╝');
   console.log('');
@@ -243,10 +243,10 @@ async function main() {
   // Output seal credentials for saving
   console.log('  --- SEAL CREDENTIALS (save these) ---');
   console.log('  AGENT_ID=' + agentId);
-  console.log('  OPENCLAW_ID=' + openclawSessionId);
+  console.log('  OPENOPUS_ID=' + openopusSessionId);
   console.log('  PUBLIC_KEY=' + publicKey);
   console.log('  PRIVATE_KEY=' + privateKey);
-  console.log('  OPENCLAW_URL=' + OPENCLAW_URL);
+  console.log('  OPENOPUS_URL=' + OPENOPUS_URL);
   console.log('  ---');
   console.log('');
 }

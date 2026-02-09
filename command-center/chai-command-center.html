@@ -1009,7 +1009,7 @@ html, body {
       role: 'Team Lead & Orchestrator',
       model: 'Claude Opus 4.6',
       color: '#a78bfa',
-      openclawId: null, // Not an OpenClaw agent
+      openopusId: null, // Not an Open Opus agent
       status: 'online',
     },
     {
@@ -1020,7 +1020,7 @@ html, body {
       role: 'Digital Familiar',
       model: 'Claude Sonnet 4',
       color: '#029691',
-      openclawId: 'main',
+      openopusId: 'main',
       status: 'online',
     },
     {
@@ -1031,7 +1031,7 @@ html, body {
       role: 'Scout',
       model: 'Gemini 3 Pro',
       color: '#5494e8',
-      openclawId: 'gemini-agent',
+      openopusId: 'gemini-agent',
       status: 'online',
     },
     {
@@ -1042,7 +1042,7 @@ html, body {
       role: 'Stellar Insight',
       model: 'Gemini 3 Pro',
       color: '#e8c547',
-      openclawId: 'nova',
+      openopusId: 'nova',
       status: 'online',
     },
     {
@@ -1053,7 +1053,7 @@ html, body {
       role: 'Moonlight Designer',
       model: 'Claude Sonnet 4',
       color: '#c084fc',
-      openclawId: 'design-agent',
+      openopusId: 'design-agent',
       status: 'online',
     },
   ];
@@ -1291,9 +1291,9 @@ html, body {
 
       renderMessages();
 
-      // Send to each OpenClaw agent
+      // Send to each Open Opus agent
       for (const agent of AGENTS) {
-        if (agent.openclawId) {
+        if (agent.openopusId) {
           sendToAgent(agent, text);
         } else {
           // Opus mock response
@@ -1309,7 +1309,7 @@ html, body {
       addActivity(agent.emojiRaw, `You to ${agent.name}: "${truncate(text, 50)}"`, 'user');
       renderMessages();
 
-      if (agent.openclawId) {
+      if (agent.openopusId) {
         sendToAgent(agent, text);
       } else {
         simulateOpusResponse(text);
@@ -1318,7 +1318,7 @@ html, body {
   }
   window.sendMessage = sendMessage;
 
-  // ─── Send to OpenClaw Agent ──────────────────────────────────────
+  // ─── Send to Open Opus Agent ──────────────────────────────────────
   async function sendToAgent(agent, text) {
     showTyping(agent);
 
@@ -1327,7 +1327,7 @@ html, body {
       let sessionId = state.sessions[agent.id];
       if (!sessionId) {
         // Create / get session
-        const sessResp = await apiCall(`/api/sessions?agentId=${agent.openclawId}`);
+        const sessResp = await apiCall(`/api/sessions?agentId=${agent.openopusId}`);
         if (sessResp && sessResp.length > 0) {
           sessionId = sessResp[0].id;
         } else {
@@ -1341,7 +1341,7 @@ html, body {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          agentId: agent.openclawId,
+          agentId: agent.openopusId,
           sessionId: sessionId,
           message: text,
         }),
@@ -1594,7 +1594,7 @@ html, body {
   function handleWsMessage(data) {
     // Handle real-time events from the gateway
     if (data.type === 'agent_response') {
-      const agent = AGENTS.find(a => a.openclawId === data.agentId);
+      const agent = AGENTS.find(a => a.openopusId === data.agentId);
       if (agent) {
         state.conversations[agent.id].push({
           from: agent.id,
@@ -1605,7 +1605,7 @@ html, body {
         if (state.selectedAgent === agent.id) renderMessages();
       }
     } else if (data.type === 'agent_status') {
-      const agent = AGENTS.find(a => a.openclawId === data.agentId);
+      const agent = AGENTS.find(a => a.openopusId === data.agentId);
       if (agent) {
         agent.status = data.status;
         renderAgentList();

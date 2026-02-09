@@ -183,7 +183,7 @@ const TOOLS = [
   },
   {
     name: 'server_health',
-    description: 'Check the health and uptime of the ChAI Command Center backend and OpenClaw gateway.',
+    description: 'Check the health and uptime of the ChAI Command Center backend and Open Opus gateway.',
     inputSchema: {
       type: 'object',
       properties: {},
@@ -482,7 +482,7 @@ const server = http.createServer(async (req, res) => {
         messages: '/messages?sessionId={id}'
       },
       tools: TOOLS.map(t => t.name),
-      clients: ['Claude Code', 'Cursor', 'OpenCode', 'OpenAI Codex', 'OpenClaw'],
+      clients: ['Claude Code', 'Cursor', 'OpenCode', 'OpenAI Codex', 'Open Opus'],
       commandCenter: COMMAND_CENTER_URL
     }));
     return;
@@ -506,7 +506,7 @@ server.listen(PORT, '127.0.0.1', () => {
   console.log(`  Tools:     ${TOOLS.length}`);
   console.log('='.repeat(50));
   console.log('  Compatible clients:');
-  console.log('    🦞 OpenClaw');
+  console.log('    🦞 Open Opus');
   console.log('    🤖 Claude Code');
   console.log('    📦 OpenCode');
   console.log('    🖱️  Cursor');

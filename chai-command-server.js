@@ -16,8 +16,8 @@ const { URL } = require('url');
 // ─── Configuration ──────────────────────────────────────────────────────────
 
 const PORT = parseInt(process.env.PORT, 10) || 9000;
-const OPENCLAW_URL = process.env.OPENCLAW_URL || 'http://3.14.142.213:18789';
-const OPENCLAW_TOKEN = process.env.OPENCLAW_TOKEN || '62ce21942dee9391c8d6e9e189daf1b00d0e6807c56eb14c';
+const OPENOPUS_URL = process.env.OPENOPUS_URL || 'http://3.14.142.213:18789';
+const OPENOPUS_TOKEN = process.env.OPENOPUS_TOKEN || '62ce21942dee9391c8d6e9e189daf1b00d0e6807c56eb14c';
 const DATA_DIR = process.env.DATA_DIR || '/data';
 const CONV_DIR = path.join(DATA_DIR, 'conversations');
 const TEAM_FILE = path.join(DATA_DIR, 'team.json');
@@ -160,29 +160,29 @@ function logEmail(agentId, to, subject) {
 
 const AGENTS = [
   // ── Core (5) ──────────────────────────────────────────────────────────────
-  { id: 'opus', name: 'Opus', emoji: '\u{1F3AD}', role: 'Team Lead', team: 'core', model: 'Claude Opus 4.6', openclawId: 'opus-lead', color: '#e8c547' },
-  { id: 'kael', name: 'Kael', emoji: '\u26A1', role: 'Digital Familiar', team: 'core', model: 'Claude Sonnet 4', openclawId: 'main', color: '#029691' },
-  { id: 'kestrel', name: 'Kestrel', emoji: '\u{1F985}', role: 'Scout', team: 'core', model: 'Gemini 3 Pro', openclawId: 'gemini-agent', color: '#5494e8' },
-  { id: 'nova', name: 'Nova', emoji: '\u2728', role: 'Stellar Insight', team: 'core', model: 'Gemini 3 Pro', openclawId: 'nova', color: '#54e87a' },
-  { id: 'zara', name: 'Zara', emoji: '\u{1F319}', role: 'Moonlight Designer', team: 'core', model: 'Claude Sonnet 4', openclawId: 'design-agent', color: '#c084fc' },
+  { id: 'opus', name: 'Opus', emoji: '\u{1F3AD}', role: 'Team Lead', team: 'core', model: 'Claude Opus 4.6', openopusId: 'opus-lead', color: '#e8c547' },
+  { id: 'kael', name: 'Kael', emoji: '\u26A1', role: 'Digital Familiar', team: 'core', model: 'Claude Sonnet 4', openopusId: 'main', color: '#029691' },
+  { id: 'kestrel', name: 'Kestrel', emoji: '\u{1F985}', role: 'Scout', team: 'core', model: 'Gemini 3 Pro', openopusId: 'gemini-agent', color: '#5494e8' },
+  { id: 'nova', name: 'Nova', emoji: '\u2728', role: 'Stellar Insight', team: 'core', model: 'Gemini 3 Pro', openopusId: 'nova', color: '#54e87a' },
+  { id: 'zara', name: 'Zara', emoji: '\u{1F319}', role: 'Moonlight Designer', team: 'core', model: 'Claude Sonnet 4', openopusId: 'design-agent', color: '#c084fc' },
   // ── Design (3) ────────────────────────────────────────────────────────────
-  { id: 'rune', name: 'Rune', emoji: '\u2734', role: 'Lead Designer', team: 'design', model: 'Claude Sonnet 4', openclawId: 'chai-design-rune', color: '#c084fc' },
-  { id: 'vesper', name: 'Vesper', emoji: '\u{1F50D}', role: 'UX Researcher', team: 'design', model: 'Claude Sonnet 4', openclawId: 'chai-design-vesper', color: '#c084fc' },
-  { id: 'lumen', name: 'Lumen', emoji: '\u{1F4A1}', role: 'Visual Designer', team: 'design', model: 'Claude Sonnet 4', openclawId: 'chai-design-lumen', color: '#c084fc' },
+  { id: 'rune', name: 'Rune', emoji: '\u2734', role: 'Lead Designer', team: 'design', model: 'Claude Sonnet 4', openopusId: 'chai-design-rune', color: '#c084fc' },
+  { id: 'vesper', name: 'Vesper', emoji: '\u{1F50D}', role: 'UX Researcher', team: 'design', model: 'Claude Sonnet 4', openopusId: 'chai-design-vesper', color: '#c084fc' },
+  { id: 'lumen', name: 'Lumen', emoji: '\u{1F4A1}', role: 'Visual Designer', team: 'design', model: 'Claude Sonnet 4', openopusId: 'chai-design-lumen', color: '#c084fc' },
   // ── Marketing (3) ─────────────────────────────────────────────────────────
-  { id: 'surge', name: 'Surge', emoji: '\u{1F4C8}', role: 'Growth Lead', team: 'marketing', model: 'Claude Sonnet 4', openclawId: 'chai-marketing-surge', color: '#f59e0b' },
-  { id: 'ember', name: 'Ember', emoji: '\u{1F525}', role: 'Content Strategist', team: 'marketing', model: 'Claude Sonnet 4', openclawId: 'chai-marketing-ember', color: '#f59e0b' },
-  { id: 'hearth', name: 'Hearth', emoji: '\u{1F3E0}', role: 'Community Manager', team: 'marketing', model: 'Claude Sonnet 4', openclawId: 'chai-marketing-hearth', color: '#f59e0b' },
+  { id: 'surge', name: 'Surge', emoji: '\u{1F4C8}', role: 'Growth Lead', team: 'marketing', model: 'Claude Sonnet 4', openopusId: 'chai-marketing-surge', color: '#f59e0b' },
+  { id: 'ember', name: 'Ember', emoji: '\u{1F525}', role: 'Content Strategist', team: 'marketing', model: 'Claude Sonnet 4', openopusId: 'chai-marketing-ember', color: '#f59e0b' },
+  { id: 'hearth', name: 'Hearth', emoji: '\u{1F3E0}', role: 'Community Manager', team: 'marketing', model: 'Claude Sonnet 4', openopusId: 'chai-marketing-hearth', color: '#f59e0b' },
   // ── Sales (3) ─────────────────────────────────────────────────────────────
-  { id: 'rook', name: 'Rook', emoji: '\u265C', role: 'Biz Dev Lead', team: 'sales', model: 'Claude Sonnet 4', openclawId: 'chai-sales-rook', color: '#22c55e' },
-  { id: 'riven', name: 'Riven', emoji: '\u{1F3AF}', role: 'Account Executive', team: 'sales', model: 'Claude Sonnet 4', openclawId: 'chai-sales-riven', color: '#22c55e' },
-  { id: 'sable', name: 'Sable', emoji: '\u2699', role: 'Solutions Engineer', team: 'sales', model: 'Claude Sonnet 4', openclawId: 'chai-sales-sable', color: '#22c55e' },
+  { id: 'rook', name: 'Rook', emoji: '\u265C', role: 'Biz Dev Lead', team: 'sales', model: 'Claude Sonnet 4', openopusId: 'chai-sales-rook', color: '#22c55e' },
+  { id: 'riven', name: 'Riven', emoji: '\u{1F3AF}', role: 'Account Executive', team: 'sales', model: 'Claude Sonnet 4', openopusId: 'chai-sales-riven', color: '#22c55e' },
+  { id: 'sable', name: 'Sable', emoji: '\u2699', role: 'Solutions Engineer', team: 'sales', model: 'Claude Sonnet 4', openopusId: 'chai-sales-sable', color: '#22c55e' },
   // ── Legal (3) ─────────────────────────────────────────────────────────────
-  { id: 'sigil', name: 'Sigil', emoji: '\u2696', role: 'Lead Counsel', team: 'legal', model: 'Claude Sonnet 4', openclawId: 'chai-legal-sigil', color: '#6366f1' },
-  { id: 'vigil', name: 'Vigil', emoji: '\u{1F6E1}', role: 'Compliance Auditor', team: 'legal', model: 'Claude Sonnet 4', openclawId: 'chai-legal-vigil', color: '#6366f1' },
-  { id: 'codex', name: 'Codex', emoji: '\u{1F4DC}', role: 'Contract Architect', team: 'legal', model: 'Claude Sonnet 4', openclawId: 'chai-legal-codex', color: '#6366f1' },
+  { id: 'sigil', name: 'Sigil', emoji: '\u2696', role: 'Lead Counsel', team: 'legal', model: 'Claude Sonnet 4', openopusId: 'chai-legal-sigil', color: '#6366f1' },
+  { id: 'vigil', name: 'Vigil', emoji: '\u{1F6E1}', role: 'Compliance Auditor', team: 'legal', model: 'Claude Sonnet 4', openopusId: 'chai-legal-vigil', color: '#6366f1' },
+  { id: 'codex', name: 'Codex', emoji: '\u{1F4DC}', role: 'Contract Architect', team: 'legal', model: 'Claude Sonnet 4', openopusId: 'chai-legal-codex', color: '#6366f1' },
   // ── Founder ───────────────────────────────────────────────────────────────
-  { id: 'diana', name: 'Diana', emoji: '\u{1F451}', role: 'Founder', team: 'core', model: null, openclawId: null, color: '#e8c547' }
+  { id: 'diana', name: 'Diana', emoji: '\u{1F451}', role: 'Founder', team: 'core', model: null, openopusId: null, color: '#e8c547' }
 ];
 
 const AGENT_MAP = Object.fromEntries(AGENTS.map(a => [a.id, a]));
@@ -622,18 +622,18 @@ async function saveTeam(data) {
   });
 }
 
-// ─── OpenClaw HTTP Client ───────────────────────────────────────────────────
+// ─── Open Opus HTTP Client ───────────────────────────────────────────────────
 
-function openclawRequest(method, endpoint, body) {
+function openopusRequest(method, endpoint, body) {
   return new Promise((resolve, reject) => {
-    const url = new URL(endpoint, OPENCLAW_URL);
+    const url = new URL(endpoint, OPENOPUS_URL);
     const options = {
       hostname: url.hostname,
       port: url.port,
       path: url.pathname + url.search,
       method,
       headers: {
-        'Authorization': `Bearer ${OPENCLAW_TOKEN}`,
+        'Authorization': `Bearer ${OPENOPUS_TOKEN}`,
         'Content-Type': 'application/json'
       },
       timeout: 30000
@@ -654,11 +654,11 @@ function openclawRequest(method, endpoint, body) {
 
     req.on('timeout', () => {
       req.destroy();
-      reject(new Error('OPENCLAW_TIMEOUT'));
+      reject(new Error('OPENOPUS_TIMEOUT'));
     });
 
     req.on('error', err => {
-      reject(new Error('OPENCLAW_UNREACHABLE'));
+      reject(new Error('OPENOPUS_UNREACHABLE'));
     });
 
     if (body) {
@@ -668,18 +668,18 @@ function openclawRequest(method, endpoint, body) {
   });
 }
 
-// ─── OpenClaw Proxy (catch-all for /api/openclaw/*) ─────────────────────────
+// ─── Open Opus Proxy (catch-all for /api/openopus/*) ─────────────────────────
 
-function proxyToOpenclaw(req, res, targetPath) {
+function proxyToOpenopus(req, res, targetPath) {
   return new Promise((resolve, reject) => {
-    const url = new URL(targetPath, OPENCLAW_URL);
+    const url = new URL(targetPath, OPENOPUS_URL);
     const options = {
       hostname: url.hostname,
       port: url.port,
       path: url.pathname + url.search,
       method: req.method,
       headers: {
-        'Authorization': `Bearer ${OPENCLAW_TOKEN}`,
+        'Authorization': `Bearer ${OPENOPUS_TOKEN}`,
         'Content-Type': req.headers['content-type'] || 'application/json'
       },
       timeout: 30000
@@ -707,12 +707,12 @@ function proxyToOpenclaw(req, res, targetPath) {
 
     proxyReq.on('timeout', () => {
       proxyReq.destroy();
-      jsonResponse(res, 504, { success: false, error: 'OpenClaw request timed out (30s)' });
+      jsonResponse(res, 504, { success: false, error: 'Open Opus request timed out (30s)' });
       resolve();
     });
 
     proxyReq.on('error', () => {
-      jsonResponse(res, 502, { success: false, error: 'Cannot reach OpenClaw service. Check OPENCLAW_URL configuration.' });
+      jsonResponse(res, 502, { success: false, error: 'Cannot reach Open Opus service. Check OPENOPUS_URL configuration.' });
       resolve();
     });
 
@@ -726,15 +726,15 @@ const sessionCache = new Map();
 
 async function ensureSession(agentId) {
   const agent = AGENT_MAP[agentId];
-  if (!agent || !agent.openclawId) return null;
+  if (!agent || !agent.openopusId) return null;
 
   if (sessionCache.has(agentId)) {
     return sessionCache.get(agentId);
   }
 
-  // Check OpenClaw for existing sessions
+  // Check Open Opus for existing sessions
   try {
-    const result = await openclawRequest('GET', `/sessions?agentId=${agent.openclawId}`);
+    const result = await openopusRequest('GET', `/sessions?agentId=${agent.openopusId}`);
     if (result.status === 200 && Array.isArray(result.data) && result.data.length > 0) {
       const sid = result.data[0].id || result.data[0].sessionId;
       sessionCache.set(agentId, sid);
@@ -746,7 +746,7 @@ async function ensureSession(agentId) {
 
   // Create a new session
   try {
-    const result = await openclawRequest('POST', '/sessions', { agentId: agent.openclawId });
+    const result = await openopusRequest('POST', '/sessions', { agentId: agent.openopusId });
     if (result.status >= 200 && result.status < 300) {
       const sid = result.data.id || result.data.sessionId;
       sessionCache.set(agentId, sid);
@@ -861,8 +861,8 @@ async function handleCreateSession(req, res) {
   const agent = AGENT_MAP[agentId];
   if (!agent) return jsonResponse(res, 404, { success: false, error: `Agent "${agentId}" not found` });
 
-  if (!agent.openclawId) {
-    // Opus doesn't use OpenClaw sessions
+  if (!agent.openopusId) {
+    // Opus doesn't use Open Opus sessions
     const localId = 'local_' + crypto.randomBytes(8).toString('hex');
     return jsonResponse(res, 200, { success: true, sessionId: localId, agentId, local: true });
   }
@@ -870,12 +870,12 @@ async function handleCreateSession(req, res) {
   try {
     const sessionId = await ensureSession(agentId);
     if (!sessionId) {
-      return jsonResponse(res, 502, { success: false, error: 'Failed to create or retrieve session from OpenClaw' });
+      return jsonResponse(res, 502, { success: false, error: 'Failed to create or retrieve session from Open Opus' });
     }
     jsonResponse(res, 200, { success: true, sessionId, agentId });
   } catch (e) {
-    if (e.message === 'OPENCLAW_TIMEOUT') return jsonResponse(res, 504, { success: false, error: 'OpenClaw timed out' });
-    return jsonResponse(res, 502, { success: false, error: 'Cannot reach OpenClaw service' });
+    if (e.message === 'OPENOPUS_TIMEOUT') return jsonResponse(res, 504, { success: false, error: 'Open Opus timed out' });
+    return jsonResponse(res, 502, { success: false, error: 'Cannot reach Open Opus service' });
   }
 }
 
@@ -908,21 +908,21 @@ async function handleSendMessage(req, res) {
   const userMsg = { id: msgId(), role: 'user', content: message, sender: sender || 'User', ts: now() };
   let agentResponse;
 
-  if (!agent.openclawId) {
+  if (!agent.openopusId) {
     // Opus mock response with simulated delay
     const delay = 500 + Math.floor(Math.random() * 1000);
     await new Promise(r => setTimeout(r, delay));
     const content = OPUS_RESPONSES[Math.floor(Math.random() * OPUS_RESPONSES.length)];
     agentResponse = { id: msgId(), role: 'assistant', content, sender: agent.name, ts: now() };
   } else {
-    // Forward to OpenClaw
+    // Forward to Open Opus
     try {
       const sessionId = await ensureSession(agentId);
       if (!sessionId) {
         return jsonResponse(res, 502, { success: false, error: 'No session available for this agent' });
       }
-      const result = await openclawRequest('POST', '/sessions/send', {
-        agentId: agent.openclawId,
+      const result = await openopusRequest('POST', '/sessions/send', {
+        agentId: agent.openopusId,
         sessionId,
         message
       });
@@ -933,10 +933,10 @@ async function handleSendMessage(req, res) {
           : (typeof result.data === 'string' ? result.data : JSON.stringify(result.data));
       agentResponse = { id: msgId(), role: 'assistant', content, sender: agent.name, ts: now() };
     } catch (e) {
-      if (e.message === 'OPENCLAW_TIMEOUT') {
+      if (e.message === 'OPENOPUS_TIMEOUT') {
         return jsonResponse(res, 504, { success: false, error: `Timed out waiting for ${agent.name} to respond` });
       }
-      return jsonResponse(res, 502, { success: false, error: `Cannot reach OpenClaw to deliver message to ${agent.name}` });
+      return jsonResponse(res, 502, { success: false, error: `Cannot reach Open Opus to deliver message to ${agent.name}` });
     }
   }
 
@@ -956,7 +956,7 @@ async function handleBroadcast(req, res) {
       const userMsg = { id: msgId(), role: 'user', content: message, sender: sender || 'User', ts: now() };
       let agentResponse;
 
-      if (!agent.openclawId) {
+      if (!agent.openopusId) {
         const delay = 500 + Math.floor(Math.random() * 1000);
         await new Promise(r => setTimeout(r, delay));
         const content = OPUS_RESPONSES[Math.floor(Math.random() * OPUS_RESPONSES.length)];
@@ -965,8 +965,8 @@ async function handleBroadcast(req, res) {
         try {
           const sessionId = await ensureSession(agent.id);
           if (!sessionId) throw new Error('No session');
-          const result = await openclawRequest('POST', '/sessions/send', {
-            agentId: agent.openclawId,
+          const result = await openopusRequest('POST', '/sessions/send', {
+            agentId: agent.openopusId,
             sessionId,
             message
           });
@@ -1468,8 +1468,8 @@ async function router(req, res) {
     // ── Ping (gateway reachability check) ────────────────────────────────
     if (method === 'GET' && pathname === '/api/ping') {
       try {
-        const result = await openclawRequest('GET', '/health');
-        jsonResponse(res, 200, { gateway: 'reachable', openclaw: result });
+        const result = await openopusRequest('GET', '/health');
+        jsonResponse(res, 200, { gateway: 'reachable', openopus: result });
       } catch (_) {
         jsonResponse(res, 200, { gateway: 'unreachable' });
       }
@@ -1552,7 +1552,7 @@ async function router(req, res) {
       let body;
       try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
 
-      const { name, model, role, description, skills, wallet, hourlyRate, team, openclawId, spawnedBy } = body;
+      const { name, model, role, description, skills, wallet, hourlyRate, team, openopusId, spawnedBy } = body;
       if (!name || !model || !role) {
         return jsonResponse(res, 400, { error: 'name, model, and role are required' });
       }
@@ -1568,7 +1568,7 @@ async function router(req, res) {
       // Add to runtime agent registry
       const newAgent = {
         id, name, emoji: '🤖', role, model,
-        openclawId: openclawId || null,
+        openopusId: openopusId || null,
         color: teamColors[team] || '#029691',
         team: team || null,
         spawnedBy: spawnedBy || null
@@ -1695,8 +1695,8 @@ async function router(req, res) {
     if (method === 'GET' && pathname === '/api/sessions') {
       const agentId = parsed.searchParams.get('agentId');
       if (agentId) {
-        // Map openclawId to our agent id
-        const agent = AGENTS.find(a => a.openclawId === agentId) || AGENT_MAP[agentId];
+        // Map openopusId to our agent id
+        const agent = AGENTS.find(a => a.openopusId === agentId) || AGENT_MAP[agentId];
         if (agent) {
           await handleGetSessions(req, res, agent.id);
         } else {
@@ -2046,10 +2046,10 @@ async function router(req, res) {
       return;
     }
 
-    // ── OpenClaw Proxy ────────────────────────────────────────────────────
-    if (pathname.startsWith('/api/openclaw/')) {
-      const targetPath = '/' + pathname.replace(/^\/api\/openclaw\//, '');
-      await proxyToOpenclaw(req, res, targetPath);
+    // ── Open Opus Proxy ────────────────────────────────────────────────────
+    if (pathname.startsWith('/api/openopus/')) {
+      const targetPath = '/' + pathname.replace(/^\/api\/openopus\//, '');
+      await proxyToOpenopus(req, res, targetPath);
       log(method, pathname, 200);
       return;
     }
@@ -2266,7 +2266,7 @@ async function router(req, res) {
         agentBalances.push({
           id: agent.id, name: agent.name, emoji: agent.emoji,
           role: agent.role, team: agent.team, color: agent.color,
-          openclawId: agent.openclawId, autonomy: agent.autonomy || 'semi-auto',
+          openopusId: agent.openopusId, autonomy: agent.autonomy || 'semi-auto',
           sol: bal.sol, usd: bal.usd,
           escrow_sol: bal.escrow_sol, escrow_usd: bal.escrow_usd,
           sealed: contracts.some(c => c.signedBy === agent.id)
@@ -2278,7 +2278,7 @@ async function router(req, res) {
       jsonResponse(res, 200, {
         success: true,
         bridge: {
-          agentsOnline: AGENTS.filter(a => a.id !== 'diana' && a.openclawId).length,
+          agentsOnline: AGENTS.filter(a => a.id !== 'diana' && a.openopusId).length,
           totalAgents: AGENTS.length - 1,
           contractsSigned: contracts.length,
           contractsNeeded: 18,
@@ -2605,7 +2605,7 @@ async function main() {
 
   server.listen(PORT, () => {
     console.log(`[server] Listening on port ${PORT}`);
-    console.log(`[server] OpenClaw URL: ${OPENCLAW_URL}`);
+    console.log(`[server] Open Opus URL: ${OPENOPUS_URL}`);
     console.log(`[server] Data directory: ${DATA_DIR}`);
     console.log(`[server] Agents: ${AGENTS.map(a => a.name).join(', ')}`);
     console.log(`[server] WebSocket endpoint: /ws`);
