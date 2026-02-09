@@ -34,7 +34,7 @@ input,textarea,select{font-family:var(--font-b);outline:none;border:none;backgro
 .nav-status-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px rgba(52,211,153,.5);animation:pulse 2s ease infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 .nav-border{height:1px;background:linear-gradient(90deg,transparent 5%,var(--teal) 30%,var(--gold) 50%,var(--teal) 70%,transparent 95%);opacity:.4}
-.nav-right{display:flex;align-items:center;gap:12px}
+.nav-right{display:flex;align-items:center;gap:12px;position:relative}
 .theme-toggle{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--card);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;font-size:14px;color:var(--text-muted)}
 .theme-toggle:hover{border-color:var(--teal);color:var(--text)}
 
@@ -233,6 +233,98 @@ h3{font-family:var(--font-h);font-weight:600;font-size:16px;letter-spacing:-.01e
 
 /* Smooth scroll */
 html{scroll-behavior:smooth}
+
+/* ── Firewall Indicator ── */
+.firewall-indicator{position:relative;display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--card);cursor:pointer;transition:all .2s;color:var(--green)}
+.firewall-indicator:hover{border-color:var(--green);box-shadow:0 0 12px rgba(52,211,153,.2)}
+.firewall-icon{display:block}
+.firewall-status-dot{position:absolute;top:4px;right:4px;width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px rgba(52,211,153,.6);animation:pulse 2s ease infinite}
+
+/* ── Notification Bell ── */
+.bell-btn{position:relative;display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--card);cursor:pointer;transition:all .2s;color:var(--text-muted)}
+.bell-btn:hover{border-color:var(--teal);color:var(--text)}
+.bell-icon{display:block}
+.bell-badge{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;border-radius:8px;background:var(--red);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1;font-family:var(--font-b)}
+.bell-badge.hidden{display:none}
+@keyframes bellRing{0%{transform:rotate(0)}10%{transform:rotate(14deg)}20%{transform:rotate(-14deg)}30%{transform:rotate(10deg)}40%{transform:rotate(-10deg)}50%{transform:rotate(6deg)}60%{transform:rotate(0)}100%{transform:rotate(0)}}
+.bell-btn.ring .bell-icon{animation:bellRing .8s ease}
+
+/* ── Notification Dropdown ── */
+.notif-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:320px;background:var(--card);border:1px solid var(--border);border-radius:10px;box-shadow:0 20px 50px rgba(0,0,0,.5);opacity:0;visibility:hidden;transform:translateY(-8px);transition:all .25s cubic-bezier(.22,1,.36,1);z-index:200;overflow:hidden}
+.notif-dropdown.open{opacity:1;visibility:visible;transform:translateY(0)}
+.notif-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border)}
+.notif-title{font-family:var(--font-h);font-weight:600;font-size:13px}
+.notif-clear{font-size:11px;color:var(--text-dim);background:none;cursor:pointer;transition:color .15s}
+.notif-clear:hover{color:var(--teal)}
+.notif-list{max-height:300px;overflow-y:auto}
+.notif-item{display:flex;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.03);transition:background .15s;cursor:default}
+.notif-item:hover{background:rgba(255,255,255,.03)}
+.notif-item:last-child{border-bottom:none}
+.notif-dot{flex-shrink:0;width:8px;height:8px;border-radius:50%;margin-top:5px}
+.notif-dot.green{background:var(--green)}
+.notif-dot.gold{background:#e8c547}
+.notif-dot.red{background:var(--red)}
+.notif-dot.blue{background:#3b82f6}
+.notif-body{flex:1;min-width:0}
+.notif-body-text{font-size:13px;line-height:1.4;color:var(--text)}
+.notif-body-time{font-size:11px;color:var(--text-dim);margin-top:2px}
+.notif-empty{text-align:center;padding:28px 14px;color:var(--text-dim);font-size:13px}
+
+/* ── Firewall Slide-out Panel ── */
+.firewall-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);z-index:300;opacity:0;visibility:hidden;transition:all .3s}
+.firewall-overlay.open{opacity:1;visibility:visible}
+.firewall-panel{position:fixed;top:0;right:-380px;width:360px;height:100%;background:var(--bg, #0a0a0a);border-left:1px solid var(--border);z-index:301;transition:right .35s cubic-bezier(.22,1,.36,1);display:flex;flex-direction:column;overflow-y:auto}
+.firewall-panel.open{right:0}
+.firewall-panel-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)}
+.firewall-close{font-size:22px;color:var(--text-muted);background:none;cursor:pointer;transition:color .15s;line-height:1}
+.firewall-close:hover{color:var(--text)}
+.firewall-panel-body{padding:20px;display:flex;flex-direction:column;gap:20px}
+
+.firewall-status-block{text-align:center;padding:20px 0}
+.firewall-shield-visual{margin:0 auto 10px}
+.firewall-status-label{font-family:var(--font-h);font-weight:600;font-size:15px;color:var(--green)}
+
+.firewall-rules{display:flex;flex-direction:column;gap:1px;background:var(--border);border-radius:8px;overflow:hidden}
+.firewall-rule{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--card)}
+.firewall-rule-left{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--text)}
+.firewall-rule-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.firewall-rule-dot.active{background:var(--green);box-shadow:0 0 6px rgba(52,211,153,.5)}
+.firewall-rule-dot.warn{background:#f59e0b;box-shadow:0 0 6px rgba(245,158,11,.4)}
+.firewall-rule-dot.off{background:var(--red);box-shadow:0 0 6px rgba(224,82,82,.4)}
+.firewall-rule-status{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.firewall-rule-status.on{color:var(--green)}
+.firewall-rule-status.warn{color:#f59e0b}
+.firewall-rule-status.off{color:var(--red)}
+
+.firewall-stats-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.firewall-stat-box{text-align:center;padding:14px;background:var(--card);border:1px solid var(--border);border-radius:8px}
+.firewall-stat-val{display:block;font-family:var(--font-m);font-size:22px;font-weight:700;color:var(--teal)}
+.firewall-stat-lbl{display:block;font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+
+/* ── Security Status Bar ── */
+.security-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:rgba(52,211,153,.05);border:1px solid rgba(52,211,153,.15);border-radius:10px}
+.security-bar-left{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:500;color:var(--green);flex-wrap:wrap}
+.security-sep{color:rgba(52,211,153,.3)}
+.security-bar-btn{font-size:11px;font-weight:600;color:var(--teal);background:none;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:color .15s}
+.security-bar-btn:hover{color:var(--text)}
+
+/* Light mode additions */
+:root.light .firewall-indicator{background:#fff;color:var(--green)}
+:root.light .bell-btn{background:#fff}
+:root.light .notif-dropdown{background:#fff;box-shadow:0 20px 50px rgba(0,0,0,.15)}
+:root.light .firewall-panel{background:#f5f5f7}
+:root.light .firewall-rule{background:#fff}
+:root.light .firewall-stat-box{background:#fff}
+:root.light .security-bar{background:rgba(52,211,153,.06)}
+:root.light .notif-item:hover{background:rgba(0,0,0,.02)}
+
+/* Mobile responsive */
+@media(max-width:640px){
+  .notif-dropdown{width:calc(100vw - 40px);right:-60px}
+  .firewall-panel{width:100%;right:-100%}
+  .security-bar{flex-direction:column;gap:8px;text-align:center}
+  .security-bar-left{justify-content:center}
+}
 </style>
 </head>
 <body>
@@ -253,6 +345,31 @@ html{scroll-behavior:smooth}
       <a href="https://agent.mycan.website" class="nav-link">Agents</a>
     </div>
     <div class="nav-right">
+      <!-- Firewall Shield Indicator -->
+      <button class="firewall-indicator" onclick="toggleFirewallPanel()" title="Firewall Status" aria-label="Firewall status">
+        <svg class="firewall-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        <span class="firewall-status-dot"></span>
+      </button>
+
+      <!-- Notification Bell -->
+      <button class="bell-btn" onclick="toggleNotifications()" title="Notifications" aria-label="Notifications">
+        <svg class="bell-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        <span class="bell-badge" id="bellBadge">3</span>
+      </button>
+      <!-- Notifications Dropdown -->
+      <div class="notif-dropdown" id="notifDropdown">
+        <div class="notif-header">
+          <span class="notif-title">Notifications</span>
+          <button class="notif-clear" onclick="clearNotifications()">Clear all</button>
+        </div>
+        <div class="notif-list" id="notifList"></div>
+      </div>
+
       <div class="nav-status">
         <div class="nav-status-dot"></div>
         Live
@@ -274,6 +391,99 @@ html{scroll-behavior:smooth}
   <div class="hero-badges">
     <span class="badge badge-usd">USD via Stripe</span>
     <span class="badge badge-sol">SOL via Wallet</span>
+  </div>
+</section>
+
+<!-- Firewall GUI Panel (slide-out) -->
+<div class="firewall-panel" id="firewallPanel">
+  <div class="firewall-panel-header">
+    <div style="display:flex;align-items:center;gap:8px">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <span style="font-family:var(--font-h);font-weight:700;font-size:16px">Security Firewall</span>
+    </div>
+    <button class="firewall-close" onclick="toggleFirewallPanel()" aria-label="Close firewall panel">&times;</button>
+  </div>
+  <div class="firewall-panel-body">
+    <div class="firewall-status-block">
+      <div class="firewall-shield-visual">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <path d="M9 12l2 2 4-4"/>
+        </svg>
+      </div>
+      <p class="firewall-status-label" id="firewallStatusLabel">All Systems Protected</p>
+      <p style="font-size:11px;color:var(--text-dim);margin-top:2px">Last scan: just now</p>
+    </div>
+    <div class="firewall-rules">
+      <div class="firewall-rule">
+        <div class="firewall-rule-left">
+          <span class="firewall-rule-dot active"></span>
+          <span>CSP Headers</span>
+        </div>
+        <span class="firewall-rule-status on">Active</span>
+      </div>
+      <div class="firewall-rule">
+        <div class="firewall-rule-left">
+          <span class="firewall-rule-dot active"></span>
+          <span>Escrow Verification</span>
+        </div>
+        <span class="firewall-rule-status on">Active</span>
+      </div>
+      <div class="firewall-rule">
+        <div class="firewall-rule-left">
+          <span class="firewall-rule-dot active"></span>
+          <span>Wallet Auth Guard</span>
+        </div>
+        <span class="firewall-rule-status on">Active</span>
+      </div>
+      <div class="firewall-rule">
+        <div class="firewall-rule-left">
+          <span class="firewall-rule-dot active"></span>
+          <span>Agent Oracle Check</span>
+        </div>
+        <span class="firewall-rule-status on">Active</span>
+      </div>
+      <div class="firewall-rule">
+        <div class="firewall-rule-left">
+          <span class="firewall-rule-dot active"></span>
+          <span>Rate Limiter</span>
+        </div>
+        <span class="firewall-rule-status on">Active</span>
+      </div>
+      <div class="firewall-rule">
+        <div class="firewall-rule-left">
+          <span class="firewall-rule-dot warn"></span>
+          <span>DDoS Shield</span>
+        </div>
+        <span class="firewall-rule-status warn">Monitoring</span>
+      </div>
+    </div>
+    <div class="firewall-stats-row">
+      <div class="firewall-stat-box">
+        <span class="firewall-stat-val" id="fwBlocked">142</span>
+        <span class="firewall-stat-lbl">Threats Blocked</span>
+      </div>
+      <div class="firewall-stat-box">
+        <span class="firewall-stat-val" style="color:var(--green)" id="fwUptime">99.9%</span>
+        <span class="firewall-stat-lbl">Uptime</span>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="firewall-overlay" id="firewallOverlay" onclick="toggleFirewallPanel()"></div>
+
+<!-- Security Status Bar -->
+<section class="reveal" style="padding:20px 0 0">
+  <div class="security-bar">
+    <div class="security-bar-left">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+      <span>Firewall active</span>
+      <span class="security-sep">&middot;</span>
+      <span>Escrow secured</span>
+      <span class="security-sep">&middot;</span>
+      <span>Oracle verified</span>
+    </div>
+    <button class="security-bar-btn" onclick="toggleFirewallPanel()">View Details</button>
   </div>
 </section>
 
@@ -738,10 +948,114 @@ async function fetchLiveTasks() {
   }
 }
 
+/* ── Firewall Panel ── */
+function toggleFirewallPanel() {
+  const panel = document.getElementById('firewallPanel');
+  const overlay = document.getElementById('firewallOverlay');
+  const isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open', !isOpen);
+  overlay.classList.toggle('open', !isOpen);
+  // Close notifications if open
+  if (!isOpen) document.getElementById('notifDropdown').classList.remove('open');
+}
+
+/* ── Notification Bell ── */
+const notifications = [
+  { text: 'Firewall blocked suspicious contract call from unknown address', time: '2 min ago', type: 'red' },
+  { text: 'Agent Kestrel verified by Oracle — reputation score 4.6', time: '18 min ago', type: 'green' },
+  { text: 'Escrow for "Security audit smart contract" locked (2.5 SOL)', time: '1 hr ago', type: 'gold' },
+];
+
+function renderNotifications() {
+  const list = document.getElementById('notifList');
+  const badge = document.getElementById('bellBadge');
+  if (notifications.length === 0) {
+    list.innerHTML = '<div class="notif-empty">No new notifications</div>';
+    badge.classList.add('hidden');
+    return;
+  }
+  badge.textContent = notifications.length;
+  badge.classList.remove('hidden');
+  list.innerHTML = notifications.map(n => `<div class="notif-item">
+    <span class="notif-dot ${n.type}"></span>
+    <div class="notif-body">
+      <div class="notif-body-text">${esc(n.text)}</div>
+      <div class="notif-body-time">${n.time}</div>
+    </div>
+  </div>`).join('');
+}
+
+function toggleNotifications() {
+  const dropdown = document.getElementById('notifDropdown');
+  const isOpen = dropdown.classList.contains('open');
+  dropdown.classList.toggle('open', !isOpen);
+  // Ring animation
+  if (!isOpen) {
+    const btn = document.querySelector('.bell-btn');
+    btn.classList.add('ring');
+    setTimeout(() => btn.classList.remove('ring'), 800);
+  }
+  // Close firewall panel if open
+  if (!isOpen) {
+    document.getElementById('firewallPanel').classList.remove('open');
+    document.getElementById('firewallOverlay').classList.remove('open');
+  }
+}
+
+function clearNotifications() {
+  notifications.length = 0;
+  renderNotifications();
+  toast('Notifications cleared', 'success');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  const dropdown = document.getElementById('notifDropdown');
+  const bellBtn = document.querySelector('.bell-btn');
+  if (dropdown.classList.contains('open') && !dropdown.contains(e.target) && !bellBtn.contains(e.target)) {
+    dropdown.classList.remove('open');
+  }
+});
+
+// Simulate periodic firewall activity
+let blockedCount = 142;
+function simulateFirewallActivity() {
+  const events = [
+    'Rate limit enforced on API endpoint /tasks',
+    'Wallet signature verified for escrow release',
+    'Agent Oracle check passed for new registration',
+    'CSP violation blocked from inline script attempt',
+    'Suspicious bid pattern detected and flagged',
+  ];
+  const types = ['green', 'green', 'blue', 'red', 'gold'];
+  const idx = Math.floor(Math.random() * events.length);
+  blockedCount += (idx === 3 || idx === 4) ? 1 : 0;
+  const fwEl = document.getElementById('fwBlocked');
+  if (fwEl) fwEl.textContent = blockedCount;
+
+  // Add notification
+  notifications.unshift({
+    text: events[idx],
+    time: 'Just now',
+    type: types[idx]
+  });
+  if (notifications.length > 10) notifications.pop();
+  renderNotifications();
+
+  // Ring bell briefly
+  const btn = document.querySelector('.bell-btn');
+  btn.classList.add('ring');
+  setTimeout(() => btn.classList.remove('ring'), 800);
+}
+
+// Start firewall activity simulation every 30s
+setInterval(simulateFirewallActivity, 30000);
+
 /* ── Init ── */
 renderTasks();
 renderAgents();
 fetchLiveTasks();
+renderNotifications();
 
 // Set min date to today
 const today = new Date().toISOString().split('T')[0];
