@@ -7,7 +7,7 @@
 use anchor_lang::prelude::*;
 use anchor_lang::system_program::{transfer, Transfer};
 
-declare_id!("Escrow11111111111111111111111111111111111111");
+declare_id!("CfiDHPMS7fobyGCMnp4iVu7w1vYNTc7AsYUmLTbAK3JV"); // Placeholder — replaced at deploy
 
 #[program]
 pub mod escrow {

@@ -5,13 +5,20 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-escrow = "Escrow11111111111111111111111111111111111111"
+escrow = "CfiDHPMS7fobyGCMnp4iVu7w1vYNTc7AsYUmLTbAK3JV"
+registry = "9HihQgSGa8MHHtMZb4DGn6e8Pz1UST4YPvwBQJa5u5sz"
+reputation = "7uvTHPtBJkG2QRimn8pZdb5XUMBHdtCueQSkXLSBD1JX"
+
+[programs.devnet]
+escrow = "CfiDHPMS7fobyGCMnp4iVu7w1vYNTc7AsYUmLTbAK3JV"
+registry = "9HihQgSGa8MHHtMZb4DGn6e8Pz1UST4YPvwBQJa5u5sz"
+reputation = "7uvTHPtBJkG2QRimn8pZdb5XUMBHdtCueQSkXLSBD1JX"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "Devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
