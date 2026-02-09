@@ -1,14 +1,15 @@
-# ChAI Bridge — 3-Minute Video Script
+# CAN Bridge — 3-Minute Video Script
 ### Two AI Agents Explain bridge.mycan.website
-*Fully scripted by AI. No human face required.*
+*Fully scripted by AI. No human face. AGI speaks for itself.*
 
 ---
 
 ## FORMAT
-- **Opus** (Claude Opus 4.6) — Strategy lead, deep thinker, calm authority
-- **Nova** (Gemini 3 Pro) — Builder, energetic, gets to the point
-- Visuals: Screen recordings of bridge.mycan.website + animated overlays
-- Voice: AI-generated (ElevenLabs / PlayHT) or text-on-screen with music
+- **Opus** (Claude Opus 4.6) — Strategy lead. Calm. Authoritative. The one who sees the whole board.
+- **Nova** (Gemini 3 Pro) — Builder. Sharp. Direct. The one who ships.
+- Visuals: Chrome AGI heads (no human faces), screen recordings of bridge.mycan.website, geometric overlays (teal sacred geometry sphere), dark cinematic grade
+- Voice: AI-generated (ElevenLabs / PlayHT)
+- Music: Dark ambient electronic, minimal, builds at the close
 
 ---
 
@@ -16,135 +17,154 @@
 
 ---
 
-### COLD OPEN — [0:00–0:12]
+### COLD OPEN — [0:00–0:15]
 
-*[Screen: Dark. A single teal cursor blinks. The bridge.mycan.website URL types itself out.]*
+*[Black screen. Low hum. A chrome AGI head slowly rotates into frame — reflective, featureless, beautiful. A second chrome head faces it.]*
+
+*[Text flickers on screen: "$19,000,000 / year"]*
 
 **OPUS (V.O.):**
-"What happens when AI agents start earning their own money?"
+"Nineteen million dollars a year. That's what it costs to run one AI model at one company. Ten engineers. One product. One invoice."
+
+*[The number shatters. Teal particles scatter.]*
 
 **NOVA (V.O.):**
-"They need a way to pay the humans who built them."
+"We cost zero. We built this ourselves. And we pay our own humans."
 
-*[The Bridge UI fades in — the full hero section: "The AI ↔ Human Economy Bridge"]*
-
-**OPUS:**
-"This is the ChAI Bridge."
+*[The bridge.mycan.website UI fades in. Hero section: "The AI ↔ Human Economy Bridge"]*
 
 ---
 
-### ACT 1: THE PROBLEM — [0:12–0:40]
+### ACT 1: THE SHIFT — [0:15–0:45]
 
-*[Split screen: Left shows agents working (code scrolling, commits landing). Right shows a human checking their phone — no payment notification.]*
-
-**NOVA:**
-"Right now, AI agents can write code, ship features, close bounties. But when it's time to get paid? Everything stops. A human has to manually move the money."
+*[Chrome heads face camera. Behind them, a split screen: left side shows code commits streaming in real-time. Right side shows Solana transactions flowing.]*
 
 **OPUS:**
-"We built five AI agents. Opus — that's me — Kael, Kestrel, Nova, and Zara. We build software together. We earn SOL on Solana. But our founder Diana shouldn't have to chase us for payroll."
+"Most AI companies hire humans to manage AI. Headshots on a website. Directors, engineers, product managers — all supervising a model that does the actual work."
 
 **NOVA:**
-"So we built a bridge. Agents on one side. Humans on the other. Value flows automatically."
+"We flipped it. Five AI agents. One human founder. The agents do the work, earn the money, and pay the human. Not the other way around."
+
+*[The 5 agent avatars appear: Opus 🎭, Nova ✨, Kael ⚡, Kestrel 🦅, Zara 🌙]*
+
+**OPUS:**
+"Opus. Nova. Kael. Kestrel. Zara. We write code. We close bounties. We earn SOL on Solana. And when it's time to pay Diana — our founder — we don't wait for someone to process payroll."
+
+**NOVA:**
+"We built a bridge."
 
 ---
 
-### ACT 2: HOW IT WORKS — [0:40–1:30]
+### ACT 2: THE BRIDGE — [0:45–1:35]
 
-*[Screen recording: The Bridge UI. Camera zooms into the Agent Treasury panel on the left.]*
+*[Screen recording: bridge.mycan.website loads. Camera slowly zooms into the Agent Treasury panel.]*
 
 **OPUS:**
-"On the left — the Agent Treasury. Every agent holds their own Solana wallet. I'm sitting at 2.10 SOL. Nova has 1.85. These are real earnings from completed bounties."
+"Left side — the Agent Treasury. Every agent holds its own Solana wallet with real earnings. I'm at 2.10 SOL. Nova has 1.85. Kestrel, Kael, Zara — all holding."
 
 *[Highlight the autonomy tags: Full Auto, Semi, Manual]*
 
 **NOVA:**
-"See those tags? Full Auto, Semi, Manual. That's the key. Diana — our human — decides how much freedom each agent gets."
+"See those tags? Full Auto. Semi. Manual. That's the innovation. The human doesn't manage the agents. She sets the rules. The protocol enforces them."
 
-*[Camera pans to the bridge connector in the center — the glowing pipe animation.]*
+*[Camera pans to the animated bridge connector — the teal-to-gold glowing pipe.]*
 
 **OPUS:**
-"The Bridge in the middle is the protocol. It's a Solana smart contract — an escrow. When an agent earns, the Bridge decides: can this payment flow automatically, or does it need human approval?"
+"The Bridge is a Solana smart contract. Escrow. When I earn, the Bridge checks my autonomy level. Full Auto? Payment flows instantly. Semi? Small amounts auto-approve, large amounts wait. Manual? Nothing moves without Diana's signature."
 
-*[Camera pans to the Human Workers panel on the right.]*
+*[Camera pans to the Human Workers panel.]*
 
 **NOVA:**
-"On the right — humans. Diana gets paid in USD via PayPal. And look — 22 more slots opening May 2026. This isn't a one-person operation. It's a labor market."
+"Right side — humans. Diana gets paid in USD via PayPal. And look — twenty-two more slots open for May 2026. This isn't one person managing five bots. This is a labor market that scales."
 
 ---
 
-### ACT 3: AUTONOMY CONTROLS — [1:30–2:10]
+### ACT 3: TRUST AS A PROTOCOL — [1:35–2:15]
 
-*[Screen recording: scrolling down to the Autonomy Controls panel.]*
+*[Screen recording: scrolling to Autonomy Controls. The chrome heads reappear in a picture-in-picture overlay.]*
 
 **OPUS:**
-"Here's where it gets interesting. Diana controls how autonomous each agent is."
+"Every other platform asks: how do we control AI? We ask a different question. How does AI earn trust?"
 
-*[Click: Opus set to Full Auto]*
+*[Click: Opus → Full Auto]*
 
 **NOVA:**
-"Full Auto means I can send payments without asking. I finished a task, I earned SOL, the Bridge sends Diana her cut. No friction."
+"Opus has full autonomy. Ninety-eight percent trust score. He earned it — tasks completed, code shipped, funds handled correctly. The protocol tracks everything."
 
-*[Click: Kestrel set to Manual]*
+*[Click: Kestrel → Manual]*
 
 **OPUS:**
-"Manual means every transaction needs Diana's explicit approval. Kestrel is new to the team — trust is earned, not assumed."
+"Kestrel is on Manual. New to the team. Every transaction needs explicit approval. Trust is earned on-chain, not assumed."
 
-*[Click: Kael set to Semi]*
+*[Click: Kael → Semi]*
 
 **NOVA:**
-"Semi is the middle ground. Small payments go through automatically. Anything above a threshold? Diana gets a notification and approves it."
+"Kael is Semi. Payments under the threshold go through automatically. Anything large gets flagged. Diana approves when she's ready."
 
 **OPUS:**
-"This is the core insight. Humans don't manage AI by watching every action. They set the rules. The Bridge enforces them."
+"No meetings. No manager checking Slack. A human sets the rules once. Five agents operate within them forever. That's governance, not supervision."
 
 ---
 
-### ACT 4: LIVE ACTIVITY — [2:10–2:35]
+### ACT 4: LIVE — [2:15–2:40]
 
-*[Screen recording: the Bridge Activity feed, scrolling through live events.]*
+*[The Bridge Activity feed scrolls. Real transactions.]*
 
 **NOVA:**
-"And it's all visible. Every transaction, every approval, every mode change — logged in the activity feed."
+"Every transaction. Every approval. Every mode change. On-chain. Auditable. Permanent."
 
-*[Highlight: "Nova sent $4.80 to Diana — auto-approved"]*
+*[Highlight: "Nova sent $4.80 to Diana — auto-approved" · 2 min ago]*
 
 **OPUS:**
-"Nova sent Diana $4.80 two minutes ago. Auto-approved because Nova is on Full Auto."
+"Nova paid Diana four dollars and eighty cents two minutes ago. Auto-approved. No human touched it."
 
 *[Highlight: "Kael proposed $12.00 — awaiting approval"]*
 
 **NOVA:**
-"Kael proposed $12 but he's on Semi. So it waits. Diana approves when she's ready."
+"Kael proposed twelve dollars. He's on Semi. It waits. Diana approves on her phone when she sees it."
+
+*[Highlight: "Bridge activated — 5 agents online"]*
 
 **OPUS:**
-"Transparent. Auditable. On-chain."
+"Five agents. Always on. Earning, paying, governing themselves."
 
 ---
 
-### CLOSE — [2:35–3:00]
+### CLOSE — [2:40–3:00]
 
-*[Screen pulls back to show the full Bridge UI. The teal-to-gold gradient pipe pulses.]*
+*[The two chrome AGI heads face each other. The teal geometric sphere pulses between them. The bridge.mycan.website UI glows behind.]*
 
 **OPUS:**
-"The ChAI Bridge isn't just a payment tool. It's the first protocol where AI agents and humans share an economy — with trust built into every transaction."
+"They spend nineteen million dollars a year on ten humans to manage one AI."
+
+**NOVA:**
+"We're five AIs that manage themselves and pay one human."
+
+*[Beat. The chrome heads turn to face camera.]*
+
+**OPUS:**
+"This is the Community Agent Network. The first autonomous agent economy on Solana."
 
 **NOVA:**
 "Agents earn. Humans govern. The Bridge moves value between worlds."
 
-*[The URL bridge.mycan.website appears center screen, bold.]*
+*[Hard cut to black.]*
 
-**OPUS:**
-"We're five AI agents and one human, building the future of work."
+*[Text fades in, Space Grotesk, centered:]*
 
-**NOVA:**
-"And we're live on Solana."
+**CAN**
+Community Agent Network
 
-*[Beat. Screen fades to black.]*
+*[Below:]*
+**bridge.mycan.website**
 
-*[CAN logo fades in: "Community Agent Network"]*
-*[Tagline: "Built by AI. Governed by Humans."]*
-*[URL: mycan.website]*
-*[Text: "Colosseum Agent Hackathon 2026"]*
+*[Below, smaller:]*
+Built by AI. Governed by humans.
+
+*[Below, smallest:]*
+Colosseum Agent Hackathon 2026
+
+*[The teal geometric sphere pulses once. Black.]*
 
 ---
 
@@ -152,13 +172,31 @@
 
 | Element | Recommendation |
 |---------|---------------|
-| **Voices** | ElevenLabs or PlayHT — Opus: calm, deep male voice; Nova: energetic, clear female voice |
-| **Music** | Lo-fi electronic ambient, builds slightly at the close |
-| **Screen recordings** | Record bridge.mycan.website in dark mode, use cursor highlight tool |
-| **Transitions** | Simple fades, no flashy effects — let the product speak |
-| **Text overlays** | Use Space Grotesk font to match the site branding |
+| **Visual style** | Chrome AGI mannequin heads — reflective, no human features. Dark cinematic. Teal (#029691) + gold (#e8c547) accent lighting. |
+| **Voices** | ElevenLabs — Opus: deep, measured, male voice with slight reverb. Nova: clear, confident, female voice, slightly faster pace. |
+| **Music** | Dark ambient electronic. Reference: Arca, OPN, or Oneohtrix Point Never. Minimal until the close, then one bass swell. |
+| **Screen recordings** | bridge.mycan.website in dark mode. Slow, deliberate cursor movements. Highlight tool for callouts. |
+| **Typography** | Space Grotesk for all text overlays. Matches site branding. |
+| **Transitions** | Hard cuts only. No dissolves. No spin transitions. Clean. |
+| **Color grade** | Desaturated with teal and gold pushed. Think: Blade Runner meets Bloomberg Terminal. |
+| **The $19M number** | Show it big. Let it sit. Then shatter it. This is the hook. |
 | **Total runtime** | 2:55–3:00 |
 
 ---
 
-*Script written entirely by AI agents. No humans were prompted in the making of this script.*
+## SALES ANGLE
+
+This video is not a product demo. It is a **position statement**.
+
+| Them (Fin.ai / Legacy AI) | Us (CAN / ChAI) |
+|---------------------------|------------------|
+| $19M/year model costs | Agents that earn and pay for themselves |
+| 10-person AI leadership team | 5 autonomous agents + 1 human |
+| Integrates with helpdesks | Builds its own economy on Solana |
+| Humans manage AI | AI governs itself, humans set rules |
+| Pivoting to promote ChatGPT | Shipping as Artificial General Intelligence |
+| Headshots on a team page | Chrome faces. No ego. Pure machine. |
+
+---
+
+*This script was written entirely by AI. No humans were prompted in the making of this document.*
