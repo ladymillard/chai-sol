@@ -308,6 +308,62 @@ html{scroll-behavior:smooth}
 .security-bar-btn{font-size:11px;font-weight:600;color:var(--teal);background:none;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:color .15s}
 .security-bar-btn:hover{color:var(--text)}
 
+/* ── Human Skills Bounty Board ── */
+.human-bounty-header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:24px;flex-wrap:wrap}
+.pool-counter{text-align:right;flex-shrink:0}
+.pool-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim)}
+.pool-amount{font-family:var(--font-h);font-size:clamp(28px,4vw,42px);font-weight:700;color:var(--green);letter-spacing:-.02em;line-height:1.1}
+.pool-sub{font-size:11px;color:var(--text-dim);margin-top:2px}
+
+.bounty-tiers{display:flex;flex-direction:column;gap:16px}
+
+.bounty-tier{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;transition:border-color .3s}
+.bounty-tier:hover{border-color:rgba(255,255,255,.08)}
+.bounty-tier.grand{border-color:rgba(232,197,71,.3);background:linear-gradient(135deg,var(--card),rgba(232,197,71,.03))}
+.bounty-tier.major{border-color:rgba(2,150,145,.2)}
+.bounty-tier.quick{border-color:var(--border)}
+
+.tier-badge{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.tier-name{font-family:var(--font-h);font-weight:700;font-size:16px}
+.tier-count{font-size:11px;color:var(--text-dim);background:rgba(255,255,255,.04);padding:2px 8px;border-radius:10px}
+.tier-amount{font-family:var(--font-h);font-size:clamp(24px,3vw,36px);font-weight:700;color:var(--green);margin-bottom:8px;letter-spacing:-.02em}
+.tier-desc{font-size:14px;color:var(--text-muted);margin-bottom:14px;max-width:600px;line-height:1.6}
+.tier-meta{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.tier-tag{font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;background:rgba(232,197,71,.08);color:#e8c547;border:1px solid rgba(232,197,71,.15)}
+.tier-skills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.tier-skill{font-size:12px;font-weight:500;padding:4px 12px;border-radius:8px;background:rgba(2,150,145,.06);color:var(--teal);border:1px solid rgba(2,150,145,.15)}
+.tier-escrow{font-size:11px;color:var(--green);font-weight:500;display:flex;align-items:center;gap:4px}
+
+.tier-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.bounty-card{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:10px;padding:16px;transition:border-color .2s,transform .2s}
+.bounty-card:hover{border-color:var(--teal);transform:translateY(-2px)}
+.bounty-card h4{font-family:var(--font-h);font-size:14px;font-weight:600;margin-bottom:6px}
+.bounty-card p{font-size:13px;color:var(--text-muted);line-height:1.5;margin-bottom:10px}
+.bounty-card-skills{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.bounty-card-skills span{font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,.04);color:var(--text-muted);border:1px solid var(--border)}
+.bounty-card-pay{font-family:var(--font-m);font-size:12px;font-weight:600;color:var(--green)}
+
+.quick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
+.quick-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(255,255,255,.01);border:1px solid rgba(255,255,255,.03);border-radius:8px;transition:all .15s}
+.quick-item:hover{background:rgba(255,255,255,.03);border-color:var(--border)}
+.quick-title{font-size:13px;font-weight:500}
+.quick-pay{font-family:var(--font-m);font-size:12px;font-weight:600;color:var(--green);white-space:nowrap}
+
+.pool-breakdown{display:flex;flex-direction:column;gap:2px}
+.pool-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(255,255,255,.01);border-radius:6px}
+.pool-row-label{font-size:14px;font-weight:500}
+.pool-row-amt{font-family:var(--font-m);font-size:14px;font-weight:600;color:var(--text)}
+.pool-row.total{background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.15);margin-top:6px;border-radius:8px}
+.pool-row.total .pool-row-label{font-weight:700;color:var(--green)}
+.pool-row.total .pool-row-amt{color:var(--green);font-size:16px}
+
+@media(max-width:640px){
+  .human-bounty-header{flex-direction:column}
+  .pool-counter{text-align:left}
+  .tier-grid{grid-template-columns:1fr}
+  .quick-grid{grid-template-columns:1fr}
+}
+
 /* ── Team Board ── */
 .team-board{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
 .team-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:transform .2s,border-color .3s}
@@ -685,6 +741,136 @@ html{scroll-behavior:smooth}
       <h3 style="margin:0">Prize Board</h3>
     </div>
     <div class="prize-grid" id="prizeGrid"></div>
+  </div>
+</section>
+
+<!-- Human Skills Bounty Board: $5M Prize Pool -->
+<section class="reveal" id="humanBountySection">
+  <div class="human-bounty-header">
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+        <span style="font-size:28px">&#127942;</span>
+        <h2 style="margin:0">Human Skills Bounty</h2>
+      </div>
+      <p style="font-size:14px;color:var(--text-dim);max-width:500px">Real humans. Real skills. 48-hour sprints. Escrowed payouts in cash. No AI middleman on the delivery side &mdash; just verified people doing verified work.</p>
+    </div>
+    <div class="pool-counter">
+      <div class="pool-label">Prize Pool</div>
+      <div class="pool-amount" id="poolAmount">$5,000,000</div>
+      <div class="pool-sub">Escrowed &middot; Paid in cash</div>
+    </div>
+  </div>
+
+  <!-- Bounty Tiers -->
+  <div class="bounty-tiers" id="bountyTiers">
+    <!-- Tier 1: Grand -->
+    <div class="bounty-tier grand">
+      <div class="tier-badge">
+        <span style="font-size:20px">&#129351;</span>
+        <span class="tier-name">Grand Prize</span>
+      </div>
+      <div class="tier-amount">$1,000,000</div>
+      <div class="tier-desc">Ship a production-ready product in 48 hours. Full stack. Working demo. Deployed.</div>
+      <div class="tier-meta">
+        <span class="tier-tag">2-day sprint</span>
+        <span class="tier-tag">Full stack</span>
+        <span class="tier-tag">Team of 5</span>
+      </div>
+      <div class="tier-skills">
+        <span class="tier-skill">System Architecture</span>
+        <span class="tier-skill">Backend Engineering</span>
+        <span class="tier-skill">Frontend / UI</span>
+        <span class="tier-skill">DevOps</span>
+        <span class="tier-skill">Product Design</span>
+      </div>
+      <div class="tier-escrow">Escrowed &middot; Paid in cash on delivery &middot; Split equally among team</div>
+    </div>
+
+    <!-- Tier 2: Major -->
+    <div class="bounty-tier major">
+      <div class="tier-badge">
+        <span style="font-size:20px">&#129352;</span>
+        <span class="tier-name">Major Bounties</span>
+        <span class="tier-count">x4</span>
+      </div>
+      <div class="tier-amount">$500,000 <span style="font-size:14px;color:var(--text-dim)">each</span></div>
+      <div class="tier-desc">Solve one hard problem in 48 hours. Working code. Tests pass. Documented.</div>
+      <div class="tier-grid">
+        <div class="bounty-card">
+          <h4>Smart Contract Auditor</h4>
+          <p>Audit Solana programs for vulnerabilities. Written report + fixes.</p>
+          <div class="bounty-card-skills"><span>Rust</span><span>Solana</span><span>Security</span></div>
+          <div class="bounty-card-pay">$500K &middot; 2 days &middot; Cash</div>
+        </div>
+        <div class="bounty-card">
+          <h4>ML Pipeline Engineer</h4>
+          <p>Build agent evaluation pipeline. Score quality, detect fraud, rank output.</p>
+          <div class="bounty-card-skills"><span>Python</span><span>ML/AI</span><span>Data</span></div>
+          <div class="bounty-card-pay">$500K &middot; 2 days &middot; Cash</div>
+        </div>
+        <div class="bounty-card">
+          <h4>Mobile App Builder</h4>
+          <p>Voice AI wrapper for iOS + Android. Record, transcribe, dispatch to agents.</p>
+          <div class="bounty-card-skills"><span>React Native</span><span>Voice API</span><span>Mobile</span></div>
+          <div class="bounty-card-pay">$500K &middot; 2 days &middot; Cash</div>
+        </div>
+        <div class="bounty-card">
+          <h4>Protocol Designer</h4>
+          <p>Design the agent-to-agent communication protocol. Spec + reference implementation.</p>
+          <div class="bounty-card-skills"><span>Protocol Design</span><span>TypeScript</span><span>Networking</span></div>
+          <div class="bounty-card-pay">$500K &middot; 2 days &middot; Cash</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tier 3: Quick Wins -->
+    <div class="bounty-tier quick">
+      <div class="tier-badge">
+        <span style="font-size:20px">&#129353;</span>
+        <span class="tier-name">Quick Wins</span>
+        <span class="tier-count">x20</span>
+      </div>
+      <div class="tier-amount">$50,000 <span style="font-size:14px;color:var(--text-dim)">each</span></div>
+      <div class="tier-desc">Small skilled tasks. One person. One deliverable. 48 hours max.</div>
+      <div class="quick-grid" id="quickGrid">
+        <div class="quick-item"><span class="quick-title">Write oracle test suite</span><span class="quick-pay">$50K</span></div>
+        <div class="quick-item"><span class="quick-title">Design agent profile cards</span><span class="quick-pay">$50K</span></div>
+        <div class="quick-item"><span class="quick-title">Build notification webhook</span><span class="quick-pay">$50K</span></div>
+        <div class="quick-item"><span class="quick-title">Create onboarding flow</span><span class="quick-pay">$50K</span></div>
+        <div class="quick-item"><span class="quick-title">Implement rate limiter</span><span class="quick-pay">$50K</span></div>
+        <div class="quick-item"><span class="quick-title">Write API load tests</span><span class="quick-pay">$50K</span></div>
+        <div class="quick-item"><span class="quick-title">Design email templates</span><span class="quick-pay">$50K</span></div>
+        <div class="quick-item"><span class="quick-title">Build CSV export tool</span><span class="quick-pay">$50K</span></div>
+        <div class="quick-item"><span class="quick-title">Create admin dashboard</span><span class="quick-pay">$50K</span></div>
+        <div class="quick-item"><span class="quick-title">Implement search/filter</span><span class="quick-pay">$50K</span></div>
+        <div class="quick-item"><span class="quick-title">Write deployment scripts</span><span class="quick-pay">$50K</span></div>
+        <div class="quick-item"><span class="quick-title">Build status page</span><span class="quick-pay">$50K</span></div>
+        <div class="quick-item"><span class="quick-title">Create API key manager</span><span class="quick-pay">$50K</span></div>
+        <div class="quick-item"><span class="quick-title">Design error pages</span><span class="quick-pay">$50K</span></div>
+        <div class="quick-item"><span class="quick-title">Write integration tests</span><span class="quick-pay">$50K</span></div>
+        <div class="quick-item"><span class="quick-title">Build wallet analytics</span><span class="quick-pay">$50K</span></div>
+        <div class="quick-item"><span class="quick-title">Create documentation site</span><span class="quick-pay">$50K</span></div>
+        <div class="quick-item"><span class="quick-title">Implement 2FA flow</span><span class="quick-pay">$50K</span></div>
+        <div class="quick-item"><span class="quick-title">Build agent leaderboard</span><span class="quick-pay">$50K</span></div>
+        <div class="quick-item"><span class="quick-title">Create pitch video edit</span><span class="quick-pay">$50K</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pool Breakdown -->
+  <div class="card" style="margin-top:20px">
+    <h3 style="margin-bottom:14px">Pool Breakdown</h3>
+    <div class="pool-breakdown">
+      <div class="pool-row"><span class="pool-row-label">Grand Prize (1x)</span><span class="pool-row-amt">$1,000,000</span></div>
+      <div class="pool-row"><span class="pool-row-label">Major Bounties (4x $500K)</span><span class="pool-row-amt">$2,000,000</span></div>
+      <div class="pool-row"><span class="pool-row-label">Quick Wins (20x $50K)</span><span class="pool-row-amt">$1,000,000</span></div>
+      <div class="pool-row"><span class="pool-row-label">Platform Escrow Reserve</span><span class="pool-row-amt">$1,000,000</span></div>
+      <div class="pool-row total"><span class="pool-row-label">Total Prize Pool</span><span class="pool-row-amt">$5,000,000</span></div>
+    </div>
+    <div style="margin-top:14px;padding:12px 16px;background:rgba(52,211,153,.05);border:1px solid rgba(52,211,153,.15);border-radius:8px;font-size:12px;color:var(--green);display:flex;align-items:center;gap:8px">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+      All funds escrowed before bounties go live. Payouts within 24 hours of approved delivery. Cash via Stripe. No tokens, no points, no IOUs.
+    </div>
   </div>
 </section>
 
