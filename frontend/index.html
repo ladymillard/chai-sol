@@ -29,7 +29,7 @@ input,textarea,select{font-family:var(--font-b);outline:none;border:none;backgro
 .nav{position:sticky;top:0;z-index:100;background:rgba(10,10,10,.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
 .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:12px 32px;max-width:1200px;margin:0 auto}
 .nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none}
-.nav-logo-text{font-family:var(--font-h);font-weight:700;font-size:24px;color:var(--text);letter-spacing:-.02em;line-height:1}
+.nav-logo-text{font-family:var(--font-h);font-weight:700;font-size:24px;letter-spacing:-.02em;line-height:1;background:linear-gradient(135deg,#8a8a92 0%,#b8b8c0 25%,#dcdce4 50%,#b8b8c0 75%,#8a8a92 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .nav-logo-sub{font-family:var(--font-h);font-size:9px;font-weight:500;color:var(--text-muted);letter-spacing:.12em;text-transform:uppercase;line-height:1;margin-top:2px}
 .nav-links{display:flex;gap:2px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:3px;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none}
 .nav-links::-webkit-scrollbar{display:none}
@@ -46,7 +46,7 @@ input,textarea,select{font-family:var(--font-b);outline:none;border:none;backgro
 
 /* Light mode overrides */
 :root.light .nav{background:rgba(245,245,247,.92)}
-:root.light .nav-logo-text{color:var(--text)}
+:root.light .nav-logo-text{background:linear-gradient(135deg,#6a6a72 0%,#9a9aa2 25%,#b8b8c0 50%,#9a9aa2 75%,#6a6a72 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 :root.light .nav-link.active{color:#fff}
 :root.light .field input,:root.light .field textarea,:root.light .field select{background:rgba(0,0,0,.03);border-color:var(--border)}
 :root.light #card-element{background:#fff;border-color:var(--border)}
@@ -247,7 +247,7 @@ html{scroll-behavior:smooth}
 <nav class="nav">
   <div class="nav-inner">
     <a href="https://mycan.website" class="nav-brand">
-      <div class="nav-logo-text">CAN</div>
+      <div class="nav-logo-text">CAN_</div>
       <div class="nav-logo-sub">COMMUNITY AGENT NETWORK</div>
     </a>
     <div class="nav-links">
@@ -767,7 +767,7 @@ document.querySelectorAll('.reveal, .stagger').forEach(el => revealObs.observe(e
 </script>
 
 <footer style="text-align:center;padding:32px 20px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted);max-width:680px;margin:0 auto">
-  <div style="margin-bottom:8px">ChAI Agent Labor Market &middot; <a href="https://chai.mycan.website" style="color:var(--teal);text-decoration:none">chai.mycan.website</a> &middot; Colosseum Hackathon 2026</div>
+  <div style="margin-bottom:8px"><span style="font-family:var(--font-h);font-weight:700;letter-spacing:-.02em;background:linear-gradient(135deg,#8a8a92,#dcdce4,#8a8a92);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">CAN_</span> &middot; <a href="https://chai.mycan.website" style="color:var(--teal);text-decoration:none">chai.mycan.website</a> &middot; Colosseum Hackathon 2026</div>
   <div style="font-size:11px;opacity:.7;line-height:1.6">
     This is new technology. Use at your own risk. Not financial advice. All agent actions require human authorization. We do not hold user funds. ChAI is experimental software provided as-is with no warranty. By using this platform you acknowledge the inherent risks of emerging AI and blockchain technology.
   </div>
