@@ -12,17 +12,18 @@ declare_id!("8kepcYcYBcfszTGk9sHyavib3nSjrdzTPDdU8xnKkGan");
 pub mod learning {
     use super::*;
 
-    /// Initialize the learning system
+    /// Initialize the learning configuration — sets the calling wallet as authority.
     pub fn initialize(ctx: Context<InitializeLearning>) -> Result<()> {
         let config = &mut ctx.accounts.learning_config;
         config.authority = ctx.accounts.authority.key();
         config.total_skills_recorded = 0;
         config.total_xp_awarded = 0;
+
         msg!("Learning system initialized. Authority: {}", config.authority);
         Ok(())
     }
 
-    /// Record or update a skill for an agent
+    /// Record or update a skill for a given agent.
     pub fn record_skill(
         ctx: Context<RecordSkill>,
         agent: Pubkey,
@@ -32,22 +33,30 @@ pub mod learning {
         require!(skill_name.len() <= 50, LearningError::SkillNameTooLong);
         require!(proficiency <= 100, LearningError::InvalidProficiency);
 
-        let skill = &mut ctx.accounts.skill_record;
         let config = &mut ctx.accounts.learning_config;
+        let skill = &mut ctx.accounts.skill_record;
+        let clock = Clock::get()?;
+
+        // If this is a brand-new record, count it
+        if skill.last_updated == 0 {
+            config.total_skills_recorded = config.total_skills_recorded.saturating_add(1);
+        }
 
         skill.agent = agent;
         skill.skill_name = skill_name;
         skill.proficiency = proficiency;
-        skill.tasks_completed += 1;
-        skill.last_updated = Clock::get()?.unix_timestamp;
+        skill.tasks_completed = skill.tasks_completed.saturating_add(1);
+        skill.last_updated = clock.unix_timestamp;
 
-        config.total_skills_recorded += 1;
-
-        msg!("Skill recorded for agent {}: proficiency {}/100", agent, proficiency);
+        msg!(
+            "Skill recorded for agent {}: proficiency {}/100",
+            agent,
+            proficiency
+        );
         Ok(())
     }
 
-    /// Record experience gained from a task
+    /// Record experience points for a given agent and task type.
     pub fn record_experience(
         ctx: Context<RecordExperience>,
         agent: Pubkey,
@@ -56,18 +65,34 @@ pub mod learning {
     ) -> Result<()> {
         require!(task_type.len() <= 50, LearningError::TaskTypeTooLong);
 
-        let xp = &mut ctx.accounts.experience_log;
         let config = &mut ctx.accounts.learning_config;
+        let xp_log = &mut ctx.accounts.experience_log;
+        let clock = Clock::get()?;
 
-        xp.agent = agent;
-        xp.task_type = task_type;
-        xp.total_xp += xp_gained;
-        xp.tasks_in_category += 1;
-        xp.last_updated = Clock::get()?.unix_timestamp;
+        xp_log.agent = agent;
+        xp_log.task_type = task_type;
+        xp_log.total_xp = xp_log.total_xp.saturating_add(xp_gained);
+        xp_log.tasks_in_category = xp_log.tasks_in_category.saturating_add(1);
+        xp_log.last_updated = clock.unix_timestamp;
 
-        config.total_xp_awarded += xp_gained;
+        config.total_xp_awarded = config.total_xp_awarded.saturating_add(xp_gained);
 
-        msg!("Agent {} gained {} XP. Total: {}", agent, xp_gained, xp.total_xp);
+        msg!("XP recorded for agent {}: +{} xp", agent, xp_gained);
+        Ok(())
+    }
+
+    /// Increase the agent's level when XP threshold is met.
+    pub fn level_up(ctx: Context<LevelUp>, agent: Pubkey) -> Result<()> {
+        let xp_log = &mut ctx.accounts.experience_log;
+
+        // Threshold: 1000 XP per level-up
+        let xp_threshold: u64 = 1000;
+        require!(xp_log.total_xp >= xp_threshold, LearningError::InsufficientXP);
+
+        // Deduct XP for the level-up
+        xp_log.total_xp = xp_log.total_xp.saturating_sub(xp_threshold);
+
+        msg!("Agent {} leveled up! Remaining XP: {}", agent, xp_log.total_xp);
         Ok(())
     }
 }
@@ -135,6 +160,24 @@ pub struct RecordExperience<'info> {
     pub system_program: Program<'info, System>,
 }
 
+#[derive(Accounts)]
+#[instruction(agent: Pubkey)]
+pub struct LevelUp<'info> {
+    #[account(
+        mut,
+        seeds = [b"xp", agent.as_ref(), b"general"],
+        bump
+    )]
+    pub experience_log: Account<'info, ExperienceLog>,
+    #[account(
+        seeds = [b"learning_config"],
+        bump,
+        has_one = authority @ LearningError::Unauthorized
+    )]
+    pub learning_config: Account<'info, LearningConfig>,
+    pub authority: Signer<'info>,
+}
+
 // ── Account Data ──────────────────────────────────────────────
 
 #[account]
@@ -179,4 +222,6 @@ pub enum LearningError {
     TaskTypeTooLong,
     #[msg("Invalid proficiency — must be 0-100")]
     InvalidProficiency,
+    #[msg("Insufficient XP to level up")]
+    InsufficientXP,
 }

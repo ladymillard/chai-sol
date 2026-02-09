@@ -1,7 +1,7 @@
 [package]
 name = "container"
 version = "0.1.0"
-description = "Smart Container — Agent Homes on Solana"
+description = "Smart Container — an agent's persistent home on chain for ChAI"
 edition = "2021"
 
 [lib]

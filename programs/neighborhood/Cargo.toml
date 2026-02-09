@@ -1,7 +1,7 @@
 [package]
 name = "neighborhood"
 version = "0.1.0"
-description = "Container-to-Container Mesh Network — Agent Neighborhoods"
+description = "Container-to-container mesh networking for ChAI agents"
 edition = "2021"
 
 [lib]
