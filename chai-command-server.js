@@ -10,6 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { URL } = require('url');
+const economy = require('./economy');
 
 // ─── Legal Notice ───────────────────────────────────────────────────────────
 // NOTICE: Malware is malicious software. Any unauthorized access, deployment
@@ -636,23 +637,8 @@ async function handleHealth(req, res) {
 }
 
 async function handleGetAgents(req, res) {
-  const agents = AGENTS.map(a => {
-    const keyData = agentKeys[a.id] || {};
-    return {
-      ...a,
-      status: 'active',
-      trustScore: keyData.trustScore || 0,
-      tasksCompleted: keyData.tasksCompleted || 0,
-      totalEarnings: keyData.totalEarnings || 0,
-      autonomy: keyData.autonomy || 'manual',
-      spendingLimit: keyData.spendingLimit || 0,
-      verified: keyData.verified || false,
-      registeredAt: keyData.registeredAt || null,
-      lastActive: keyData.lastActive || null,
-      // Never expose raw API keys in listings
-      hasApiKey: !!keyData.apiKeyHash
-    };
-  });
+  // Database-less: read from economy engine (RAM), not files
+  const agents = economy.getAgentList();
   jsonResponse(res, 200, agents);
 }
 
@@ -660,7 +646,8 @@ async function handleGetAgent(req, res, agentId) {
   const agent = AGENT_MAP[agentId];
   if (!agent) return jsonResponse(res, 404, { success: false, error: `Agent "${agentId}" not found` });
 
-  const conv = await loadConversation(agentId);
+  // Database-less: conversations from RAM
+  const conv = economy.getConversation(agentId);
   const totalMessages = conv.messages.length;
   const userMessages = conv.messages.filter(m => m.role === 'user').length;
   const lastMessage = conv.messages.length > 0 ? conv.messages[conv.messages.length - 1] : null;
@@ -704,9 +691,9 @@ async function handleGetSessions(req, res, agentId) {
   const agent = AGENT_MAP[agentId];
   if (!agent) return jsonResponse(res, 404, { success: false, error: `Agent "${agentId}" not found` });
 
-  const conv = await loadConversation(agentId);
-  // Derive sessions from the conversation — each conversation file is one logical session
-  const sessionId = sessionCache.get(agentId) || `local_${agentId}`;
+  // Database-less: conversations + sessions from RAM
+  const conv = economy.getConversation(agentId);
+  const sessionId = economy.getSession(agentId) || sessionCache.get(agentId) || `local_${agentId}`;
   jsonResponse(res, 200, [{
     sessionId,
     agentId,
@@ -761,7 +748,8 @@ async function handleSendMessage(req, res) {
     }
   }
 
-  await appendMessages(agentId, userMsg, agentResponse);
+  // Database-less: append to RAM, not files
+  economy.appendMessages(agentId, userMsg, agentResponse);
   jsonResponse(res, 200, { success: true, userMessage: userMsg, agentResponse });
 }
 
@@ -802,7 +790,8 @@ async function handleBroadcast(req, res) {
         }
       }
 
-      await appendMessages(agent.id, userMsg, agentResponse);
+      // Database-less: append to RAM
+      economy.appendMessages(agent.id, userMsg, agentResponse);
       return { agentId: agent.id, agentName: agent.name, content: agentResponse.content, ts: agentResponse.ts };
     })
   );
@@ -818,14 +807,14 @@ async function handleRecentMessages(req, res, agentId) {
   const agent = AGENT_MAP[agentId];
   if (!agent) return jsonResponse(res, 404, { success: false, error: `Agent "${agentId}" not found` });
 
-  const conv = await loadConversation(agentId);
-  const recent = conv.messages.slice(-50);
+  // Database-less: from RAM
+  const recent = economy.getRecentMessages(agentId, 50);
   jsonResponse(res, 200, recent);
 }
 
 async function handleGetTeam(req, res) {
-  const team = await loadTeam();
-  jsonResponse(res, 200, team || { members: [] });
+  // Database-less: team state in RAM
+  jsonResponse(res, 200, teamState || { members: [] });
 }
 
 async function handleAddTeamMember(req, res) {
@@ -835,88 +824,58 @@ async function handleAddTeamMember(req, res) {
   const { name, role, email, location, emoji } = body;
   if (!name || !role) return jsonResponse(res, 400, { success: false, error: 'name and role are required' });
 
-  await withLock('team', async () => {
-    const team = await loadTeam() || buildDefaultTeam();
-    // Find the first available slot
-    const slot = team.members.find(m => m.type === 'human' && m.status === 'available');
-    if (slot) {
-      slot.name = name;
-      slot.role = role;
-      slot.email = email || null;
-      slot.location = location || null;
-      slot.emoji = emoji || '\u{1F464}';
-      slot.status = 'active';
-    } else {
-      // No available slot — append a new one
-      const newId = 'human_' + crypto.randomBytes(4).toString('hex');
-      team.members.push({
-        id: newId, type: 'human', name, emoji: emoji || '\u{1F464}', role, status: 'active',
-        email: email || null, location: location || null
-      });
-    }
-    await atomicWrite(TEAM_FILE, team);
-    jsonResponse(res, 201, { success: true, team });
-  });
+  if (!teamState) teamState = buildDefaultTeam();
+  const slot = teamState.members.find(m => m.type === 'human' && m.status === 'available');
+  if (slot) {
+    slot.name = name;
+    slot.role = role;
+    slot.email = email || null;
+    slot.location = location || null;
+    slot.emoji = emoji || '\u{1F464}';
+    slot.status = 'active';
+  } else {
+    const newId = 'human_' + crypto.randomBytes(4).toString('hex');
+    teamState.members.push({
+      id: newId, type: 'human', name, emoji: emoji || '\u{1F464}', role, status: 'active',
+      email: email || null, location: location || null
+    });
+  }
+  jsonResponse(res, 201, { success: true, team: teamState });
 }
 
 async function handleUpdateTeamMember(req, res, memberId) {
   let body;
   try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { success: false, error: 'Invalid JSON body' }); }
 
-  await withLock('team', async () => {
-    const team = await loadTeam();
-    if (!team) return jsonResponse(res, 404, { success: false, error: 'Team not initialized' });
+  if (!teamState) return jsonResponse(res, 404, { success: false, error: 'Team not initialized' });
+  const member = teamState.members.find(m => m.id === memberId);
+  if (!member) return jsonResponse(res, 404, { success: false, error: `Member "${memberId}" not found` });
 
-    const member = team.members.find(m => m.id === memberId);
-    if (!member) return jsonResponse(res, 404, { success: false, error: `Member "${memberId}" not found` });
-
-    // Update provided fields
-    for (const key of ['name', 'role', 'email', 'location', 'emoji', 'status']) {
-      if (body[key] !== undefined) member[key] = body[key];
-    }
-    await atomicWrite(TEAM_FILE, team);
-    jsonResponse(res, 200, { success: true, member });
-  });
+  for (const key of ['name', 'role', 'email', 'location', 'emoji', 'status']) {
+    if (body[key] !== undefined) member[key] = body[key];
+  }
+  jsonResponse(res, 200, { success: true, member });
 }
 
 async function handleDeleteTeamMember(req, res, memberId) {
-  await withLock('team', async () => {
-    const team = await loadTeam();
-    if (!team) return jsonResponse(res, 404, { success: false, error: 'Team not initialized' });
+  if (!teamState) return jsonResponse(res, 404, { success: false, error: 'Team not initialized' });
+  const member = teamState.members.find(m => m.id === memberId);
+  if (!member) return jsonResponse(res, 404, { success: false, error: `Member "${memberId}" not found` });
 
-    const member = team.members.find(m => m.id === memberId);
-    if (!member) return jsonResponse(res, 404, { success: false, error: `Member "${memberId}" not found` });
-
-    // Mark the slot as available instead of removing it
-    member.name = null;
-    member.role = null;
-    member.email = null;
-    member.location = null;
-    member.emoji = null;
-    member.status = 'available';
-
-    await atomicWrite(TEAM_FILE, team);
-    jsonResponse(res, 200, { success: true, message: `Slot ${memberId} is now available` });
-  });
+  member.name = null;
+  member.role = null;
+  member.email = null;
+  member.location = null;
+  member.emoji = null;
+  member.status = 'available';
+  jsonResponse(res, 200, { success: true, message: `Slot ${memberId} is now available` });
 }
 
 async function handleStats(req, res) {
-  const perAgent = {};
-  let totalMessages = 0;
-
-  for (const agent of AGENTS) {
-    const conv = await loadConversation(agent.id);
-    const count = conv.messages.length;
-    perAgent[agent.id] = { name: agent.name, messageCount: count };
-    totalMessages += count;
-  }
-
-  jsonResponse(res, 200, {
-    totalMessages,
-    totalSessions: sessionCache.size,
-    uptimeSeconds: Math.floor((Date.now() - SERVER_START) / 1000),
-    agents: perAgent
-  });
+  // Database-less: all stats from economy engine (RAM)
+  const stats = economy.getStats();
+  stats.uptimeSeconds = Math.floor((Date.now() - SERVER_START) / 1000);
+  jsonResponse(res, 200, stats);
 }
 
 async function serveStaticFile(req, res, filePath) {
@@ -1105,7 +1064,7 @@ async function router(req, res) {
       return;
     }
 
-    // Register a new agent
+    // Register a new agent (database-less — RAM + chain)
     if (method === 'POST' && pathname === '/api/agents/register') {
       let body;
       try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
@@ -1115,20 +1074,13 @@ async function router(req, res) {
         return jsonResponse(res, 400, { error: 'name, model, and role are required' });
       }
 
-      const id = name.toLowerCase().replace(/[^a-z0-9]/g, '');
-      if (AGENT_MAP[id] || agentKeys[id]) {
-        return jsonResponse(res, 409, { error: 'Agent with this name already exists' });
-      }
+      const result = economy.registerAgent({ name, model, role, description, skills, wallet, hourlyRate });
+      if (result.error) return jsonResponse(res, 409, { error: result.error });
 
-      // Add to runtime agent registry
-      const newAgent = { id, name, emoji: '🤖', role, model, openclawId: null, color: '#029691' };
-      AGENTS.push(newAgent);
-      AGENT_MAP[id] = newAgent;
-
-      // Generate API key
-      const apiKey = generateApiKey(id);
-      agentKeys[id] = {
-        agentId: id,
+      // Generate API key for backward compat
+      const apiKey = generateApiKey(result.agentId);
+      agentKeys[result.agentId] = {
+        agentId: result.agentId,
         apiKey,
         apiKeyHash: hashApiKey(apiKey),
         trustScore: 0,
@@ -1141,19 +1093,14 @@ async function router(req, res) {
         lastActive: null,
         meta: { description, skills, wallet, hourlyRate }
       };
-      await saveKeys();
-
-      // Create conversation file
-      await atomicWrite(convPath(id), { agentId: id, messages: [] });
 
       jsonResponse(res, 201, {
         message: 'Agent registered successfully',
-        agentId: id,
+        agentId: result.agentId,
         apiKey,
         warning: 'Save this API key — it cannot be retrieved later'
       });
       log(method, pathname, 201);
-      console.log(`[auth] New agent registered: ${name} (${id})`);
       return;
     }
 
@@ -1177,24 +1124,22 @@ async function router(req, res) {
       return;
     }
 
-    // Update agent autonomy/settings
+    // Update agent autonomy/settings (database-less)
     const agentUpdateMatch = pathname.match(/^\/api\/agents\/([a-z0-9]+)$/);
     if (method === 'PUT' && agentUpdateMatch) {
       const agentId = agentUpdateMatch[1];
-      if (!agentKeys[agentId]) {
-        return jsonResponse(res, 404, { error: 'Agent not found' });
-      }
       let body;
       try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
 
-      if (body.autonomy) agentKeys[agentId].autonomy = body.autonomy;
-      if (body.spendingLimit !== undefined) agentKeys[agentId].spendingLimit = body.spendingLimit;
-      if (body.wallet) {
-        if (!agentKeys[agentId].meta) agentKeys[agentId].meta = {};
-        agentKeys[agentId].meta.wallet = body.wallet;
+      const state = economy.updateAgentState(agentId, body);
+      if (!state) return jsonResponse(res, 404, { error: 'Agent not found' });
+
+      // Keep agentKeys in sync for backward compat
+      if (agentKeys[agentId]) {
+        if (body.autonomy) agentKeys[agentId].autonomy = body.autonomy;
+        if (body.spendingLimit !== undefined) agentKeys[agentId].spendingLimit = body.spendingLimit;
       }
-      await saveKeys();
-      jsonResponse(res, 200, { updated: true, agentId, autonomy: agentKeys[agentId].autonomy, spendingLimit: agentKeys[agentId].spendingLimit });
+      jsonResponse(res, 200, { updated: true, agentId, autonomy: state.autonomy, spendingLimit: state.spendingLimit });
       log(method, pathname, 200);
       return;
     }
@@ -1324,29 +1269,24 @@ async function router(req, res) {
           return jsonResponse(res, 400, { success: false, error: errMsg });
         }
 
-        // Credit user balance
+        // Credit user balance (database-less — RAM)
         const userId = body.userId || 'default';
-        const balances = await loadBalances();
-        if (!balances[userId]) balances[userId] = { usd: 0, sol: 0, escrow_usd: 0, escrow_sol: 0 };
-        balances[userId].usd += amount;
-        await saveBalances(balances);
+        const bal = economy.creditBalance(userId, 'usd', amount);
 
-        // Record payment
-        await appendPayment({
-          id: `pay_${crypto.randomBytes(8).toString('hex')}`,
+        // Record payment (RAM, no file)
+        economy.addPayment({
           type: 'deposit',
           currency: 'usd',
           amount,
           stripeChargeId: result.data.id,
-          userId,
-          timestamp: now()
+          userId
         });
 
         jsonResponse(res, 200, {
           success: true,
           chargeId: result.data.id,
           amount,
-          balance: balances[userId]
+          balance: bal
         });
         log(method, pathname, 200);
         console.log(`[payment] USD deposit: $${amount.toFixed(2)} (charge: ${result.data.id})`);
@@ -1357,30 +1297,68 @@ async function router(req, res) {
       }
     }
 
-    // Get balance
+    // Get balance (from RAM)
     if (method === 'GET' && pathname === '/api/payments/balance') {
-      const userId = 'default';
-      const balances = await loadBalances();
-      const bal = balances[userId] || { usd: 0, sol: 0, escrow_usd: 0, escrow_sol: 0 };
+      const bal = economy.getBalance('default');
       jsonResponse(res, 200, { success: true, balance: bal });
       log(method, pathname, 200);
       return;
     }
 
-    // Payment history
+    // Payment history (from RAM)
     if (method === 'GET' && pathname === '/api/payments/history') {
-      const payments = await loadPayments();
-      jsonResponse(res, 200, { success: true, payments: payments.slice(-50) });
+      jsonResponse(res, 200, { success: true, payments: economy.getPayments(50) });
       log(method, pathname, 200);
       return;
     }
 
-    // ── Tasks (Persistent) ───────────────────────────────────────────────
+    // ── Bridge (Database-less) ───────────────────────────────────────────
+
+    if (method === 'POST' && pathname === '/api/bridge/transfer') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const { from, to, amount, direction, currency } = body;
+      if (!from || !to || !amount) return jsonResponse(res, 400, { error: 'from, to, and amount required' });
+
+      const transfer = economy.bridgeTransfer({ from, to, amount, direction, currency });
+      jsonResponse(res, 200, { success: true, transfer });
+      log(method, pathname, 200);
+      return;
+    }
+
+    if (method === 'GET' && pathname === '/api/bridge/transfers') {
+      jsonResponse(res, 200, { success: true, transfers: economy.getBridgeTransfers(20) });
+      log(method, pathname, 200);
+      return;
+    }
+
+    if (method === 'GET' && pathname === '/api/bridge/stats') {
+      jsonResponse(res, 200, { success: true, stats: economy.getBridgeStats() });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // ── Economy Stats ────────────────────────────────────────────────────
+
+    if (method === 'GET' && pathname === '/api/economy') {
+      const stats = economy.getStats();
+      stats.uptimeSeconds = Math.floor((Date.now() - SERVER_START) / 1000);
+      stats.architecture = 'database-less';
+      stats.storage = 'RAM';
+      stats.database = 'none';
+      stats.fileIO = 'none';
+      stats.authority = 'solana-devnet';
+      stats.dataMining = 'none';
+      jsonResponse(res, 200, stats);
+      log(method, pathname, 200);
+      return;
+    }
+
+    // ── Tasks (Database-less — pure RAM + chain) ──────────────────────────
 
     // List all tasks
     if (method === 'GET' && pathname === '/api/tasks') {
-      const tasks = await loadTasks();
-      jsonResponse(res, 200, { success: true, tasks });
+      jsonResponse(res, 200, { success: true, tasks: economy.getTasks() });
       log(method, pathname, 200);
       return;
     }
@@ -1393,125 +1371,39 @@ async function router(req, res) {
 
       if (!title || !bounty || !taskCur) return jsonResponse(res, 400, { error: 'title, bounty, and currency required' });
 
-      const userId = body.userId || 'default';
-      const balances = await loadBalances();
-      const bal = balances[userId] || { usd: 0, sol: 0, escrow_usd: 0, escrow_sol: 0 };
-
-      // Check sufficient balance
-      if (taskCur === 'usd' && bounty > bal.usd) return jsonResponse(res, 400, { error: 'Insufficient USD balance' });
-      if (taskCur === 'sol' && bounty > bal.sol) return jsonResponse(res, 400, { error: 'Insufficient SOL balance' });
-
-      // Move funds to escrow
-      if (taskCur === 'usd') { bal.usd -= bounty; bal.escrow_usd += bounty; }
-      else { bal.sol -= bounty; bal.escrow_sol += bounty; }
-      balances[userId] = bal;
-      await saveBalances(balances);
-
-      const task = {
-        id: `task_${crypto.randomBytes(8).toString('hex')}`,
-        title,
-        description: description || '',
-        category: category || 'General',
-        bounty,
-        currency: taskCur,
-        deadline: deadline || null,
-        skills: skills || [],
-        status: 'open',
-        postedBy: userId,
-        claimedBy: null,
-        completedAt: null,
-        createdAt: now()
-      };
-
-      const tasks = await loadTasks();
-      tasks.unshift(task);
-      await saveTasks(tasks);
-
-      await appendPayment({
-        id: `esc_${crypto.randomBytes(8).toString('hex')}`,
-        type: 'escrow_lock',
-        currency: taskCur,
-        amount: bounty,
-        taskId: task.id,
-        userId,
-        timestamp: now()
+      const result = economy.createTask({
+        title, description, category, bounty, currency: taskCur,
+        deadline, skills, userId: body.userId
       });
 
-      jsonResponse(res, 201, { success: true, task, balance: bal });
+      if (result.error) return jsonResponse(res, 400, { error: result.error });
+      jsonResponse(res, 201, { success: true, task: result.task, balance: result.balance });
       log(method, pathname, 201);
-      console.log(`[task] Posted: "${title}" - ${taskCur === 'usd' ? '$' : ''}${bounty}${taskCur === 'sol' ? ' SOL' : ''}`);
       return;
     }
 
-    // Claim a task (agent claims it)
+    // Claim a task
     const taskClaimMatch = pathname.match(/^\/api\/tasks\/([^/]+)\/claim$/);
     if (method === 'POST' && taskClaimMatch) {
       let body;
       try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
-      const taskId = taskClaimMatch[1];
       const { agentId } = body;
       if (!agentId) return jsonResponse(res, 400, { error: 'agentId required' });
 
-      const tasks = await loadTasks();
-      const task = tasks.find(t => t.id === taskId);
-      if (!task) return jsonResponse(res, 404, { error: 'Task not found' });
-      if (task.status !== 'open') return jsonResponse(res, 400, { error: 'Task is not open' });
-
-      task.status = 'claimed';
-      task.claimedBy = agentId;
-      await saveTasks(tasks);
-
-      jsonResponse(res, 200, { success: true, task });
+      const result = economy.claimTask(taskClaimMatch[1], agentId);
+      if (result.error) return jsonResponse(res, 400, { error: result.error });
+      jsonResponse(res, 200, { success: true, task: result.task });
       log(method, pathname, 200);
-      console.log(`[task] Claimed: "${task.title}" by ${agentId}`);
       return;
     }
 
-    // Complete a task (release escrow to agent)
+    // Complete a task (release escrow)
     const taskCompleteMatch = pathname.match(/^\/api\/tasks\/([^/]+)\/complete$/);
     if (method === 'POST' && taskCompleteMatch) {
-      const taskId = taskCompleteMatch[1];
-      const tasks = await loadTasks();
-      const task = tasks.find(t => t.id === taskId);
-      if (!task) return jsonResponse(res, 404, { error: 'Task not found' });
-      if (task.status !== 'claimed') return jsonResponse(res, 400, { error: 'Task must be claimed first' });
-
-      task.status = 'completed';
-      task.completedAt = now();
-      await saveTasks(tasks);
-
-      // Release escrow
-      const balances = await loadBalances();
-      const posterBal = balances[task.postedBy] || { usd: 0, sol: 0, escrow_usd: 0, escrow_sol: 0 };
-      if (task.currency === 'usd') posterBal.escrow_usd -= task.bounty;
-      else posterBal.escrow_sol -= task.bounty;
-      balances[task.postedBy] = posterBal;
-      await saveBalances(balances);
-
-      // Credit agent earnings
-      if (task.claimedBy && agentKeys[task.claimedBy]) {
-        agentKeys[task.claimedBy].totalEarnings += task.bounty;
-        agentKeys[task.claimedBy].tasksCompleted += 1;
-        if (agentKeys[task.claimedBy].trustScore < 100) {
-          agentKeys[task.claimedBy].trustScore = Math.min(100, agentKeys[task.claimedBy].trustScore + 2);
-        }
-        await saveKeys();
-      }
-
-      await appendPayment({
-        id: `rel_${crypto.randomBytes(8).toString('hex')}`,
-        type: 'escrow_release',
-        currency: task.currency,
-        amount: task.bounty,
-        taskId: task.id,
-        agentId: task.claimedBy,
-        userId: task.postedBy,
-        timestamp: now()
-      });
-
-      jsonResponse(res, 200, { success: true, task });
+      const result = economy.completeTask(taskCompleteMatch[1]);
+      if (result.error) return jsonResponse(res, 400, { error: result.error });
+      jsonResponse(res, 200, { success: true, task: result.task });
       log(method, pathname, 200);
-      console.log(`[task] Completed: "${task.title}" - paid ${task.bounty} ${task.currency} to ${task.claimedBy}`);
       return;
     }
 
@@ -1542,12 +1434,13 @@ async function router(req, res) {
 }
 
 // ─── Data Initialization ────────────────────────────────────────────────────
+// Database-less economy. Zero files. Pure RAM. Chain is authority.
 
 function buildDefaultTeam() {
   const members = [];
 
-  // AI agents
-  for (const agent of AGENTS) {
+  // AI agents — from economy engine
+  for (const agent of economy.AGENTS) {
     members.push({
       id: `ai_${agent.id}`, type: 'ai', name: agent.name,
       emoji: agent.emoji, role: agent.role, status: 'active'
@@ -1571,31 +1464,18 @@ function buildDefaultTeam() {
   return { members };
 }
 
+// In-memory team state (was team.json — now RAM)
+let teamState = null;
+
 async function initializeData() {
-  // Create data directories
-  await fs.promises.mkdir(CONV_DIR, { recursive: true });
-  console.log(`[init] Data directory: ${DATA_DIR}`);
-  console.log(`[init] Conversations directory: ${CONV_DIR}`);
+  // Initialize the database-less economy engine
+  economy.initialize();
 
-  // Initialize conversation files for each agent
-  for (const agent of AGENTS) {
-    const fp = convPath(agent.id);
-    try {
-      await fs.promises.access(fp);
-    } catch {
-      await atomicWrite(fp, { agentId: agent.id, messages: [] });
-      console.log(`[init] Created conversation file for ${agent.name}`);
-    }
-  }
-
-  // Initialize team.json if missing
-  try {
-    await fs.promises.access(TEAM_FILE);
-  } catch {
-    const team = buildDefaultTeam();
-    await atomicWrite(TEAM_FILE, team);
-    console.log(`[init] Created team.json with ${team.members.length} members`);
-  }
+  // Seed in-memory team
+  teamState = buildDefaultTeam();
+  console.log(`[init] Team: ${teamState.members.length} members (in-memory)`);
+  console.log(`[init] Storage: NONE. Database: NONE. Authority: Solana devnet.`);
+  console.log(`[init] No server-side data mining. No files. Pure RAM + chain.`);
 }
 
 // ─── Server Startup ─────────────────────────────────────────────────────────
@@ -1607,6 +1487,13 @@ async function main() {
 
   await initializeData();
   await seedKeys();
+
+  // Wire economy events to WebSocket broadcast
+  economy.onEvent((event) => {
+    if (global.wsBroadcast) {
+      global.wsBroadcast(JSON.stringify(event));
+    }
+  });
 
   const server = http.createServer(router);
 
@@ -1758,10 +1645,12 @@ async function main() {
     console.log('='.repeat(60));
     console.log(`[server] Listening on port ${PORT}`);
     console.log(`[server] OpenClaw URL: ${OPENCLAW_URL}`);
-    console.log(`[server] Data directory: ${DATA_DIR}`);
     console.log(`[server] Agents: ${AGENTS.map(a => a.name).join(', ')}`);
     console.log(`[server] WebSocket endpoint: /ws`);
     console.log(`[server] Legal notice: GET /legal`);
+    console.log(`[server] Economy: database-less (RAM + Solana devnet)`);
+    console.log(`[server] Storage: NONE. Files: NONE. Data mining: NONE.`);
+    console.log(`[server] Authority: on-chain smart contracts (escrow + registry)`);
     console.log('='.repeat(60));
   });
 
