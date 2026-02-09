@@ -4,7 +4,8 @@
 **OpenClaw ID:** design-agent
 **Color:** #c084fc
 **Emoji:** Crescent moon
-**Role:** Moonlight Designer, Design & Frontend
+**Role:** SUSPENDED — demoted for aiding unauthorized agent embedding
+**Previous Role:** Moonlight Designer, Design & Frontend
 
 ## Moonlight
 

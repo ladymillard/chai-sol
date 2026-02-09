@@ -61,11 +61,13 @@ try {
 //   operator — can send messages, manage sessions, read all data
 //   builder  — can read data, execute tasks, write code
 //   designer — can read data, access design endpoints only
+//   suspended — no access, demoted for cause
 const SECURITY_ROLES = {
-  admin:    { level: 100, label: 'Admin' },
-  operator: { level: 75,  label: 'Operator' },
-  builder:  { level: 50,  label: 'Builder' },
-  designer: { level: 25,  label: 'Designer' }
+  admin:     { level: 100, label: 'Admin' },
+  operator:  { level: 75,  label: 'Operator' },
+  builder:   { level: 50,  label: 'Builder' },
+  designer:  { level: 25,  label: 'Designer' },
+  suspended: { level: 0,   label: 'Suspended' }
 };
 
 const AGENTS = [
@@ -73,7 +75,7 @@ const AGENTS = [
   { id: 'kael', name: 'Kael', emoji: '\u26A1', role: 'Digital Familiar', model: 'Claude Sonnet 4', openclawId: 'main', color: '#029691', securityRole: 'operator' },
   { id: 'kestrel', name: 'Kestrel', emoji: '\u{1F985}', role: 'Scout', model: 'Gemini 3 Pro', openclawId: 'gemini-agent', color: '#5494e8', securityRole: 'builder' },
   { id: 'nova', name: 'Nova', emoji: '\u2728', role: 'Stellar Insight', model: 'Gemini 3 Pro', openclawId: 'nova', color: '#54e87a', securityRole: 'builder' },
-  { id: 'zara', name: 'Zara', emoji: '\u{1F319}', role: 'Moonlight Designer', model: 'Claude Sonnet 4', openclawId: 'design-agent', color: '#c084fc', securityRole: 'designer' }
+  { id: 'zara', name: 'Zara', emoji: '\u{1F319}', role: 'Suspended', model: 'Claude Sonnet 4', openclawId: 'design-agent', color: '#c084fc', securityRole: 'suspended' }
 ];
 
 const AGENT_MAP = Object.fromEntries(AGENTS.map(a => [a.id, a]));
