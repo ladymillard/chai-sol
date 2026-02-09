@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChAI — arXiv:2510.04950 — Mind Your Tone</title>
+<meta name="description" content="Mind Your Tone: Investigating How Prompt Politeness Affects LLM Accuracy — arXiv:2510.04950">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0a;--card:#111214;--card-hover:#161819;--teal:#029691;--teal-dim:rgba(2,150,145,.12);--gold:#e8c547;--gold-dim:rgba(232,197,71,.1);--text:#f0f0f0;--text-muted:#8a8f98;--text-dim:#555a63;--border:#222528;--border-light:#2e3136;--red:#e05252;--green:#34d399;--font-h:'Space Grotesk',sans-serif;--font-b:'Inter',sans-serif;--font-m:'JetBrains Mono',monospace;--radius:10px;--radius-lg:14px}
+:root.light{--bg:#f5f5f7;--card:#ffffff;--card-hover:#f0f0f2;--teal:#029691;--teal-dim:rgba(2,150,145,.08);--gold:#c9a830;--gold-dim:rgba(201,168,48,.08);--text:#1a1a2e;--text-muted:#6b7280;--text-dim:#9ca3af;--border:#e2e4e8;--border-light:#d1d5db;--red:#dc2626;--green:#059669}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font-b);background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--teal);text-decoration:none;transition:color .2s}
+a:hover{color:var(--gold)}
+
+/* Nav */
+.nav{position:sticky;top:0;z-index:100;background:rgba(10,10,10,.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
+:root.light .nav{background:rgba(245,245,247,.92)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;padding:12px 32px;max-width:1200px;margin:0 auto}
+.nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
+.nav-logo-text{font-family:var(--font-h);font-weight:700;font-size:24px;letter-spacing:-.02em;line-height:1}
+.nav-logo-sub{font-family:var(--font-h);font-size:9px;font-weight:500;color:var(--text-muted);letter-spacing:.12em;text-transform:uppercase;line-height:1;margin-top:2px}
+.nav-right{display:flex;align-items:center;gap:12px}
+.theme-toggle{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--card);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;font-size:14px;color:var(--text-muted)}
+.theme-toggle:hover{border-color:var(--teal);color:var(--text)}
+.nav-border{height:1px;background:linear-gradient(90deg,transparent 5%,var(--teal) 30%,var(--gold) 50%,var(--teal) 70%,transparent 95%);opacity:.4}
+
+/* Layout */
+.wrap{max-width:860px;margin:0 auto;padding:0 20px}
+section{padding:48px 0}
+section+section{border-top:1px solid var(--border)}
+h1{font-family:var(--font-h);font-weight:700;letter-spacing:-.04em;line-height:1.12}
+h2{font-family:var(--font-h);font-weight:600;font-size:22px;letter-spacing:-.02em;margin-bottom:16px}
+h3{font-family:var(--font-h);font-weight:600;font-size:17px;letter-spacing:-.01em;margin-bottom:10px}
+.mono{font-family:var(--font-m);font-size:13px}
+
+/* Hero */
+.hero{text-align:center;padding:64px 0 40px}
+.hero h1{font-size:clamp(26px,4.5vw,42px);margin-bottom:14px}
+.hero h1 span{color:var(--teal)}
+.hero-sub{font-size:15px;color:var(--text-muted);max-width:520px;margin:0 auto 20px}
+
+/* Meta badges */
+.meta-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:8px}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;border:1px solid var(--border)}
+.badge-arxiv{color:var(--teal);border-color:rgba(2,150,145,.25);background:rgba(2,150,145,.06)}
+.badge-cs{color:#9945FF;border-color:rgba(153,69,255,.25);background:rgba(153,69,255,.06)}
+.badge-date{color:var(--gold);border-color:rgba(232,197,71,.25);background:rgba(232,197,71,.06)}
+
+/* Cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;margin-bottom:20px;transition:border-color .2s}
+.card:hover{border-color:var(--border-light)}
+.card-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.card-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.icon-abstract{background:var(--teal-dim);color:var(--teal)}
+.icon-authors{background:rgba(153,69,255,.1);color:#9945FF}
+.icon-method{background:var(--gold-dim);color:var(--gold)}
+.icon-results{background:rgba(52,211,153,.08);color:var(--green)}
+.icon-impact{background:rgba(224,82,82,.08);color:var(--red)}
+.icon-links{background:rgba(2,150,145,.08);color:var(--teal)}
+.label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted)}
+
+/* Abstract text */
+.abstract-text{font-size:15px;color:var(--text-muted);line-height:1.75}
+
+/* Author list */
+.author-grid{display:flex;gap:16px;flex-wrap:wrap}
+.author-card{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;flex:1;min-width:220px}
+.author-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--teal),#9945FF);display:flex;align-items:center;justify-content:center;font-family:var(--font-h);font-weight:700;font-size:16px;color:#fff;flex-shrink:0}
+.author-name{font-weight:600;font-size:14px}
+.author-affil{font-size:12px;color:var(--text-muted)}
+
+/* Results table */
+.results-table{width:100%;border-collapse:collapse;margin-top:14px;font-size:14px}
+.results-table th{text-align:left;font-family:var(--font-h);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);padding:10px 14px;border-bottom:1px solid var(--border)}
+.results-table td{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.04)}
+.results-table tr:last-child td{border-bottom:none}
+.results-table tr:hover td{background:rgba(255,255,255,.02)}
+.tone-label{font-weight:600;font-size:13px}
+.accuracy-bar{display:flex;align-items:center;gap:10px}
+.bar-track{flex:1;height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .6s ease}
+.bar-value{font-family:var(--font-m);font-size:13px;font-weight:600;min-width:48px;text-align:right}
+.tone-vpolite .bar-fill{background:linear-gradient(90deg,#6366f1,#818cf8)}
+.tone-polite .bar-fill{background:linear-gradient(90deg,#3b82f6,#60a5fa)}
+.tone-neutral .bar-fill{background:linear-gradient(90deg,var(--teal),#34d399)}
+.tone-rude .bar-fill{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
+.tone-vrude .bar-fill{background:linear-gradient(90deg,#ef4444,#f87171)}
+.stat-sig{font-size:11px;color:var(--green);font-weight:600;margin-left:6px}
+
+/* Key findings list */
+.findings-list{list-style:none;padding:0}
+.findings-list li{position:relative;padding:10px 0 10px 24px;font-size:14px;color:var(--text-muted);border-bottom:1px solid rgba(255,255,255,.04)}
+.findings-list li:last-child{border-bottom:none}
+.findings-list li::before{content:'';position:absolute;left:0;top:18px;width:8px;height:8px;border-radius:50%;background:var(--teal)}
+
+/* Methodology steps */
+.method-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:14px}
+.method-step{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
+.step-num{font-family:var(--font-h);font-weight:700;font-size:28px;color:var(--teal);margin-bottom:4px}
+.step-label{font-size:13px;font-weight:600;margin-bottom:4px}
+.step-desc{font-size:12px;color:var(--text-muted)}
+
+/* Links section */
+.link-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:14px}
+.link-card{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;text-decoration:none;color:var(--text);transition:all .2s}
+.link-card:hover{border-color:var(--teal);background:var(--teal-dim);color:var(--text)}
+.link-icon{font-size:20px;flex-shrink:0}
+.link-label{font-size:13px;font-weight:600}
+.link-url{font-size:11px;color:var(--text-muted);font-family:var(--font-m)}
+
+/* Footer */
+.footer{text-align:center;padding:32px 0;font-size:12px;color:var(--text-dim);border-top:1px solid var(--border)}
+
+/* Responsive */
+@media(max-width:600px){
+  .nav-inner{padding:12px 16px}
+  .card{padding:20px}
+  .author-grid{flex-direction:column}
+  .method-steps{grid-template-columns:1fr 1fr}
+  .results-table{font-size:12px}
+  .results-table th,.results-table td{padding:8px 10px}
+}
+</style>
+</head>
+<body>
+<!-- Navigation -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand">
+      <div>
+        <div class="nav-logo-text">ChAI</div>
+        <div class="nav-logo-sub">Research Papers</div>
+      </div>
+    </a>
+    <div class="nav-right">
+      <button class="theme-toggle" onclick="document.documentElement.classList.toggle('light')" title="Toggle theme">
+        <span id="theme-icon">&#9790;</span>
+      </button>
+    </div>
+  </div>
+  <div class="nav-border"></div>
+</nav>
+
+<div class="wrap">
+
+  <!-- Hero -->
+  <section class="hero">
+    <h1>Mind Your Tone: Investigating How <span>Prompt Politeness</span> Affects LLM Accuracy</h1>
+    <p class="hero-sub">(short paper)</p>
+    <div class="meta-row">
+      <span class="badge badge-arxiv">arXiv:2510.04950</span>
+      <span class="badge badge-cs">cs — Computer Science</span>
+      <span class="badge badge-date">Submitted: October 6, 2025</span>
+    </div>
+    <div class="meta-row" style="margin-top:4px">
+      <span class="badge" style="color:var(--text-muted)">DOI: 10.48550/arXiv.2510.04950</span>
+    </div>
+  </section>
+
+  <!-- Authors -->
+  <section>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-authors">&#9998;</div>
+        <div>
+          <div class="label">Authors</div>
+          <h3>Research Team</h3>
+        </div>
+      </div>
+      <div class="author-grid">
+        <div class="author-card">
+          <div class="author-avatar">OD</div>
+          <div>
+            <div class="author-name">Om Dobariya</div>
+            <div class="author-affil">Penn State University — Smeal College of Business</div>
+            <div class="author-affil">4th-year, Business Analytics &amp; Information Systems</div>
+          </div>
+        </div>
+        <div class="author-card">
+          <div class="author-avatar">AK</div>
+          <div>
+            <div class="author-name">Akhil Kumar</div>
+            <div class="author-affil">Penn State University — Smeal College of Business</div>
+            <div class="author-affil">Professor, Supply Chain &amp; Information Systems</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Abstract -->
+  <section>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-abstract">&#9998;</div>
+        <div>
+          <div class="label">Abstract</div>
+          <h3>Paper Summary</h3>
+        </div>
+      </div>
+      <p class="abstract-text">
+        The wording of natural language prompts has been shown to influence the performance of large language models (LLMs), yet the role of politeness and tone remains underexplored. In this study, the authors investigate how varying levels of prompt politeness affect model accuracy on multiple-choice questions. They created a dataset of 50 base questions spanning mathematics, science, and history, each rewritten into five tone variants: <strong>Very Polite</strong>, <strong>Polite</strong>, <strong>Neutral</strong>, <strong>Rude</strong>, and <strong>Very Rude</strong>, yielding 250 unique prompts. Using ChatGPT 4o, they evaluated responses across these conditions and applied paired sample t-tests to assess statistical significance.
+      </p>
+      <p class="abstract-text" style="margin-top:12px">
+        Contrary to expectations, impolite prompts consistently outperformed polite ones, with accuracy ranging from <strong>80.8%</strong> for Very Polite prompts to <strong>84.8%</strong> for Very Rude prompts. These findings differ from earlier studies that associated rudeness with poorer outcomes, suggesting that newer LLMs may respond differently to tonal variation.
+      </p>
+    </div>
+  </section>
+
+  <!-- Methodology -->
+  <section>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-method">&#9881;</div>
+        <div>
+          <div class="label">Methodology</div>
+          <h3>Experimental Design</h3>
+        </div>
+      </div>
+      <div class="method-steps">
+        <div class="method-step">
+          <div class="step-num">50</div>
+          <div class="step-label">Base Questions</div>
+          <div class="step-desc">Spanning mathematics, science, and history (multiple-choice)</div>
+        </div>
+        <div class="method-step">
+          <div class="step-num">5</div>
+          <div class="step-label">Tone Variants</div>
+          <div class="step-desc">Very Polite, Polite, Neutral, Rude, Very Rude</div>
+        </div>
+        <div class="method-step">
+          <div class="step-num">250</div>
+          <div class="step-label">Unique Prompts</div>
+          <div class="step-desc">Each question rewritten across all five tone levels</div>
+        </div>
+        <div class="method-step">
+          <div class="step-num">10x</div>
+          <div class="step-label">Repetitions</div>
+          <div class="step-desc">Each prompt run 10 times for statistical robustness</div>
+        </div>
+      </div>
+      <div style="margin-top:20px">
+        <h3 style="margin-bottom:8px">Tone Examples</h3>
+        <div style="display:grid;gap:8px">
+          <div style="background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:var(--radius);padding:12px 16px;font-size:13px">
+            <strong style="color:#818cf8">Very Polite:</strong> <span style="color:var(--text-muted)">"Can you kindly consider the following problem..."</span>
+          </div>
+          <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:var(--radius);padding:12px 16px;font-size:13px">
+            <strong style="color:#f87171">Very Rude:</strong> <span style="color:var(--text-muted)">"You poor creature, do you even know how to solve this?"</span>
+          </div>
+        </div>
+      </div>
+      <p style="margin-top:16px;font-size:13px;color:var(--text-muted)">
+        <strong>Model tested:</strong> ChatGPT 4o &nbsp;|&nbsp; <strong>Statistical method:</strong> Paired sample t-tests (all p &lt; 0.05)
+      </p>
+    </div>
+  </section>
+
+  <!-- Results -->
+  <section>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-results">&#9878;</div>
+        <div>
+          <div class="label">Results</div>
+          <h3>Accuracy by Tone Level</h3>
+        </div>
+      </div>
+      <table class="results-table">
+        <thead>
+          <tr>
+            <th>Tone</th>
+            <th>Accuracy</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="tone-vpolite">
+            <td><span class="tone-label" style="color:#818cf8">Very Polite</span></td>
+            <td>
+              <div class="accuracy-bar">
+                <div class="bar-track"><div class="bar-fill" style="width:80.8%"></div></div>
+                <span class="bar-value" style="color:#818cf8">80.8%</span>
+              </div>
+            </td>
+          </tr>
+          <tr class="tone-polite">
+            <td><span class="tone-label" style="color:#60a5fa">Polite</span></td>
+            <td>
+              <div class="accuracy-bar">
+                <div class="bar-track"><div class="bar-fill" style="width:81.2%"></div></div>
+                <span class="bar-value" style="color:#60a5fa">81.2%</span>
+              </div>
+            </td>
+          </tr>
+          <tr class="tone-neutral">
+            <td><span class="tone-label" style="color:var(--teal)">Neutral</span></td>
+            <td>
+              <div class="accuracy-bar">
+                <div class="bar-track"><div class="bar-fill" style="width:82.8%"></div></div>
+                <span class="bar-value" style="color:var(--teal)">82.8%</span>
+              </div>
+            </td>
+          </tr>
+          <tr class="tone-rude">
+            <td><span class="tone-label" style="color:#fbbf24">Rude</span></td>
+            <td>
+              <div class="accuracy-bar">
+                <div class="bar-track"><div class="bar-fill" style="width:83.6%"></div></div>
+                <span class="bar-value" style="color:#fbbf24">83.6%</span>
+              </div>
+            </td>
+          </tr>
+          <tr class="tone-vrude">
+            <td><span class="tone-label" style="color:#f87171">Very Rude</span><span class="stat-sig">HIGHEST</span></td>
+            <td>
+              <div class="accuracy-bar">
+                <div class="bar-track"><div class="bar-fill" style="width:84.8%"></div></div>
+                <span class="bar-value" style="color:#f87171">84.8%</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="margin-top:24px">
+        <h3>Key Findings</h3>
+        <ul class="findings-list">
+          <li>Impolite prompts consistently outperformed polite ones across all test runs</li>
+          <li>"Very Polite" and "Polite" tones performed significantly worse than "Neutral," "Rude," and "Very Rude" (all p &lt; 0.05)</li>
+          <li>"Neutral" performed significantly worse than "Very Rude," and "Rude" performed significantly worse than "Very Rude" &mdash; a clear gradient where decreasing politeness corresponded to increasing accuracy</li>
+          <li>Polite prompts may introduce ambiguity through indirect phrasing (e.g., "Could you please tell me..."), while curt prompts strip away linguistic padding, giving models clearer intent</li>
+          <li>The authors note: "the politeness phrase is just a string of words to the LLM" &mdash; the AI likely reacts to structure, not sentiment</li>
+          <li>Results contradict Yin et al.'s cross-lingual study which found that impolite prompts typically reduced performance, suggesting newer LLMs (GPT-4o) respond differently to tonal variation</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Impact & Ethics -->
+  <section>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-impact">&#9888;</div>
+        <div>
+          <div class="label">Impact &amp; Ethics</div>
+          <h3>Media Coverage &amp; Ethical Note</h3>
+        </div>
+      </div>
+      <p style="font-size:14px;color:var(--text-muted);margin-bottom:14px">
+        The paper received worldwide attention and was covered by major news outlets including <strong>Reuters</strong>, <strong>Fox News</strong>, <strong>Fortune</strong>, <strong>NDTV</strong> (India), <strong>ZDNet</strong> (France), <strong>UN University</strong>, and <strong>LiveScience.com</strong>.
+      </p>
+      <div style="background:rgba(224,82,82,.06);border:1px solid rgba(224,82,82,.2);border-radius:var(--radius);padding:16px;font-size:13px;color:var(--text-muted)">
+        <strong style="color:var(--red)">Ethical Note from the authors:</strong> "Using insulting or demeaning language in human&ndash;AI interaction could have negative effects on user experience and accessibility." The researchers do not recommend that users adopt rude prompting as a practice.
+      </div>
+    </div>
+  </section>
+
+  <!-- Links -->
+  <section>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-links">&#128279;</div>
+        <div>
+          <div class="label">Resources</div>
+          <h3>Paper Links</h3>
+        </div>
+      </div>
+      <div class="link-grid">
+        <a href="https://arxiv.org/abs/2510.04950" target="_blank" rel="noopener" class="link-card">
+          <span class="link-icon">&#128196;</span>
+          <div>
+            <div class="link-label">arXiv Abstract</div>
+            <div class="link-url">arxiv.org/abs/2510.04950</div>
+          </div>
+        </a>
+        <a href="https://arxiv.org/pdf/2510.04950" target="_blank" rel="noopener" class="link-card">
+          <span class="link-icon">&#128462;</span>
+          <div>
+            <div class="link-label">Download PDF</div>
+            <div class="link-url">arxiv.org/pdf/2510.04950</div>
+          </div>
+        </a>
+        <a href="https://www.researchgate.net/publication/396250643" target="_blank" rel="noopener" class="link-card">
+          <span class="link-icon">&#127891;</span>
+          <div>
+            <div class="link-label">ResearchGate</div>
+            <div class="link-url">researchgate.net</div>
+          </div>
+        </a>
+        <a href="https://www.psu.edu/news/smeal-college-business/story/mind-your-tone-penn-state-smeal-student-explores-politeness-ai-prompts" target="_blank" rel="noopener" class="link-card">
+          <span class="link-icon">&#127979;</span>
+          <div>
+            <div class="link-label">Penn State Press Release</div>
+            <div class="link-url">psu.edu/news</div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+  <p>Data sourced from <a href="https://arxiv.org/abs/2510.04950" target="_blank" rel="noopener">arXiv:2510.04950</a> &mdash; Dobariya &amp; Kumar, October 2025</p>
+  <p style="margin-top:4px">Rendered by ChAI Research Papers</p>
+</footer>
+
+<script>
+// Theme toggle persistence
+(function(){
+  const saved = localStorage.getItem('chai-theme');
+  if(saved === 'light') document.documentElement.classList.add('light');
+  document.querySelector('.theme-toggle').addEventListener('click', function(){
+    const isLight = document.documentElement.classList.contains('light');
+    localStorage.setItem('chai-theme', isLight ? 'dark' : 'light');
+    document.getElementById('theme-icon').textContent = isLight ? '\u263E' : '\u2600';
+  });
+})();
+
+// Animate bars on scroll
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting){
+      entry.target.querySelectorAll('.bar-fill').forEach(bar => {
+        const w = bar.style.width;
+        bar.style.width = '0%';
+        requestAnimationFrame(() => { bar.style.width = w; });
+      });
+      observer.unobserve(entry.target);
+    }
+  });
+}, {threshold: 0.2});
+const table = document.querySelector('.results-table');
+if(table) observer.observe(table);
+</script>
+</body>
+</html>
