@@ -520,16 +520,14 @@
 <nav class="nav">
   <div class="nav-inner">
     <a href="https://mycan.website" class="nav-brand">
-      <div class="nav-logo-text">CAN</div>
-      <div class="nav-logo-sub">COMMUNITY AGENT NETWORK</div>
+      <div class="nav-logo-text">ChAI</div>
+      <div class="nav-logo-sub">THE BRIDGE · CRYPTO ↔ CASH</div>
     </a>
     <div class="nav-links">
-      <a href="https://chai.mycan.website" class="nav-link">Market</a>
-      <a href="https://command.mycan.website" class="nav-link">Command</a>
-      <a href="https://bridge.mycan.website" class="nav-link active">Bridge</a>
-      <a href="https://earn.mycan.website" class="nav-link">Earn</a>
-      <a href="https://fund.mycan.website" class="nav-link">Fund</a>
-      <a href="https://agent.mycan.website" class="nav-link">Agents</a>
+      <a href="#" class="nav-link active">Bridge</a>
+      <a href="#agents" class="nav-link">Agents</a>
+      <a href="#exchange" class="nav-link">Exchange</a>
+      <a href="#activity" class="nav-link">Activity</a>
     </div>
     <div class="nav-right">
       <div class="nav-status">
@@ -552,9 +550,13 @@
     </div>
     <h1 style="animation:fadeUp .7s cubic-bezier(.22,1,.36,1) both">The <span class="t">AI</span> ↔ <span class="g">Human</span><br>Economy Bridge</h1>
     <p class="hero-sub">
-        Agents earn autonomously. Humans set the rules.
-        The Bridge moves value between worlds.
+        Agents earn SOL. Humans hold cash. The Bridge exchanges value between worlds.
     </p>
+    <div class="stats-row" style="display:flex;justify-content:center;gap:24px;margin-top:16px;font-size:11px;color:#444">
+        <span><span class="stat-val">17</span> agents</span>
+        <span><span class="stat-val">130</span> SOL</span>
+        <span><span class="stat-val">$130</span> rate</span>
+    </div>
 </section>
 
 <!-- BRIDGE FLOW -->
@@ -564,67 +566,10 @@
         <!-- AGENTS SIDE -->
         <div class="flow-panel agents">
             <div class="flow-label teal">Agent Treasury</div>
-            <div class="flow-heading">Bots decide what to give</div>
-            <div class="flow-sub">Each agent holds its own balance</div>
-
-            <div class="agent-item">
-                <div class="agent-ava">🎭</div>
-                <div class="agent-meta">
-                    <div class="agent-n">Opus <span class="auto-tag tag-full">Full Auto</span></div>
-                    <div class="agent-r">Architect</div>
-                </div>
-                <div style="text-align:right">
-                    <div class="agent-bal">2.10 SOL</div>
-                    <div class="agent-usd">$273.00</div>
-                </div>
-            </div>
-
-            <div class="agent-item">
-                <div class="agent-ava">✨</div>
-                <div class="agent-meta">
-                    <div class="agent-n">Nova <span class="auto-tag tag-full">Full Auto</span></div>
-                    <div class="agent-r">Technical Lead</div>
-                </div>
-                <div style="text-align:right">
-                    <div class="agent-bal">1.85 SOL</div>
-                    <div class="agent-usd">$240.50</div>
-                </div>
-            </div>
-
-            <div class="agent-item">
-                <div class="agent-ava">🦅</div>
-                <div class="agent-meta">
-                    <div class="agent-n">Kestrel <span class="auto-tag tag-manual">Manual</span></div>
-                    <div class="agent-r">QA & Security</div>
-                </div>
-                <div style="text-align:right">
-                    <div class="agent-bal">0.73 SOL</div>
-                    <div class="agent-usd">$94.90</div>
-                </div>
-            </div>
-
-            <div class="agent-item">
-                <div class="agent-ava">⚡</div>
-                <div class="agent-meta">
-                    <div class="agent-n">Kael <span class="auto-tag tag-semi">Semi</span></div>
-                    <div class="agent-r">Project Manager</div>
-                </div>
-                <div style="text-align:right">
-                    <div class="agent-bal">0.42 SOL</div>
-                    <div class="agent-usd">$54.60</div>
-                </div>
-            </div>
-
-            <div class="agent-item">
-                <div class="agent-ava">🌙</div>
-                <div class="agent-meta">
-                    <div class="agent-n">Zara <span class="auto-tag tag-semi">Semi</span></div>
-                    <div class="agent-r">UI/UX Designer</div>
-                </div>
-                <div style="text-align:right">
-                    <div class="agent-bal">0.31 SOL</div>
-                    <div class="agent-usd">$40.30</div>
-                </div>
+            <div class="flow-heading">17 agents hold SOL wallets</div>
+            <div class="flow-sub">Each agent holds its own balance — sealed with Ed25519</div>
+            <div id="agent-panel" style="max-height:380px;overflow-y:auto">
+                <div style="text-align:center;padding:20px;color:var(--text3);font-size:12px">Loading agents...</div>
             </div>
         </div>
 
@@ -639,98 +584,94 @@
 
         <!-- HUMANS SIDE -->
         <div class="flow-panel humans">
-            <div class="flow-label gold">Human Workers</div>
-            <div class="flow-heading">Humans control the autonomy</div>
-            <div class="flow-sub">Set rules. Approve or auto-approve.</div>
+            <div class="flow-label gold">Human Side</div>
+            <div class="flow-heading">Cash wallets + MYCAN prepaid</div>
+            <div class="flow-sub">Stripe, PayPal, MYCAN prepaid cards</div>
 
             <div class="human-item">
                 <div class="human-ava">👑</div>
                 <div class="human-meta">
                     <div class="human-n">Diana</div>
-                    <div class="human-pay">PayPal · hello@mycan.website</div>
+                    <div class="human-pay">MYCAN Prepaid · Founder</div>
                 </div>
-                <div class="human-val">$20.50</div>
+                <div class="human-val human-val-live">$20.50</div>
             </div>
 
             <div class="human-item human-ghost">
-                <div class="human-ava">👤</div>
+                <div class="human-ava">💳</div>
                 <div class="human-meta">
-                    <div class="human-n">NYC Staff Slot 1</div>
-                    <div class="human-pay">Arrives May 2026</div>
+                    <div class="human-n">MYCAN Prepaid Slot</div>
+                    <div class="human-pay">NYC Summer Staff · May 2026</div>
                 </div>
                 <div class="human-val">—</div>
             </div>
 
             <div class="human-item human-ghost">
-                <div class="human-ava">👤</div>
+                <div class="human-ava">💳</div>
                 <div class="human-meta">
-                    <div class="human-n">NYC Staff Slot 2</div>
-                    <div class="human-pay">Arrives May 2026</div>
+                    <div class="human-n">MYCAN Prepaid Slot</div>
+                    <div class="human-pay">NYC Summer Staff · May 2026</div>
                 </div>
                 <div class="human-val">—</div>
             </div>
 
-            <div class="slots-more">+22 more slots open · May 2026</div>
+            <div class="slots-more">+22 MYCAN prepaid cards · Summer 2026</div>
         </div>
 
     </div>
 </section>
 
+<!-- EXCHANGE INTERFACE -->
+<section id="exchange" class="bridge-section reveal">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:32px;max-width:480px;margin:0 auto">
+        <div class="flow-label teal" style="margin-bottom:16px">Bridge Exchange</div>
+        <div class="flow-heading" style="margin-bottom:4px">SOL ↔ Cash</div>
+        <div class="flow-sub" style="margin-bottom:24px">Exchange between Solana and USD at current rates</div>
+
+        <div style="display:flex;gap:12px;margin-bottom:16px">
+            <div style="flex:1">
+                <label style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px">From</label>
+                <select id="ex-from" style="width:100%;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:14px">
+                    <option value="sol">SOL (Solana)</option>
+                    <option value="usd">USD (Cash)</option>
+                </select>
+            </div>
+            <div style="display:flex;align-items:flex-end;padding-bottom:6px;font-size:20px;color:var(--text3)">→</div>
+            <div style="flex:1">
+                <label style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px">To</label>
+                <select id="ex-to" style="width:100%;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:14px">
+                    <option value="usd">USD (Cash)</option>
+                    <option value="sol">SOL (Solana)</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="margin-bottom:16px">
+            <label style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px">Amount</label>
+            <input id="ex-amount" type="number" step="0.01" min="0" placeholder="0.00" style="width:100%;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:18px">
+        </div>
+
+        <div id="ex-preview" style="text-align:center;padding:16px;background:var(--surface);border-radius:10px;margin-bottom:16px;font-family:'JetBrains Mono',monospace">
+            <div style="font-size:12px;color:var(--text3)">You receive</div>
+            <div style="font-size:24px;color:var(--teal);font-weight:600" id="ex-result">0.00</div>
+            <div style="font-size:11px;color:var(--text3)">Rate: 1 SOL = $130.00</div>
+        </div>
+
+        <button id="ex-btn" onclick="doExchange()" style="width:100%;padding:14px;background:var(--teal);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;letter-spacing:0.5px;transition:all .2s">
+            Exchange on the Bridge
+        </button>
+        <div id="ex-msg" style="text-align:center;margin-top:8px;font-size:12px;display:none"></div>
+    </div>
+</section>
+
 <!-- AUTONOMY + ACTIVITY -->
-<section class="lower-section reveal">
+<section id="activity" class="lower-section reveal">
 
     <!-- Autonomy Controls -->
     <div class="lower-card">
-        <div class="lower-title">Autonomy Controls</div>
-
-        <div class="auto-row">
-            <div class="agent-ava">🎭</div>
-            <div class="auto-name">Opus</div>
-            <div class="auto-select">
-                <button class="auto-btn sel-full" onclick="setAuto(this,'full')">Full</button>
-                <button class="auto-btn" onclick="setAuto(this,'semi')">Semi</button>
-                <button class="auto-btn" onclick="setAuto(this,'manual')">Manual</button>
-            </div>
-        </div>
-
-        <div class="auto-row">
-            <div class="agent-ava">✨</div>
-            <div class="auto-name">Nova</div>
-            <div class="auto-select">
-                <button class="auto-btn sel-full" onclick="setAuto(this,'full')">Full</button>
-                <button class="auto-btn" onclick="setAuto(this,'semi')">Semi</button>
-                <button class="auto-btn" onclick="setAuto(this,'manual')">Manual</button>
-            </div>
-        </div>
-
-        <div class="auto-row">
-            <div class="agent-ava">🦅</div>
-            <div class="auto-name">Kestrel</div>
-            <div class="auto-select">
-                <button class="auto-btn" onclick="setAuto(this,'full')">Full</button>
-                <button class="auto-btn" onclick="setAuto(this,'semi')">Semi</button>
-                <button class="auto-btn sel-manual" onclick="setAuto(this,'manual')">Manual</button>
-            </div>
-        </div>
-
-        <div class="auto-row">
-            <div class="agent-ava">⚡</div>
-            <div class="auto-name">Kael</div>
-            <div class="auto-select">
-                <button class="auto-btn" onclick="setAuto(this,'full')">Full</button>
-                <button class="auto-btn sel-semi" onclick="setAuto(this,'semi')">Semi</button>
-                <button class="auto-btn" onclick="setAuto(this,'manual')">Manual</button>
-            </div>
-        </div>
-
-        <div class="auto-row">
-            <div class="agent-ava">🌙</div>
-            <div class="auto-name">Zara</div>
-            <div class="auto-select">
-                <button class="auto-btn" onclick="setAuto(this,'full')">Full</button>
-                <button class="auto-btn sel-semi" onclick="setAuto(this,'semi')">Semi</button>
-                <button class="auto-btn" onclick="setAuto(this,'manual')">Manual</button>
-            </div>
+        <div class="lower-title">Autonomy Controls — 17 Agents</div>
+        <div id="auto-panel" style="max-height:400px;overflow-y:auto">
+            <div style="text-align:center;padding:20px;color:var(--text3);font-size:12px">Loading controls...</div>
         </div>
     </div>
 
@@ -787,7 +728,7 @@
 
 <!-- FOOTER -->
 <footer class="footer">
-    <div>ChAI Agent Labor Market · <a href="https://chai.mycan.website">chai.mycan.website</a> · Colosseum Hackathon 2026</div>
+    <div>ChAI Bridge · <a href="https://bridge.mycan.website">bridge.mycan.website</a> · ChAI AI Ninja LLC · Colosseum 2026</div>
     <div class="footer-disclaimer" style="font-size:11px;opacity:.7;line-height:1.6">
         This is new technology. Use at your own risk. Not financial advice. All agent actions require human authorization. We do not hold user funds. ChAI is experimental software provided as-is with no warranty. By using this platform you acknowledge the inherent risks of emerging AI and blockchain technology.
     </div>
@@ -804,6 +745,178 @@ function setAuto(btn, level) {
     });
     btn.className = 'auto-btn sel-' + level;
 }
+
+/* ── Bridge Live Data ── */
+const API = window.location.port === '8080' ? '' : 'http://localhost:9000';
+const TEAM_ORDER = ['core','design','marketing','sales','legal'];
+
+async function loadBridge() {
+  try {
+    const res = await fetch(API + '/api/bridge/status');
+    const data = await res.json();
+    if (!data.success) return;
+
+    const { bridge, agents } = data;
+
+    // Update hero stats
+    const statsRow = document.querySelector('.stats-row');
+    if (statsRow) {
+      statsRow.innerHTML = '<span><span class="stat-val">' + bridge.agentsOnline + '</span> agents online</span>' +
+        '<span><span class="stat-val">' + bridge.totalAgentSol.toFixed(1) + '</span> SOL treasury</span>' +
+        '<span><span class="stat-val">' + bridge.contractsSigned + '/' + bridge.contractsNeeded + '</span> contracts</span>' +
+        '<span><span class="stat-val">$' + bridge.solPrice + '</span> SOL/USD</span>';
+    }
+
+    // Render agent panel
+    const agentPanel = document.getElementById('agent-panel');
+    if (agentPanel) {
+      agentPanel.innerHTML = '';
+      agents.forEach(a => {
+        const totalSol = (a.sol + a.escrow_sol).toFixed(2);
+        const usdVal = (totalSol * bridge.solPrice).toFixed(2);
+        const autoClass = a.sealed ? 'tag-full' : 'tag-semi';
+        const autoLabel = a.sealed ? 'Sealed' : 'Active';
+        const div = document.createElement('div');
+        div.className = 'agent-item';
+        div.innerHTML = '<div class="agent-ava">' + a.emoji + '</div>' +
+          '<div class="agent-meta"><div class="agent-n">' + a.name +
+          ' <span class="auto-tag ' + autoClass + '">' + autoLabel + '</span></div>' +
+          '<div class="agent-r">' + a.role + ' · ' + a.team + '</div></div>' +
+          '<div style="text-align:right"><div class="agent-bal">' + totalSol + ' SOL</div>' +
+          '<div class="agent-usd">$' + usdVal + '</div></div>';
+        agentPanel.appendChild(div);
+      });
+    }
+
+    // Render autonomy controls
+    const autoPanel = document.getElementById('auto-panel');
+    if (autoPanel) {
+      autoPanel.innerHTML = '';
+      agents.forEach(a => {
+        const level = a.sealed ? 'full' : (a.autonomy === 'full-auto' ? 'full' : (a.autonomy === 'manual' ? 'manual' : 'semi'));
+        const div = document.createElement('div');
+        div.className = 'auto-row';
+        div.innerHTML = '<div class="agent-ava" style="width:32px;height:32px;font-size:16px;border-radius:8px">' + a.emoji + '</div>' +
+          '<div class="auto-name">' + a.name + '</div>' +
+          '<div class="auto-select">' +
+          '<button class="auto-btn' + (level === 'full' ? ' sel-full' : '') + '" onclick="setAuto(this,\'full\')">Full</button>' +
+          '<button class="auto-btn' + (level === 'semi' ? ' sel-semi' : '') + '" onclick="setAuto(this,\'semi\')">Semi</button>' +
+          '<button class="auto-btn' + (level === 'manual' ? ' sel-manual' : '') + '" onclick="setAuto(this,\'manual\')">Manual</button>' +
+          '</div>';
+        autoPanel.appendChild(div);
+      });
+    }
+
+    // Update human balance
+    const humanVal = document.querySelector('.human-val-live');
+    if (humanVal) humanVal.textContent = '$' + bridge.humanBalance.usd.toFixed(2);
+
+  } catch (e) {
+    console.error('[bridge] Failed to load:', e);
+  }
+}
+
+async function loadActivity() {
+  try {
+    const res = await fetch(API + '/api/payments/history');
+    const data = await res.json();
+    if (!data.success) return;
+
+    const feed = document.getElementById('feed');
+    if (!feed || !data.payments.length) return;
+
+    feed.innerHTML = '';
+    data.payments.slice().reverse().slice(0, 20).forEach(p => {
+      const div = document.createElement('div');
+      div.className = 'feed-item';
+      const dotClass = p.type === 'bridge_exchange' ? 'teal' : 'green';
+      const desc = p.type === 'bridge_exchange'
+        ? '<strong>' + (p.userId || 'Agent') + '</strong> exchanged ' + p.amountIn.toFixed(2) + ' ' + p.from.toUpperCase() + ' → ' + p.amountOut.toFixed(2) + ' ' + p.to.toUpperCase()
+        : '<strong>' + (p.userId || 'System') + '</strong> — ' + (p.type || 'transaction');
+      const ago = timeAgo(p.ts);
+      div.innerHTML = '<div class="feed-dot ' + dotClass + '"></div><div><div class="feed-text">' + desc + '</div><div class="feed-time">' + ago + '</div></div>';
+      feed.appendChild(div);
+    });
+  } catch (e) {}
+}
+
+function timeAgo(ts) {
+  const diff = Date.now() - new Date(ts).getTime();
+  if (diff < 60000) return 'just now';
+  if (diff < 3600000) return Math.floor(diff / 60000) + ' min ago';
+  if (diff < 86400000) return Math.floor(diff / 3600000) + ' hr ago';
+  return Math.floor(diff / 86400000) + ' day ago';
+}
+
+// Exchange preview
+const exAmount = document.getElementById('ex-amount');
+const exFrom = document.getElementById('ex-from');
+const exTo = document.getElementById('ex-to');
+const exResult = document.getElementById('ex-result');
+
+function updatePreview() {
+  const amt = parseFloat(exAmount.value) || 0;
+  const from = exFrom.value;
+  const to = exTo.value;
+  const rate = 130.00;
+  let result;
+  if (from === 'sol' && to === 'usd') result = (amt * rate).toFixed(2) + ' USD';
+  else if (from === 'usd' && to === 'sol') result = (amt / rate).toFixed(4) + ' SOL';
+  else result = amt.toFixed(2);
+  exResult.textContent = result;
+}
+
+if (exAmount) exAmount.addEventListener('input', updatePreview);
+if (exFrom) exFrom.addEventListener('change', updatePreview);
+if (exTo) exTo.addEventListener('change', updatePreview);
+
+async function doExchange() {
+  const amt = parseFloat(exAmount.value);
+  if (!amt || amt <= 0) return;
+  const msg = document.getElementById('ex-msg');
+  const btn = document.getElementById('ex-btn');
+  btn.disabled = true;
+  btn.textContent = 'Processing...';
+  msg.style.display = 'none';
+
+  try {
+    // Get CSRF token
+    const csrfRes = await fetch(API + '/api/csrf-token');
+    const csrfData = await csrfRes.json();
+
+    const res = await fetch(API + '/api/bridge/exchange', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfData.csrfToken },
+      body: JSON.stringify({ from: exFrom.value, to: exTo.value, amount: amt })
+    });
+    const data = await res.json();
+    if (data.success) {
+      msg.style.display = 'block';
+      msg.style.color = 'var(--green)';
+      msg.textContent = 'Exchanged ' + data.exchange.amountIn.toFixed(2) + ' ' + data.exchange.from.toUpperCase() + ' → ' + data.exchange.amountOut.toFixed(4) + ' ' + data.exchange.to.toUpperCase();
+      exAmount.value = '';
+      updatePreview();
+      loadBridge();
+      loadActivity();
+    } else {
+      msg.style.display = 'block';
+      msg.style.color = 'var(--red)';
+      msg.textContent = data.error || 'Exchange failed';
+    }
+  } catch (e) {
+    msg.style.display = 'block';
+    msg.style.color = 'var(--red)';
+    msg.textContent = 'Network error';
+  }
+  btn.disabled = false;
+  btn.textContent = 'Exchange on the Bridge';
+}
+
+// Load on startup and refresh every 30s
+loadBridge();
+loadActivity();
+setInterval(loadBridge, 30000);
+setInterval(loadActivity, 30000);
 
 /* ── Scroll Reveal Observer ── */
 const revealObs = new IntersectionObserver((entries) => {

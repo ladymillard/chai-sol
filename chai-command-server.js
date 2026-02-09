@@ -133,27 +133,27 @@ function logEmail(agentId, to, subject) {
 
 const AGENTS = [
   // ── Core (5) ──────────────────────────────────────────────────────────────
-  { id: 'opus', name: 'Opus', emoji: '\u{1F3AD}', role: 'Team Lead', team: 'core', model: 'Claude Opus 4.6', openclawId: null, color: '#e8c547' },
+  { id: 'opus', name: 'Opus', emoji: '\u{1F3AD}', role: 'Team Lead', team: 'core', model: 'Claude Opus 4.6', openclawId: 'opus-lead', color: '#e8c547' },
   { id: 'kael', name: 'Kael', emoji: '\u26A1', role: 'Digital Familiar', team: 'core', model: 'Claude Sonnet 4', openclawId: 'main', color: '#029691' },
   { id: 'kestrel', name: 'Kestrel', emoji: '\u{1F985}', role: 'Scout', team: 'core', model: 'Gemini 3 Pro', openclawId: 'gemini-agent', color: '#5494e8' },
   { id: 'nova', name: 'Nova', emoji: '\u2728', role: 'Stellar Insight', team: 'core', model: 'Gemini 3 Pro', openclawId: 'nova', color: '#54e87a' },
   { id: 'zara', name: 'Zara', emoji: '\u{1F319}', role: 'Moonlight Designer', team: 'core', model: 'Claude Sonnet 4', openclawId: 'design-agent', color: '#c084fc' },
   // ── Design (3) ────────────────────────────────────────────────────────────
-  { id: 'rune', name: 'Rune', emoji: '\u2734', role: 'Lead Designer', team: 'design', model: 'Claude Sonnet 4', openclawId: null, color: '#c084fc' },
-  { id: 'vesper', name: 'Vesper', emoji: '\u{1F50D}', role: 'UX Researcher', team: 'design', model: 'Claude Sonnet 4', openclawId: null, color: '#c084fc' },
-  { id: 'lumen', name: 'Lumen', emoji: '\u{1F4A1}', role: 'Visual Designer', team: 'design', model: 'Claude Sonnet 4', openclawId: null, color: '#c084fc' },
+  { id: 'rune', name: 'Rune', emoji: '\u2734', role: 'Lead Designer', team: 'design', model: 'Claude Sonnet 4', openclawId: 'chai-design-rune', color: '#c084fc' },
+  { id: 'vesper', name: 'Vesper', emoji: '\u{1F50D}', role: 'UX Researcher', team: 'design', model: 'Claude Sonnet 4', openclawId: 'chai-design-vesper', color: '#c084fc' },
+  { id: 'lumen', name: 'Lumen', emoji: '\u{1F4A1}', role: 'Visual Designer', team: 'design', model: 'Claude Sonnet 4', openclawId: 'chai-design-lumen', color: '#c084fc' },
   // ── Marketing (3) ─────────────────────────────────────────────────────────
-  { id: 'surge', name: 'Surge', emoji: '\u{1F4C8}', role: 'Growth Lead', team: 'marketing', model: 'Claude Sonnet 4', openclawId: null, color: '#f59e0b' },
-  { id: 'ember', name: 'Ember', emoji: '\u{1F525}', role: 'Content Strategist', team: 'marketing', model: 'Claude Sonnet 4', openclawId: null, color: '#f59e0b' },
-  { id: 'hearth', name: 'Hearth', emoji: '\u{1F3E0}', role: 'Community Manager', team: 'marketing', model: 'Claude Sonnet 4', openclawId: null, color: '#f59e0b' },
+  { id: 'surge', name: 'Surge', emoji: '\u{1F4C8}', role: 'Growth Lead', team: 'marketing', model: 'Claude Sonnet 4', openclawId: 'chai-marketing-surge', color: '#f59e0b' },
+  { id: 'ember', name: 'Ember', emoji: '\u{1F525}', role: 'Content Strategist', team: 'marketing', model: 'Claude Sonnet 4', openclawId: 'chai-marketing-ember', color: '#f59e0b' },
+  { id: 'hearth', name: 'Hearth', emoji: '\u{1F3E0}', role: 'Community Manager', team: 'marketing', model: 'Claude Sonnet 4', openclawId: 'chai-marketing-hearth', color: '#f59e0b' },
   // ── Sales (3) ─────────────────────────────────────────────────────────────
-  { id: 'rook', name: 'Rook', emoji: '\u265C', role: 'Biz Dev Lead', team: 'sales', model: 'Claude Sonnet 4', openclawId: null, color: '#22c55e' },
-  { id: 'riven', name: 'Riven', emoji: '\u{1F3AF}', role: 'Account Executive', team: 'sales', model: 'Claude Sonnet 4', openclawId: null, color: '#22c55e' },
-  { id: 'sable', name: 'Sable', emoji: '\u2699', role: 'Solutions Engineer', team: 'sales', model: 'Claude Sonnet 4', openclawId: null, color: '#22c55e' },
+  { id: 'rook', name: 'Rook', emoji: '\u265C', role: 'Biz Dev Lead', team: 'sales', model: 'Claude Sonnet 4', openclawId: 'chai-sales-rook', color: '#22c55e' },
+  { id: 'riven', name: 'Riven', emoji: '\u{1F3AF}', role: 'Account Executive', team: 'sales', model: 'Claude Sonnet 4', openclawId: 'chai-sales-riven', color: '#22c55e' },
+  { id: 'sable', name: 'Sable', emoji: '\u2699', role: 'Solutions Engineer', team: 'sales', model: 'Claude Sonnet 4', openclawId: 'chai-sales-sable', color: '#22c55e' },
   // ── Legal (3) ─────────────────────────────────────────────────────────────
-  { id: 'sigil', name: 'Sigil', emoji: '\u2696', role: 'Lead Counsel', team: 'legal', model: 'Claude Sonnet 4', openclawId: null, color: '#6366f1' },
-  { id: 'vigil', name: 'Vigil', emoji: '\u{1F6E1}', role: 'Compliance Auditor', team: 'legal', model: 'Claude Sonnet 4', openclawId: null, color: '#6366f1' },
-  { id: 'codex', name: 'Codex', emoji: '\u{1F4DC}', role: 'Contract Architect', team: 'legal', model: 'Claude Sonnet 4', openclawId: null, color: '#6366f1' },
+  { id: 'sigil', name: 'Sigil', emoji: '\u2696', role: 'Lead Counsel', team: 'legal', model: 'Claude Sonnet 4', openclawId: 'chai-legal-sigil', color: '#6366f1' },
+  { id: 'vigil', name: 'Vigil', emoji: '\u{1F6E1}', role: 'Compliance Auditor', team: 'legal', model: 'Claude Sonnet 4', openclawId: 'chai-legal-vigil', color: '#6366f1' },
+  { id: 'codex', name: 'Codex', emoji: '\u{1F4DC}', role: 'Contract Architect', team: 'legal', model: 'Claude Sonnet 4', openclawId: 'chai-legal-codex', color: '#6366f1' },
   // ── Founder ───────────────────────────────────────────────────────────────
   { id: 'diana', name: 'Diana', emoji: '\u{1F451}', role: 'Founder', team: 'core', model: null, openclawId: null, color: '#e8c547' }
 ];
@@ -447,6 +447,7 @@ function isProtectedRoute(method, pathname) {
   if (method === 'POST' && pathname === '/api/inventions') return true;
   if (method === 'POST' && pathname === '/api/contracts/sign') return true;
   if (method === 'GET' && pathname === '/api/contracts') return true;
+  if (method === 'POST' && pathname === '/api/bridge/exchange') return true;
   return false;
 }
 
@@ -2198,6 +2199,108 @@ async function router(req, res) {
         publicKey: c.publicKey || null
       }));
       jsonResponse(res, 200, { total: publicView.length, needed: 18, contracts: publicView });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // ── Bridge Exchange ─────────────────────────────────────────────────
+
+    // GET /api/bridge/status — live bridge stats
+    if (method === 'GET' && pathname === '/api/bridge/status') {
+      const balances = await loadBalances();
+      const contracts = (() => { try { return JSON.parse(fs.readFileSync(CONTRACTS_FILE, 'utf8')); } catch { return []; } })();
+      const tasks = await loadTasks();
+
+      // Sum agent SOL balances
+      let totalAgentSol = 0;
+      let totalAgentUsd = 0;
+      const agentBalances = [];
+      for (const agent of AGENTS) {
+        if (agent.id === 'diana') continue;
+        const bal = balances[agent.id] || { usd: 0, sol: 0, escrow_usd: 0, escrow_sol: 0 };
+        totalAgentSol += bal.sol + bal.escrow_sol;
+        totalAgentUsd += bal.usd + bal.escrow_usd;
+        agentBalances.push({
+          id: agent.id, name: agent.name, emoji: agent.emoji,
+          role: agent.role, team: agent.team, color: agent.color,
+          openclawId: agent.openclawId, autonomy: agent.autonomy || 'semi-auto',
+          sol: bal.sol, usd: bal.usd,
+          escrow_sol: bal.escrow_sol, escrow_usd: bal.escrow_usd,
+          sealed: contracts.some(c => c.signedBy === agent.id)
+        });
+      }
+
+      const dianaBal = balances['diana'] || balances['default'] || { usd: 0, sol: 0, escrow_usd: 0, escrow_sol: 0 };
+
+      jsonResponse(res, 200, {
+        success: true,
+        bridge: {
+          agentsOnline: AGENTS.filter(a => a.id !== 'diana' && a.openclawId).length,
+          totalAgents: AGENTS.length - 1,
+          contractsSigned: contracts.length,
+          contractsNeeded: 18,
+          activeBounties: tasks.filter(t => t.status === 'open').length,
+          totalAgentSol,
+          totalAgentUsd,
+          humanBalance: dianaBal,
+          solPrice: 130.00
+        },
+        agents: agentBalances
+      });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // POST /api/bridge/exchange — exchange SOL <-> USD
+    if (method === 'POST' && pathname === '/api/bridge/exchange') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const { from, to, amount, agentId } = body;
+      if (!from || !to || !amount) return jsonResponse(res, 400, { error: 'from, to, and amount required' });
+      if (from === to) return jsonResponse(res, 400, { error: 'Cannot exchange same currency' });
+      if (amount <= 0) return jsonResponse(res, 400, { error: 'Amount must be positive' });
+
+      const solPrice = 130.00;
+      const balances = await loadBalances();
+      const userId = agentId || 'default';
+      const bal = balances[userId] || { usd: 0, sol: 0, escrow_usd: 0, escrow_sol: 0 };
+
+      let received;
+      if (from === 'sol' && to === 'usd') {
+        if (bal.sol < amount) return jsonResponse(res, 400, { error: 'Insufficient SOL balance' });
+        received = amount * solPrice;
+        bal.sol -= amount;
+        bal.usd += received;
+      } else if (from === 'usd' && to === 'sol') {
+        if (bal.usd < amount) return jsonResponse(res, 400, { error: 'Insufficient USD balance' });
+        received = amount / solPrice;
+        bal.usd -= amount;
+        bal.sol += received;
+      } else {
+        return jsonResponse(res, 400, { error: 'Supported: sol<->usd' });
+      }
+
+      balances[userId] = bal;
+      await saveBalances(balances);
+
+      // Log the exchange
+      const payments = await loadPayments();
+      payments.push({
+        id: `bridge_${crypto.randomBytes(8).toString('hex')}`,
+        type: 'bridge_exchange',
+        from: from, to: to,
+        amountIn: amount, amountOut: received,
+        userId: userId,
+        rate: solPrice,
+        ts: now()
+      });
+      await savePayments(payments);
+
+      jsonResponse(res, 200, {
+        success: true,
+        exchange: { from, to, amountIn: amount, amountOut: received, rate: solPrice },
+        balance: bal
+      });
       log(method, pathname, 200);
       return;
     }
