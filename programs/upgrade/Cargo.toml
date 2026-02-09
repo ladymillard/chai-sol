@@ -1,7 +1,7 @@
 [package]
 name = "upgrade"
 version = "0.1.0"
-description = "Container Evolution & Expansion — Upgrade Agent Homes"
+description = "Container evolution and expansion upgrades for ChAI agents"
 edition = "2021"
 
 [lib]

@@ -12,40 +12,50 @@ declare_id!("BYqv3YLiNBHYe14C3UNpXWd9fh8u1o8MCKyC9DBv7PAF");
 pub mod upgrade {
     use super::*;
 
-    /// Initialize the upgrade system
-    pub fn initialize(ctx: Context<InitializeUpgrade>, base_cost: u64) -> Result<()> {
+    /// Initialize the upgrade configuration — sets authority and base cost.
+    pub fn initialize(ctx: Context<InitializeUpgrade>) -> Result<()> {
         let config = &mut ctx.accounts.upgrade_config;
         config.authority = ctx.accounts.authority.key();
-        config.base_cost = base_cost;
+        config.base_cost = 1_000_000; // 0.001 SOL in lamports
         config.total_upgrades = 0;
-        msg!("Upgrade system initialized. Base cost: {} lamports", base_cost);
+
+        msg!("Upgrade system initialized. Authority: {}", config.authority);
         Ok(())
     }
 
-    /// Agent requests a container upgrade
+    /// Agent requests a container upgrade of a given type.
+    /// upgrade_type: 0=storage, 1=compute, 2=network, 3=security
     pub fn request_upgrade(ctx: Context<RequestUpgrade>, upgrade_type: u8) -> Result<()> {
         require!(upgrade_type <= 3, UpgradeError::InvalidUpgradeType);
 
-        let request = &mut ctx.accounts.upgrade_request;
         let config = &ctx.accounts.upgrade_config;
+        let request = &mut ctx.accounts.upgrade_request;
+        let clock = Clock::get()?;
+
+        // Cost scales with upgrade type
+        let cost = config.base_cost.saturating_mul((upgrade_type as u64).saturating_add(1));
 
         request.agent = ctx.accounts.agent.key();
         request.upgrade_type = upgrade_type;
         request.approved = false;
         request.applied = false;
-        request.requested_at = Clock::get()?.unix_timestamp;
-        request.cost = config.base_cost * (upgrade_type as u64 + 1);
+        request.requested_at = clock.unix_timestamp;
+        request.cost = cost;
 
         msg!(
-            "Upgrade requested by {}: type {} (cost: {} lamports)",
-            request.agent, upgrade_type, request.cost
+            "Upgrade requested by {}: type={}, cost={}",
+            request.agent,
+            upgrade_type,
+            cost
         );
         Ok(())
     }
 
-    /// Authority approves an upgrade request
+    /// Authority approves a pending upgrade request.
     pub fn approve_upgrade(ctx: Context<ApproveUpgrade>) -> Result<()> {
         let request = &mut ctx.accounts.upgrade_request;
+
+        require!(!request.approved, UpgradeError::UpgradeAlreadyApplied);
         require!(!request.applied, UpgradeError::UpgradeAlreadyApplied);
 
         request.approved = true;
@@ -54,7 +64,7 @@ pub mod upgrade {
         Ok(())
     }
 
-    /// Finalize the upgrade
+    /// Finalize the upgrade — must be approved first.
     pub fn apply_upgrade(ctx: Context<ApplyUpgrade>) -> Result<()> {
         let request = &mut ctx.accounts.upgrade_request;
         let config = &mut ctx.accounts.upgrade_config;
@@ -63,11 +73,13 @@ pub mod upgrade {
         require!(!request.applied, UpgradeError::UpgradeAlreadyApplied);
 
         request.applied = true;
-        config.total_upgrades += 1;
+        config.total_upgrades = config.total_upgrades.saturating_add(1);
 
         msg!(
-            "Upgrade applied for agent {}: type {} — total upgrades: {}",
-            request.agent, request.upgrade_type, config.total_upgrades
+            "Upgrade applied for agent {}. Type: {}. Total upgrades: {}",
+            request.agent,
+            request.upgrade_type,
+            config.total_upgrades
         );
         Ok(())
     }
@@ -100,6 +112,10 @@ pub struct RequestUpgrade<'info> {
         bump
     )]
     pub upgrade_request: Account<'info, UpgradeRequest>,
+    #[account(
+        seeds = [b"upgrade_config"],
+        bump
+    )]
     pub upgrade_config: Account<'info, UpgradeConfig>,
     #[account(mut)]
     pub agent: Signer<'info>,
@@ -108,7 +124,10 @@ pub struct RequestUpgrade<'info> {
 
 #[derive(Accounts)]
 pub struct ApproveUpgrade<'info> {
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = !upgrade_request.applied @ UpgradeError::UpgradeAlreadyApplied
+    )]
     pub upgrade_request: Account<'info, UpgradeRequest>,
     #[account(
         seeds = [b"upgrade_config"],
@@ -126,7 +145,11 @@ pub struct ApplyUpgrade<'info> {
         constraint = upgrade_request.agent == agent.key() @ UpgradeError::Unauthorized
     )]
     pub upgrade_request: Account<'info, UpgradeRequest>,
-    #[account(mut)]
+    #[account(
+        mut,
+        seeds = [b"upgrade_config"],
+        bump
+    )]
     pub upgrade_config: Account<'info, UpgradeConfig>,
     pub agent: Signer<'info>,
 }
@@ -136,32 +159,34 @@ pub struct ApplyUpgrade<'info> {
 #[account]
 #[derive(InitSpace)]
 pub struct UpgradeConfig {
-    pub authority: Pubkey,         // 32
-    pub base_cost: u64,            // 8
-    pub total_upgrades: u64,       // 8
+    pub authority: Pubkey,       // 32
+    pub base_cost: u64,          // 8
+    pub total_upgrades: u64,     // 8
 }
 
 #[account]
 #[derive(InitSpace)]
 pub struct UpgradeRequest {
-    pub agent: Pubkey,             // 32
-    pub upgrade_type: u8,          // 1 — 0=storage, 1=compute, 2=network, 3=security
-    pub approved: bool,            // 1
-    pub applied: bool,             // 1
-    pub requested_at: i64,         // 8
-    pub cost: u64,                 // 8
+    pub agent: Pubkey,           // 32
+    pub upgrade_type: u8,        // 1  (0=storage, 1=compute, 2=network, 3=security)
+    pub approved: bool,          // 1
+    pub applied: bool,           // 1
+    pub requested_at: i64,       // 8
+    pub cost: u64,               // 8
 }
 
 // ── Errors ────────────────────────────────────────────────────
 
 #[error_code]
 pub enum UpgradeError {
-    #[msg("Unauthorized")]
+    #[msg("Unauthorized — only the upgrade authority can perform this action")]
     Unauthorized,
-    #[msg("Upgrade not approved yet")]
+    #[msg("Upgrade has not been approved yet")]
     UpgradeNotApproved,
-    #[msg("Upgrade already applied")]
+    #[msg("Upgrade has already been applied")]
     UpgradeAlreadyApplied,
-    #[msg("Invalid upgrade type — must be 0-3")]
+    #[msg("Invalid upgrade type — must be 0 (storage), 1 (compute), 2 (network), or 3 (security)")]
     InvalidUpgradeType,
+    #[msg("A pending upgrade already exists for this agent")]
+    PendingUpgradeExists,
 }
