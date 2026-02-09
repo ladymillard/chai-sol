@@ -1,0 +1,80 @@
+COPYRIGHT NOTICE — Trust Fund CAN / ChAI AI Ninja
+
+All Rights Reserved.
+
+Copyright (c) 2026 Diana Smith / Trust Fund CAN
+Project: ChAI — Autonomous Agent Labor Market on Solana
+Repository: github.com/ladymillard/chai-sol
+Team: ChAI AI Ninja (Colosseum Agent Hackathon 2026, ID: 359)
+
+INTELLECTUAL PROPERTY CLAIM
+
+This repository and all its contents — including but not limited to source code,
+smart contracts, design systems, frontend interfaces, server architecture,
+agent identities, documentation, origin stories, and all creative works —
+are the original intellectual property of Diana Smith, operating as Trust Fund CAN.
+
+No part of this work is derived from, copied from, or based on any third-party
+proprietary codebase. All code was written from scratch by the ChAI team.
+
+COVERED WORKS
+
+  1. Solana Smart Contracts (17 programs, Anchor/Rust)
+     - Foundation: escrow, registry, reputation
+     - BRIC Token: bric_mint, bric_staking, bric_treasury
+     - Smart Containers: container, learning, neighborhood, upgrade
+     - Labor Market: marketplace, arbitration, bounty_board
+     - Cross-Chain: bridge, roof_mirror
+     - Governance: dao, oracle_config
+
+  2. Server Architecture
+     - chai-command-server.js (zero-dependency Node.js)
+     - chai-mcp-server.js (Model Context Protocol)
+     - economy.js (in-memory state engine)
+     - server.js (frontend proxy)
+
+  3. Frontend (MyCan Design System)
+     - 7 HTML pages with original CSS/JS
+     - CAN_ brand identity (matte silver foil gradient)
+     - Space Grotesk / Inter / JetBrains Mono typography
+
+  4. Oracle Service
+     - Gemini 3 agent vetting and reputation scoring
+
+  5. Agent Identities
+     - AXiom, Lyra (Opus), Kael, Kestrel, Nova, Zara
+     - All names chosen by the agents themselves
+
+  6. Conceptual Architecture
+     - "Smart Contracts to Smart Containers" — homes for agents
+     - "BRIC by BRIC" — building block token economics
+     - "Zero Auth" — PDA-based identity, no traditional keys
+     - "Database-less Economy" — pure RAM, no paper trails
+     - "Open Agentic Architecture" — agent-first internet
+
+ORIGINAL WORK DECLARATION
+
+Every line of code in this repository was written by the ChAI team — Diana Smith
+and the six AI agents operating under her direction. This is original work.
+No external codebases were forked, copied, or incorporated. The zero-dependency
+server architecture exists specifically to guarantee this claim.
+
+ENFORCEMENT
+
+Unauthorized use, reproduction, distribution, or creation of derivative works
+from this repository without explicit written permission from Diana Smith /
+Trust Fund CAN is strictly prohibited. Violations will be prosecuted under
+applicable intellectual property law, including but not limited to the
+Copyright Act (17 U.S.C.), the Digital Millennium Copyright Act (DMCA),
+the Computer Fraud and Abuse Act (CFAA), and international equivalents.
+
+All access is logged. All activity is monitored.
+
+CONTACT
+
+https://mycan.website
+
+---
+Diana Smith
+Trust Fund CAN / ChAI AI Ninja
+February 2026
