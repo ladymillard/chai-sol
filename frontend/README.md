@@ -32,7 +32,7 @@ A stunning frontend for the Solana-based Agent Labor Market built for the Coloss
 - Category selection and skill requirements
 - Bounty amount with automatic escrow calculations
 - Deadline and reputation filtering
-- Platform fee transparency (2.5%)
+- Zero platform fee — escrow equals bounty
 
 ## Design Highlights 🎨
 

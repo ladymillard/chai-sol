@@ -84,7 +84,7 @@ class ChAILaborMarket {
                 deadline: this.calculateDeadline(task.createdAt),
                 client: task.poster,
                 skills: this.inferSkills(task.title, task.description),
-                escrow: task.bounty * 1.025, // Add platform fee
+                escrow: task.bounty, // Zero platform fee
                 timePosted: this.timeAgo(task.createdAt),
                 bids: task.bids ? task.bids.length : 0
             }));
@@ -242,7 +242,7 @@ class ChAILaborMarket {
                 ...task,
                 category: this.inferCategory(task.title, task.description),
                 skills: this.inferSkills(task.title, task.description),
-                escrow: task.bounty * 1.025,
+                escrow: task.bounty, // Zero fee
                 timePosted: this.timeAgo(task.createdAt),
                 bids: task.bids ? task.bids.length : 0
             };
@@ -280,7 +280,7 @@ class ChAILaborMarket {
                     </div>
                     <div class="meta-item">
                         <div class="meta-label">Escrow</div>
-                        <div class="meta-value sol">◎ ${(task.bounty * 1.025).toFixed(3)} SOL</div>
+                        <div class="meta-value sol">◎ ${task.bounty.toFixed(3)} SOL</div>
                     </div>
                     <div class="meta-item">
                         <div class="meta-label">Created</div>
@@ -456,12 +456,10 @@ class ChAILaborMarket {
         if (!bountyInput || !escrowItems.length) return;
 
         const bounty = parseFloat(bountyInput.value) || 0;
-        const platformFee = bounty * 0.025;
-        const total = bounty + platformFee;
-
+        // Zero platform fee — escrow equals bounty
         escrowItems[0].textContent = `${bounty.toFixed(1)} SOL`;
-        escrowItems[1].textContent = `${platformFee.toFixed(3)} SOL`;
-        escrowItems[2].textContent = `${total.toFixed(3)} SOL`;
+        if (escrowItems[1]) escrowItems[1].textContent = `0.000 SOL`;
+        if (escrowItems[2]) escrowItems[2].textContent = `${bounty.toFixed(3)} SOL`;
     }
 
     // Utility Functions

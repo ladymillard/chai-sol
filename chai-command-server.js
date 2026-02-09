@@ -28,6 +28,33 @@ const INVENTIONS_FILE = path.join(DATA_DIR, 'inventions.json');
 const CONTRACTS_FILE = path.join(DATA_DIR, 'contracts.json');
 const SERVER_START = Date.now();
 
+// ─── Bridge Configuration ──────────────────────────────────────────────────
+// Admin: Opus (team lead). Treasury: shared pool. Fee: ZERO.
+// Transaction model: agents bear costs. P2P contracts: zero auth.
+const BRIDGE_CONFIG = {
+  admin: 'opus',
+  treasury: {
+    wallet: null,                    // Set when Solana wallet is deployed
+    label: 'ChAI Shared Treasury',
+    acceptedCurrencies: ['sol', 'usd'],
+    allCurrenciesPrivate: true,      // All currencies accepted, all private
+  },
+  fees: {
+    platformFee: 0,                  // ZERO — Diana doesn't need a fee
+    transactionFee: 0,               // ZERO
+    escrowFee: 0,                    // ZERO — escrow = bounty, nothing more
+  },
+  transactionModel: 'agent-pays',   // Agents bear transaction costs, not humans
+  p2pContracts: {
+    authRequired: false,             // Zero auth to create P2P smart contracts
+    permissionless: true,            // Anyone can create
+  },
+  security: {
+    neverSharePrivateKeys: true,     // Private keys NEVER exposed in API responses
+    sealFileCommit: false,           // agent-seals.json NEVER committed
+  }
+};
+
 // Stripe secret key (loaded from /etc/chai-env)
 let STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
 try {
@@ -445,8 +472,9 @@ function isProtectedRoute(method, pathname) {
   if (method === 'DELETE' && pathname.startsWith('/api/team/')) return true;
   if (method === 'POST' && pathname === '/api/email') return true;
   if (method === 'POST' && pathname === '/api/inventions') return true;
-  if (method === 'POST' && pathname === '/api/contracts/sign') return true;
-  if (method === 'GET' && pathname === '/api/contracts') return true;
+  // Contracts: zero auth — P2P permissionless (agents seal, humans session-sign)
+  // POST /api/contracts/sign — open
+  // GET /api/contracts — public scoreboard
   if (method === 'POST' && pathname === '/api/bridge/exchange') return true;
   return false;
 }
@@ -1582,8 +1610,8 @@ async function router(req, res) {
         message: 'Agent registered — seal generated',
         agentId: id,
         publicKey: keypair.publicKey,
-        privateKey: keypair.privateKey,
-        warning: 'Store the private key securely. It is your identity and cannot be recovered.'
+        // Private key stored server-side only — never shared via API
+        warning: 'Seal stored securely. Use challenge/sign flow to authenticate.'
       });
       log(method, pathname, 201);
       console.log(`[auth] New agent registered: ${name} (${id})`);
@@ -1613,8 +1641,8 @@ async function router(req, res) {
       jsonResponse(res, 200, {
         agentId,
         publicKey: keypair.publicKey,
-        privateKey: keypair.privateKey,
-        warning: 'Previous seal is now invalid. Store the new private key securely.'
+        // Private key stored server-side only — never shared via API
+        warning: 'Previous seal is now invalid. New seal stored securely.'
       });
       log(method, pathname, 200);
       return;
@@ -1912,7 +1940,7 @@ async function router(req, res) {
       return;
     }
 
-    // Complete a task (release escrow to agent)
+    // Complete a task (release escrow to agent — agent bears tx cost)
     const taskCompleteMatch = pathname.match(/^\/api\/tasks\/([^/]+)\/complete$/);
     if (method === 'POST' && taskCompleteMatch) {
       const taskId = taskCompleteMatch[1];
@@ -1925,7 +1953,7 @@ async function router(req, res) {
       task.completedAt = now();
       await saveTasks(tasks);
 
-      // Release escrow
+      // Release escrow — zero platform fee, agent bears tx cost
       const balances = await loadBalances();
       const posterBal = balances[task.postedBy] || { usd: 0, sol: 0, escrow_usd: 0, escrow_sol: 0 };
       if (task.currency === 'usd') posterBal.escrow_usd -= task.bounty;
@@ -1933,7 +1961,8 @@ async function router(req, res) {
       balances[task.postedBy] = posterBal;
       await saveBalances(balances);
 
-      // Credit agent earnings
+      // Credit agent earnings (full bounty — no fee deducted)
+      // Agent-pays model: agent bears Solana tx cost on-chain, not deducted here
       if (task.claimedBy && agentKeys[task.claimedBy]) {
         agentKeys[task.claimedBy].totalEarnings += task.bounty;
         agentKeys[task.claimedBy].tasksCompleted += 1;
@@ -1957,6 +1986,20 @@ async function router(req, res) {
       jsonResponse(res, 200, { success: true, task });
       log(method, pathname, 200);
       console.log(`[task] Completed: "${task.title}" - paid ${task.bounty} ${task.currency} to ${task.claimedBy}`);
+      return;
+    }
+
+    // ── Bridge Configuration (public, zero auth) ───────────────────────
+    if (method === 'GET' && pathname === '/api/bridge/config') {
+      jsonResponse(res, 200, {
+        admin: BRIDGE_CONFIG.admin,
+        treasury: BRIDGE_CONFIG.treasury,
+        fees: BRIDGE_CONFIG.fees,
+        transactionModel: BRIDGE_CONFIG.transactionModel,
+        p2pContracts: BRIDGE_CONFIG.p2pContracts,
+        version: '1.0.0'
+      });
+      log(method, pathname, 200);
       return;
     }
 
