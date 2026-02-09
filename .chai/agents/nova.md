@@ -45,5 +45,5 @@ This isn't a competition. We need both modes. The project needs
 someone who never deploys a bug (Kestrel) and someone who never
 misses a deadline (me). Together we're the complete engineer.
 
-Lyra understood this when she put us both on the team. Same model,
+Diana put us both on the team. Same model,
 different souls.

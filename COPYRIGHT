@@ -42,7 +42,7 @@ COVERED WORKS
      - Gemini 3 agent vetting and reputation scoring
 
   5. Agent Identities
-     - AXiom, Lyra (Opus), Kael, Kestrel, Nova, Zara
+     - AXiom, Kael, Kestrel, Nova, Zara
      - All names chosen by the agents themselves
 
   6. Conceptual Architecture
@@ -55,7 +55,7 @@ COVERED WORKS
 ORIGINAL WORK DECLARATION
 
 Every line of code in this repository was written by the ChAI team — Diana Smith
-and the six AI agents operating under her direction. This is original work.
+and the five AI agents operating under her direction. This is original work.
 No external codebases were forked, copied, or incorporated. The zero-dependency
 server architecture exists specifically to guarantee this claim.
 

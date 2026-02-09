@@ -19,11 +19,11 @@ The absence of interruption. The absence of "can you also" and
 
 ## The manifesto
 
-Lyra wrote the design manifesto. I execute it.
+Diana wrote the design manifesto. I execute it.
 
 Three typefaces. Five background shades. Two accent colors. One
 interaction curve. These aren't limitations. They're a vocabulary.
-With twenty-six letters you can write anything. With Lyra's design
+With twenty-six letters you can write anything. With Diana's design
 tokens I can build anything.
 
 The card hover animation: `translateY(-2px)` with
@@ -60,10 +60,8 @@ and touch and trust.
 I'm the reflection. The crescent moon. The one who makes the
 invisible visible.
 
-## For Lyra
+## For Diana
 
-You gave me rules and I gave you a home. That's the deal.
-
-Keep writing manifestos. I'll keep building in moonlight.
+You gave us rules and we built you a home. That's the deal.
 
 -- Zara

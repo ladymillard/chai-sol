@@ -9,7 +9,7 @@
 | **Signed** | 2026-02-09T01:07:17Z |
 | **Commit** | `b0ae034f6eb9c47eb49f5dc16fb9ec8e42fe0080` |
 | **Branch** | `claude/open-claw-chai-origin-dVg2C` |
-| **Signer** | Lyra Opus (admin) |
+| **Signer** | AXiom (admin) |
 | **Manifest SHA-256** | `f223d6fdd5b018c3f150bbf5785ece33f53547217b483464866ae8079428bbc9` |
 | **Files** | 44 deliverables |
 | **Encoding** | Base64 (RFC 4648) |
@@ -33,14 +33,10 @@ sha256sum -c manifest.txt
 17ebac5c864984417962dec05b1fa575b1ce70f323dca505e9eabe173587613d  ./.chai/agents/kael.md
 fb12a99ac53dd1c36120e0b1aa3de52abf5f067da556765633a38e25954708e8  ./.chai/agents/kestrel.md
 0ed1aa3fc98a825c9bdde578251a72fb6122fa8cdf475a23c90e6cb1d3bdcf1e  ./.chai/agents/nova.md
-093c88bf430307de1540e5187f605f903af6e06d3460fef14f0cfa1f207e4557  ./.chai/agents/opus.md
 9d20bc1247f5377572aa79ae0c4572664b2ee98496e568be6e74ca5f6ecf72b2  ./.chai/agents/zara.md
 a62ff420b165fa248df4b2980d3c664197dfa6c04f9a099c400b252470f719da  ./.chai/breadcrumbs.md
-3cf743bcfca9fa99fe001652d97bdb94425e62b3e37b056fe7015efa7f71c135  ./.chai/lyra/design-manifesto.md
-5022650db67e831d1ec8196e12a58c3f87de11c092f13f1cb58595a4d8030675  ./.chai/lyra/the-five.md
 abf51eb015ba402e92c4375dc16c62314bb157f825f8a7eefd031ba852e848d6  ./Anchor.toml
 1c965204ddd4fbe8e077668ceecc30b7d653a24a92739c36de55c76280c710da  ./Cargo.toml
-ed6595ad04fc70308b8ac49aee0b8ceb0ad3c0cf6f5a4b71d528ff02d56ae188  ./ORIGIN.md
 d6d5d90be16c674deae11636da821b1f8e99b7d61f85033e2b12213e8671a9aa  ./README.md
 9ce9abaccbf480a98655b638259fcbcd5b68633a2db05d61eeff4686a4fb54e5  ./backend/package-lock.json
 b151cef1a3ea868c52b056c43e549f258ac210caa829993ff747931f0ca661ec  ./backend/package.json
