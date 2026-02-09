@@ -2,7 +2,8 @@
 members = [
     "programs/escrow",
     "programs/reputation",
-    "programs/registry"
+    "programs/registry",
+    "programs/sol"
 ]
 resolver = "2"
 
