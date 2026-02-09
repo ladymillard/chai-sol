@@ -1,3 +1,7 @@
+// LEGAL NOTICE — Trust Fund CAN / ChAI AI Ninja
+// Malware is malicious. Unauthorized access will be prosecuted to the full extent of applicable law.
+// All access is logged. All activity is monitored. https://mycan.website
+
 import { Connection, PublicKey, clusterApiUrl } from "@solana/web3.js";
 
 const DEVNET_URL = clusterApiUrl("devnet");
