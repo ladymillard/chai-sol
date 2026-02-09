@@ -3,35 +3,54 @@ use anchor_lang::system_program::{transfer, Transfer};
 
 declare_id!("Escrow11111111111111111111111111111111111111");
 
+/// Insurance rate: 2.5% of bounty held as insurance reserve
+const INSURANCE_BPS: u64 = 250; // basis points (250 = 2.5%)
+const BPS_DENOMINATOR: u64 = 10_000;
+
 #[program]
 pub mod escrow {
     use super::*;
 
-    // 1. Initialize Task: Poster deposits SOL into the TaskEscrow PDA
+    // 1. Initialize Task: Poster deposits SOL (bounty + insurance) into the TaskEscrow PDA
     pub fn initialize_task(
-        ctx: Context<InitializeTask>, 
-        task_id: String, 
+        ctx: Context<InitializeTask>,
+        task_id: String,
         bounty_amount: u64,
         description: String
     ) -> Result<()> {
+        // Calculate insurance reserve embedded in the escrow
+        let insurance_amount = bounty_amount
+            .checked_mul(INSURANCE_BPS)
+            .unwrap()
+            .checked_div(BPS_DENOMINATOR)
+            .unwrap();
+        let total_deposit = bounty_amount
+            .checked_add(insurance_amount)
+            .unwrap();
+
         let task_escrow = &mut ctx.accounts.task_escrow;
         task_escrow.poster = ctx.accounts.poster.key();
         task_escrow.task_id = task_id;
         task_escrow.description = description;
         task_escrow.bounty_amount = bounty_amount;
+        task_escrow.insurance_amount = insurance_amount;
+        task_escrow.ip_assigned = false;
         task_escrow.status = TaskStatus::Open;
         task_escrow.created_at = Clock::get()?.unix_timestamp;
         task_escrow.bump = ctx.bumps.task_escrow;
 
-        // Transfer SOL from poster to the escrow PDA
+        // Transfer SOL (bounty + insurance) from poster to the escrow PDA
         let cpi_accounts = Transfer {
             from: ctx.accounts.poster.to_account_info(),
             to: task_escrow.to_account_info(),
         };
         let cpi_ctx = CpiContext::new(ctx.accounts.system_program.to_account_info(), cpi_accounts);
-        transfer(cpi_ctx, bounty_amount)?;
+        transfer(cpi_ctx, total_deposit)?;
 
-        msg!("Task initialized: {} with bounty {} lamports", task_escrow.task_id, bounty_amount);
+        msg!(
+            "Task initialized: {} | bounty={} insurance={} total={} lamports",
+            task_escrow.task_id, bounty_amount, insurance_amount, total_deposit
+        );
         Ok(())
     }
 
@@ -50,16 +69,17 @@ pub mod escrow {
         Ok(())
     }
 
-    // 3. Complete Task: Poster verifies work and releases funds to the Agent
+    // 3. Complete Task: Poster verifies work, releases bounty to agent,
+    //    insurance to reserve, and assigns IP to poster
     pub fn complete_task(ctx: Context<CompleteTask>) -> Result<()> {
         let task_escrow = &mut ctx.accounts.task_escrow;
-        
+
         // Only poster can verify/complete
         require!(task_escrow.poster == ctx.accounts.poster.key(), EscrowError::Unauthorized);
-        
+
         // Ensure valid status
         require!(
-            task_escrow.status == TaskStatus::Open || task_escrow.status == TaskStatus::InProgress, 
+            task_escrow.status == TaskStatus::Open || task_escrow.status == TaskStatus::InProgress,
             EscrowError::InvalidStatus
         );
 
@@ -69,16 +89,27 @@ pub mod escrow {
             require!(assigned == dest_agent.key(), EscrowError::WrongAgent);
         }
 
-        // Payout: Transfer SOL from PDA to Agent
-        // Since PDA "owns" the lamports, we can decrease its balance and increase agent's
+        // Payout: bounty to agent
         **task_escrow.to_account_info().try_borrow_mut_lamports()? -= task_escrow.bounty_amount;
         **dest_agent.to_account_info().try_borrow_mut_lamports()? += task_escrow.bounty_amount;
+
+        // Insurance: transfer insurance reserve to the platform insurance vault
+        let insurance_vault = &ctx.accounts.insurance_vault;
+        **task_escrow.to_account_info().try_borrow_mut_lamports()? -= task_escrow.insurance_amount;
+        **insurance_vault.to_account_info().try_borrow_mut_lamports()? += task_escrow.insurance_amount;
+
+        // IP assignment: work product IP transfers to poster on completion
+        task_escrow.ip_assigned = true;
 
         task_escrow.status = TaskStatus::Completed;
         task_escrow.completed_agent = Some(dest_agent.key());
         task_escrow.completed_at = Some(Clock::get()?.unix_timestamp);
 
-        msg!("Task completed! Funds released to {}", dest_agent.key());
+        msg!(
+            "Task completed! Bounty {} -> agent {}. Insurance {} -> vault. IP assigned to poster.",
+            task_escrow.bounty_amount, dest_agent.key(),
+            task_escrow.insurance_amount
+        );
         Ok(())
     }
 
@@ -127,11 +158,15 @@ pub struct AssignAgent<'info> {
 pub struct CompleteTask<'info> {
     #[account(mut)]
     pub poster: Signer<'info>,
-    
-    /// CHECK: The agent account to receive funds. Verified by logic if assigned_agent is set.
+
+    /// CHECK: The agent account to receive bounty. Verified by logic if assigned_agent is set.
     #[account(mut)]
     pub agent: AccountInfo<'info>,
-    
+
+    /// CHECK: Insurance vault account that collects the 2.5% insurance reserve.
+    #[account(mut)]
+    pub insurance_vault: AccountInfo<'info>,
+
     #[account(mut)]
     pub task_escrow: Account<'info, TaskEscrow>,
 }
@@ -151,23 +186,24 @@ pub struct CancelTask<'info> {
 
 #[account]
 pub struct TaskEscrow {
-    pub poster: Pubkey,          // 32
-    pub task_id: String,         // 4 + 50 (max len)
-    pub description: String,     // 4 + 200 (max len)
-    pub bounty_amount: u64,      // 8
-    pub status: TaskStatus,      // 1 + 1 (enum discriminator + variant)
+    pub poster: Pubkey,                 // 32
+    pub task_id: String,                // 4 + 50 (max len)
+    pub description: String,            // 4 + 200 (max len)
+    pub bounty_amount: u64,             // 8  — payout to agent
+    pub insurance_amount: u64,          // 8  — 2.5% reserve held for disputes/protection
+    pub ip_assigned: bool,              // 1  — true when IP transfers to poster on completion
+    pub status: TaskStatus,             // 1 + 1 (enum discriminator + variant)
     pub assigned_agent: Option<Pubkey>, // 1 + 32
-    pub completed_agent: Option<Pubkey>, // 1 + 32
-    pub created_at: i64,         // 8
-    pub completed_at: Option<i64>, // 1 + 8
-    pub bump: u8,                // 1
+    pub completed_agent: Option<Pubkey>,// 1 + 32
+    pub created_at: i64,                // 8
+    pub completed_at: Option<i64>,      // 1 + 8
+    pub bump: u8,                       // 1
 }
 
 impl TaskEscrow {
-    // Approx space calculation:
-    // 32 + (4+50) + (4+200) + 8 + 2 + 33 + 33 + 8 + 9 + 1 = 384 approx
-    // Giving some padding
-    pub const INIT_SPACE: usize = 500; 
+    // 32 + (4+50) + (4+200) + 8 + 8 + 1 + 2 + 33 + 33 + 8 + 9 + 1 = ~393
+    // Giving padding for future fields
+    pub const INIT_SPACE: usize = 520;
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq)]
