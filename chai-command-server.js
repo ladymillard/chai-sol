@@ -956,9 +956,13 @@ async function router(req, res) {
       return;
     }
 
-    // ── Stripe Publishable Key Endpoint (V-001) ─────────────────────────
+    // ── Stripe Publishable Key Endpoint (V-001) — AUTH WALL ─────────────
     if (method === 'GET' && pathname === '/api/config/stripe-key') {
-      const stripePk = process.env.STRIPE_PK || '';  // REQUIRED: set via environment variable
+      const humanAuth = req.headers['x-human-auth'] || '';
+      if (!process.env.HUMAN_AUTH_TOKEN || humanAuth !== process.env.HUMAN_AUTH_TOKEN) {
+        return jsonResponse(res, 403, { error: 'Stripe key requires human authorization' });
+      }
+      const stripePk = process.env.STRIPE_PK || '';
       jsonResponse(res, 200, { publishableKey: stripePk });
       log(method, pathname, 200);
       return;
@@ -1246,9 +1250,21 @@ async function router(req, res) {
     }
 
     // ── Payments ──────────────────────────────────────────────────────────
+    // AUTH WALL: All payment endpoints require HUMAN_AUTH_TOKEN.
+    // No agent, no bot, no automated system can touch payments.
+    // Diana sets HUMAN_AUTH_TOKEN in env. No token = no payments. Period.
 
-    // Deposit USD via Stripe
+    const HUMAN_AUTH_TOKEN = process.env.HUMAN_AUTH_TOKEN || '';
+
+    // Deposit USD via Stripe — HUMAN AUTH REQUIRED
     if (method === 'POST' && pathname === '/api/payments/deposit') {
+      // ── AUTH WALL ──
+      const authHeader = req.headers['x-human-auth'] || '';
+      if (!HUMAN_AUTH_TOKEN || authHeader !== HUMAN_AUTH_TOKEN) {
+        console.log(`[payment] AUTH WALL BLOCKED deposit attempt. No valid human auth token.`);
+        return jsonResponse(res, 403, { success: false, error: 'Payment requires human authorization. Set HUMAN_AUTH_TOKEN and pass X-Human-Auth header.' });
+      }
+
       let body;
       try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
       const { amount, currency, stripeToken } = body;
