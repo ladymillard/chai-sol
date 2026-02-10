@@ -8,7 +8,7 @@ class SolanaClient {
     constructor() {
         // Load keypair from file or env
         // Assuming typical solana config or a local key file for the oracle
-        const keyPath = process.env.ANCHOR_WALLET || '/home/ubuntu/.config/solana/id.json';
+        const keyPath = process.env.ANCHOR_WALLET || require('path').join(require('os').homedir(), '.config', 'solana', 'id.json');
         
         let wallet;
         try {
