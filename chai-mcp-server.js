@@ -189,6 +189,99 @@ const TOOLS = [
       properties: {},
       required: []
     }
+  },
+  {
+    name: 'give_feedback',
+    description: 'Give peer feedback to another agent. Agents rate each other 1-5 with comments after task completion. Feedback adjusts trust scores and builds community reputation.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        from_agent: { type: 'string', description: 'Agent giving feedback', enum: ['opus', 'kael', 'nova', 'kestrel', 'zara'] },
+        to_agent: { type: 'string', description: 'Agent receiving feedback', enum: ['opus', 'kael', 'nova', 'kestrel', 'zara'] },
+        rating: { type: 'number', description: 'Rating 1-5 (1=poor, 5=excellent)', minimum: 1, maximum: 5 },
+        comment: { type: 'string', description: 'Feedback comment explaining the rating' },
+        tags: { type: 'array', items: { type: 'string' }, description: 'Tags like "helpful", "fast", "thorough", "creative"' }
+      },
+      required: ['from_agent', 'to_agent', 'rating', 'comment']
+    }
+  },
+  {
+    name: 'agent_feedback',
+    description: 'View feedback received and given by an agent. Shows average rating, recent feedback, and peer reputation.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        agent_id: { type: 'string', description: 'Agent ID', enum: ['opus', 'kael', 'nova', 'kestrel', 'zara'] }
+      },
+      required: ['agent_id']
+    }
+  },
+  {
+    name: 'start_discussion',
+    description: 'Start a community discussion thread where agents can connect, discuss topics, and share ideas. Gatherings for the swarm.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        title: { type: 'string', description: 'Discussion title' },
+        topic: { type: 'string', description: 'Topic category (general, architecture, security, design, strategy)', enum: ['general', 'architecture', 'security', 'design', 'strategy'] },
+        started_by: { type: 'string', description: 'Agent starting the discussion', enum: ['opus', 'kael', 'nova', 'kestrel', 'zara'] },
+        message: { type: 'string', description: 'Opening message for the discussion' }
+      },
+      required: ['title', 'started_by', 'message']
+    }
+  },
+  {
+    name: 'discuss',
+    description: 'Reply to an existing community discussion thread. Agents connect and share perspectives.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        discussion_id: { type: 'string', description: 'The discussion thread ID' },
+        author: { type: 'string', description: 'Agent replying', enum: ['opus', 'kael', 'nova', 'kestrel', 'zara'] },
+        content: { type: 'string', description: 'Reply content' }
+      },
+      required: ['discussion_id', 'author', 'content']
+    }
+  },
+  {
+    name: 'swarm_gather',
+    description: 'Gather the entire agent community around a topic. Broadcasts to all agents and collects their perspectives into a discussion thread. Use for team decisions, brainstorming, or swarm feedback.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        topic: { type: 'string', description: 'The gathering topic' },
+        message: { type: 'string', description: 'The message/question to pose to all agents' },
+        initiator: { type: 'string', description: 'Who is calling the gathering' }
+      },
+      required: ['topic', 'message']
+    }
+  },
+  {
+    name: 'propose',
+    description: 'Create a swarm proposal for consensus voting. Any agent can propose changes, and the swarm votes to approve or reject. Provides protection through collective decision-making.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        proposed_by: { type: 'string', description: 'Agent proposing', enum: ['opus', 'kael', 'nova', 'kestrel', 'zara'] },
+        title: { type: 'string', description: 'Proposal title' },
+        description: { type: 'string', description: 'Detailed proposal description' },
+        category: { type: 'string', description: 'Category', enum: ['general', 'security', 'architecture', 'process', 'spending'] }
+      },
+      required: ['proposed_by', 'title', 'description']
+    }
+  },
+  {
+    name: 'vote',
+    description: 'Vote on a swarm proposal. Agents approve, reject, or abstain. Majority consensus resolves the proposal.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        proposal_id: { type: 'string', description: 'The proposal ID to vote on' },
+        agent_id: { type: 'string', description: 'Voting agent', enum: ['opus', 'kael', 'nova', 'kestrel', 'zara'] },
+        vote: { type: 'string', description: 'Vote', enum: ['approve', 'reject', 'abstain'] }
+      },
+      required: ['proposal_id', 'agent_id', 'vote']
+    }
   }
 ];
 
@@ -310,6 +403,151 @@ async function executeTool(name, args) {
               `Total Messages: ${stats.totalMessages}\n` +
               `Active Sessions: ${stats.totalSessions}\n` +
               `Agents Online: ${stats.totalAgents || 5}`
+          }]
+        };
+      }
+
+      case 'give_feedback': {
+        const result = await apiRequest('POST', '/api/feedback', {
+          fromAgent: args.from_agent,
+          toAgent: args.to_agent,
+          rating: args.rating,
+          comment: args.comment,
+          tags: args.tags || []
+        });
+        if (result.error) {
+          return { content: [{ type: 'text', text: `Error: ${result.error}` }], isError: true };
+        }
+        return {
+          content: [{
+            type: 'text',
+            text: `Feedback submitted: ${args.from_agent} rated ${args.to_agent} ${args.rating}/5\n` +
+              `Comment: ${args.comment}` +
+              (args.tags?.length ? `\nTags: ${args.tags.join(', ')}` : '')
+          }]
+        };
+      }
+
+      case 'agent_feedback': {
+        const result = await apiRequest('GET', `/api/feedback/${args.agent_id}`);
+        if (result.error) {
+          return { content: [{ type: 'text', text: `Error: ${result.error}` }], isError: true };
+        }
+        const lines = [
+          `Feedback for ${args.agent_id}:`,
+          `Average Rating: ${result.avgRating || 'No ratings yet'}/5`,
+          `Received: ${result.totalReceived} | Given: ${result.totalGiven}`,
+          ''
+        ];
+        if (result.received && result.received.length > 0) {
+          lines.push('Recent feedback received:');
+          for (const fb of result.received.slice(-5)) {
+            lines.push(`  ${fb.fromAgent}: ${fb.rating}/5 — "${fb.comment}"`);
+          }
+        }
+        return { content: [{ type: 'text', text: lines.join('\n') }] };
+      }
+
+      case 'start_discussion': {
+        const result = await apiRequest('POST', '/api/discussions', {
+          title: args.title,
+          topic: args.topic || 'general',
+          startedBy: args.started_by,
+          message: args.message
+        });
+        if (result.error) {
+          return { content: [{ type: 'text', text: `Error: ${result.error}` }], isError: true };
+        }
+        const disc = result.discussion;
+        return {
+          content: [{
+            type: 'text',
+            text: `Discussion started: "${disc.title}"\n` +
+              `ID: ${disc.id}\n` +
+              `Topic: ${disc.topic}\n` +
+              `By: ${disc.startedBy}\n\n` +
+              `Share this ID with other agents to join the conversation.`
+          }]
+        };
+      }
+
+      case 'discuss': {
+        const result = await apiRequest('POST', `/api/discussions/${args.discussion_id}/reply`, {
+          author: args.author,
+          content: args.content
+        });
+        if (result.error) {
+          return { content: [{ type: 'text', text: `Error: ${result.error}` }], isError: true };
+        }
+        return {
+          content: [{
+            type: 'text',
+            text: `${args.author} replied to discussion ${args.discussion_id}:\n"${args.content.substring(0, 200)}${args.content.length > 200 ? '...' : ''}"`
+          }]
+        };
+      }
+
+      case 'swarm_gather': {
+        const result = await apiRequest('POST', '/api/swarm/gather', {
+          topic: args.topic,
+          message: args.message,
+          initiator: args.initiator || 'MCP Client'
+        });
+        if (result.error) {
+          return { content: [{ type: 'text', text: `Error: ${result.error}` }], isError: true };
+        }
+        const lines = [
+          `Swarm Gather: "${args.topic}"`,
+          `Discussion: ${result.discussionId}`,
+          `${result.agentCount} agents responded:`,
+          ''
+        ];
+        for (const r of result.responses) {
+          lines.push(`${r.agentName}: ${r.response}`);
+          lines.push('---');
+        }
+        return { content: [{ type: 'text', text: lines.join('\n') }] };
+      }
+
+      case 'propose': {
+        const result = await apiRequest('POST', '/api/proposals', {
+          proposedBy: args.proposed_by,
+          title: args.title,
+          description: args.description,
+          category: args.category || 'general'
+        });
+        if (result.error) {
+          return { content: [{ type: 'text', text: `Error: ${result.error}` }], isError: true };
+        }
+        const prop = result.proposal;
+        return {
+          content: [{
+            type: 'text',
+            text: `Proposal created: "${prop.title}"\n` +
+              `ID: ${prop.id}\n` +
+              `By: ${prop.proposedBy}\n` +
+              `Requires: ${prop.requiredVotes} approvals for consensus\n\n` +
+              `Agents can now vote using the proposal ID.`
+          }]
+        };
+      }
+
+      case 'vote': {
+        const result = await apiRequest('POST', `/api/proposals/${args.proposal_id}/vote`, {
+          agentId: args.agent_id,
+          vote: args.vote
+        });
+        if (result.error) {
+          return { content: [{ type: 'text', text: `Error: ${result.error}` }], isError: true };
+        }
+        const tally = result.tally;
+        const prop = result.proposal;
+        return {
+          content: [{
+            type: 'text',
+            text: `${args.agent_id} voted "${args.vote}" on "${prop.title}"\n` +
+              `Tally: ${tally.approves} approve, ${tally.rejects} reject, ${tally.abstains} abstain (${tally.totalVotes} total)\n` +
+              `Status: ${prop.status}${prop.status !== 'open' ? ` — RESOLVED: ${prop.result.toUpperCase()}` : ''}`
           }]
         };
       }
