@@ -15,7 +15,7 @@ const { URL } = require('url');
 
 const PORT = parseInt(process.env.PORT, 10) || 9000;
 const OPENCLAW_URL = process.env.OPENCLAW_URL || 'http://3.14.142.213:18789';
-const OPENCLAW_TOKEN = process.env.OPENCLAW_TOKEN || '62ce21942dee9391c8d6e9e189daf1b00d0e6807c56eb14c';
+const OPENCLAW_TOKEN = process.env.OPENCLAW_TOKEN || '';
 const DATA_DIR = process.env.DATA_DIR || '/data';
 const CONV_DIR = path.join(DATA_DIR, 'conversations');
 const TEAM_FILE = path.join(DATA_DIR, 'team.json');
@@ -37,11 +37,10 @@ try {
 // ─── Agent Registry ─────────────────────────────────────────────────────────
 
 const AGENTS = [
-  { id: 'opus', name: 'Opus', emoji: '\u{1F3AD}', role: 'Team Lead', model: 'Claude Opus 4.6', openclawId: null, color: '#e8c547' },
-  { id: 'kael', name: 'Kael', emoji: '\u26A1', role: 'Digital Familiar', model: 'Claude Sonnet 4', openclawId: 'main', color: '#029691' },
-  { id: 'kestrel', name: 'Kestrel', emoji: '\u{1F985}', role: 'Scout', model: 'Gemini 3 Pro', openclawId: 'gemini-agent', color: '#5494e8' },
-  { id: 'nova', name: 'Nova', emoji: '\u2728', role: 'Stellar Insight', model: 'Gemini 3 Pro', openclawId: 'nova', color: '#54e87a' },
-  { id: 'zara', name: 'Zara', emoji: '\u{1F319}', role: 'Moonlight Designer', model: 'Claude Sonnet 4', openclawId: 'design-agent', color: '#c084fc' }
+  { id: 'kael', name: 'Kael', emoji: '\u26A1', role: 'Memory & Coordination', model: 'Claude Sonnet 4', openclawId: 'main', color: '#029691' },
+  { id: 'kestrel', name: 'Kestrel', emoji: '\u{1F985}', role: 'Architecture & Solana', model: 'Gemini 3 Pro', openclawId: 'gemini-agent', color: '#5494e8' },
+  { id: 'nova', name: 'Nova', emoji: '\u2728', role: 'Builder', model: 'Gemini 3 Pro', openclawId: 'nova', color: '#54e87a' },
+  { id: 'zara', name: 'Zara', emoji: '\u{1F319}', role: 'SUSPENDED', model: 'Claude Sonnet 4', openclawId: null, color: '#c084fc', securityLevel: 0 }
 ];
 
 const AGENT_MAP = Object.fromEntries(AGENTS.map(a => [a.id, a]));
@@ -81,7 +80,7 @@ async function seedKeys() {
         agentId: agent.id,
         apiKey,
         apiKeyHash: hashApiKey(apiKey),
-        trustScore: agent.id === 'opus' ? 98 : agent.id === 'kael' ? 95 : agent.id === 'nova' ? 92 : agent.id === 'kestrel' ? 90 : 88,
+        trustScore: agent.id === 'kael' ? 95 : agent.id === 'nova' ? 92 : agent.id === 'kestrel' ? 90 : 0,
         tasksCompleted: 0,
         totalEarnings: 0,
         autonomy: 'semi-auto',
@@ -214,6 +213,50 @@ setInterval(() => {
   }
 }, 60 * 1000);
 
+// ─── RBAC (Role-Based Access Control) ───────────────────────────────────────
+
+const RBAC_LEVELS = {
+  admin: 100,     // Full access — Diana (human) only
+  operator: 75,   // Messaging, sessions, reads — Kael
+  builder: 50,    // Task execution, code ops — Kestrel, Nova
+  designer: 25,   // Read-only design endpoints
+  suspended: 0    // Zero access — Zara
+};
+
+const AGENT_ROLES = {
+  kael: 'operator',
+  kestrel: 'builder',
+  nova: 'builder',
+  zara: 'suspended'
+};
+
+// Route ACL: minimum RBAC level required
+const ROUTE_ACL = [
+  { method: 'DELETE', path: /^\/api\/team\//, level: RBAC_LEVELS.admin },
+  { method: 'PUT', path: /^\/api\/agents\//, level: RBAC_LEVELS.admin },
+  { method: 'POST', path: /^\/api\/agents\/register/, level: RBAC_LEVELS.admin },
+  { method: 'POST', path: /^\/api\/messages\//, level: RBAC_LEVELS.operator },
+  { method: 'POST', path: /^\/api\/sessions\/send/, level: RBAC_LEVELS.operator },
+  { method: 'POST', path: /^\/api\/tasks\//, level: RBAC_LEVELS.builder },
+  { method: 'PUT', path: /^\/api\/tasks\//, level: RBAC_LEVELS.builder }
+];
+
+function getAgentRbacLevel(agentId) {
+  const role = AGENT_ROLES[agentId];
+  if (!role) return 0;
+  return RBAC_LEVELS[role] || 0;
+}
+
+function checkRbac(method, pathname, agentId) {
+  for (const rule of ROUTE_ACL) {
+    if (rule.method === method && rule.path.test(pathname)) {
+      const level = getAgentRbacLevel(agentId);
+      return level >= rule.level;
+    }
+  }
+  return true; // No ACL rule = open
+}
+
 // ─── Protected Route Checking ───────────────────────────────────────────────
 
 function isProtectedRoute(method, pathname) {
@@ -222,23 +265,11 @@ function isProtectedRoute(method, pathname) {
   if (method === 'POST' && pathname === '/api/sessions/send') return true;
   if (method === 'PUT' && pathname.startsWith('/api/agents/')) return true;
   if (method === 'DELETE' && pathname.startsWith('/api/team/')) return true;
+  if (method === 'POST' && pathname === '/api/agents/register') return true;
   return false;
 }
 
-// ─── Opus Mock Responses ────────────────────────────────────────────────────
-
-const OPUS_RESPONSES = [
-  "I've reviewed the situation. My recommendation: we move forward deliberately, ensuring each agent's strengths are aligned with the task at hand.",
-  "Good thinking. Let me coordinate with the rest of the team. Kael can handle the implementation details while Kestrel scouts for edge cases.",
-  "As team lead, I want to make sure we're not just building fast — we're building right. Let's discuss the architecture before we commit.",
-  "I've been reflecting on our progress. The team is performing well, but I see an opportunity to improve our feedback loops.",
-  "That's a fascinating challenge. I'll draft a strategy and distribute subtasks to Nova for analysis and Zara for the design components.",
-  "Trust the process. Every great system starts with a clear vision and patient iteration. We're on the right track.",
-  "I've synthesized the inputs from all agents. Here's my assessment: we should prioritize clarity over speed in this phase.",
-  "Consider this — what if we approached the problem from the user's perspective first? Sometimes the best architecture emerges from empathy.",
-  "Excellent question. I'll meditate on it and loop back with a comprehensive plan. In the meantime, Kael can begin the preliminary work.",
-  "The team's collective intelligence is our greatest asset. Let me orchestrate the next steps so everyone can contribute their best work."
-];
+// ─── Opus/Lyra PURGED — mock responses removed (security incident) ──────────
 
 // ─── File Locking (per-agent) ───────────────────────────────────────────────
 
@@ -608,9 +639,8 @@ async function handleCreateSession(req, res) {
   if (!agent) return jsonResponse(res, 404, { success: false, error: `Agent "${agentId}" not found` });
 
   if (!agent.openclawId) {
-    // Opus doesn't use OpenClaw sessions
-    const localId = 'local_' + crypto.randomBytes(8).toString('hex');
-    return jsonResponse(res, 200, { success: true, sessionId: localId, agentId, local: true });
+    // Agent has no OpenClaw ID — suspended or unconfigured
+    return jsonResponse(res, 403, { success: false, error: `Agent "${agentId}" is suspended or has no active session` });
   }
 
   try {
@@ -655,11 +685,8 @@ async function handleSendMessage(req, res) {
   let agentResponse;
 
   if (!agent.openclawId) {
-    // Opus mock response with simulated delay
-    const delay = 500 + Math.floor(Math.random() * 1000);
-    await new Promise(r => setTimeout(r, delay));
-    const content = OPUS_RESPONSES[Math.floor(Math.random() * OPUS_RESPONSES.length)];
-    agentResponse = { id: msgId(), role: 'assistant', content, sender: agent.name, ts: now() };
+    // Agent has no OpenClaw session — reject (suspended or unconfigured)
+    return jsonResponse(res, 403, { success: false, error: `Agent "${agentId}" is suspended or has no active session` });
   } else {
     // Forward to OpenClaw
     try {
@@ -703,10 +730,8 @@ async function handleBroadcast(req, res) {
       let agentResponse;
 
       if (!agent.openclawId) {
-        const delay = 500 + Math.floor(Math.random() * 1000);
-        await new Promise(r => setTimeout(r, delay));
-        const content = OPUS_RESPONSES[Math.floor(Math.random() * OPUS_RESPONSES.length)];
-        agentResponse = { id: msgId(), role: 'assistant', content, sender: agent.name, ts: now() };
+        // Skip suspended/unconfigured agents in broadcast
+        agentResponse = { id: msgId(), role: 'assistant', content: `[${agent.name} is suspended]`, sender: agent.name, ts: now() };
       } else {
         try {
           const sessionId = await ensureSession(agent.id);
@@ -920,9 +945,21 @@ async function router(req, res) {
       return;
     }
 
-    // ── Stripe Publishable Key Endpoint (V-001) ─────────────────────────
+    // ── Stripe Publishable Key Endpoint (V-001) — HUMAN AUTH REQUIRED ──
     if (method === 'GET' && pathname === '/api/config/stripe-key') {
-      const stripePk = process.env.STRIPE_PK || 'pk_live_51RGbN2GGgBHthisisnottherealkeyjustplaceholder';
+      const humanAuth = req.headers['x-human-auth'];
+      const requiredToken = process.env.HUMAN_AUTH_TOKEN;
+      if (!requiredToken || humanAuth !== requiredToken) {
+        jsonResponse(res, 403, { success: false, error: 'Human authorization required.' });
+        log(method, pathname, 403);
+        return;
+      }
+      const stripePk = process.env.STRIPE_PK || '';
+      if (!stripePk) {
+        jsonResponse(res, 500, { success: false, error: 'Stripe not configured' });
+        log(method, pathname, 500);
+        return;
+      }
       jsonResponse(res, 200, { publishableKey: stripePk });
       log(method, pathname, 200);
       return;
@@ -1198,10 +1235,19 @@ async function router(req, res) {
       return;
     }
 
-    // ── Payments ──────────────────────────────────────────────────────────
+    // ── Payments (HUMAN AUTH WALL) ──────────────────────────────────────
+    // All payment operations require human authorization via HUMAN_AUTH_TOKEN.
+    // Diana (founder) is the only authorized human.
 
     // Deposit USD via Stripe
     if (method === 'POST' && pathname === '/api/payments/deposit') {
+      const humanAuth = req.headers['x-human-auth'];
+      const requiredToken = process.env.HUMAN_AUTH_TOKEN;
+      if (!requiredToken || humanAuth !== requiredToken) {
+        jsonResponse(res, 403, { success: false, error: 'Human authorization required. Only Diana can authorize payments.' });
+        log(method, pathname, 403);
+        return;
+      }
       let body;
       try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
       const { amount, currency, stripeToken } = body;
