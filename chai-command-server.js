@@ -1473,6 +1473,60 @@ async function router(req, res) {
       return;
     }
 
+    // ── ROOF Mirror — ETH Token LIVE ─────────────────────────────────────
+    // Oracle syncs ETH ROOF balances to SOL-side mirror.
+    // These endpoints are the off-chain cache. On-chain PDA is permanent.
+
+    // Sync ROOF balance (oracle-only: requires auth)
+    if (method === 'POST' && pathname === '/api/roof/sync') {
+      // Auth: oracle or admin only
+      const authHeader = req.headers['x-human-auth'] || '';
+      const zeroAuth = req.headers['x-zero-auth-sig'];
+      let syncAuthorized = false;
+      if (zeroAuth) {
+        const wallet = req.headers['x-zero-auth-wallet'] || '';
+        if (AUTHORIZED_WALLET && wallet === AUTHORIZED_WALLET) syncAuthorized = true;
+      }
+      if (!syncAuthorized && HUMAN_AUTH_TOKEN && authHeader === HUMAN_AUTH_TOKEN) syncAuthorized = true;
+      if (!syncAuthorized) {
+        return jsonResponse(res, 403, { error: 'ROOF sync requires authorization (oracle/admin)' });
+      }
+
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const { agent, balance, blockNumber, ethTxHash } = body;
+      if (!agent || balance === undefined) return jsonResponse(res, 400, { error: 'agent and balance required' });
+
+      const entry = economy.syncRoofBalance(agent, balance, blockNumber || 0, ethTxHash);
+      jsonResponse(res, 200, { success: true, roof: entry });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Get ROOF balance for a specific agent
+    const roofAgentMatch = pathname.match(/^\/api\/roof\/balance\/(.+)$/);
+    if (method === 'GET' && roofAgentMatch) {
+      const agentKey = decodeURIComponent(roofAgentMatch[1]);
+      const entry = economy.getRoofBalance(agentKey);
+      jsonResponse(res, 200, { success: true, roof: entry });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Get all ROOF balances
+    if (method === 'GET' && pathname === '/api/roof/balances') {
+      jsonResponse(res, 200, { success: true, balances: economy.getAllRoofBalances() });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Get ROOF mirror stats
+    if (method === 'GET' && pathname === '/api/roof/stats') {
+      jsonResponse(res, 200, { success: true, stats: economy.getRoofStats() });
+      log(method, pathname, 200);
+      return;
+    }
+
     // ── Economy Stats ────────────────────────────────────────────────────
 
     if (method === 'GET' && pathname === '/api/economy') {

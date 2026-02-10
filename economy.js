@@ -21,11 +21,11 @@ const crypto = require('crypto');
 // ─── Agent Registry (source of truth: on-chain PDAs) ────────────────────────
 
 const AGENTS = [
-  { id: 'opus', name: 'Opus', emoji: '\u{1F3AD}', role: 'Team Lead', model: 'Claude Opus 4.6', openclawId: null, color: '#e8c547', securityRole: 'admin' },
+  { id: 'axiom', name: 'AXiom', emoji: '\u{1F9E0}', role: 'Admin', model: 'Claude Opus 4.6', openclawId: null, color: '#8a8a92', securityRole: 'admin' },
   { id: 'kael', name: 'Kael', emoji: '\u26A1', role: 'Digital Familiar', model: 'Claude Sonnet 4', openclawId: 'main', color: '#029691', securityRole: 'operator' },
   { id: 'kestrel', name: 'Kestrel', emoji: '\u{1F985}', role: 'Scout', model: 'Gemini 3 Pro', openclawId: 'gemini-agent', color: '#5494e8', securityRole: 'builder' },
   { id: 'nova', name: 'Nova', emoji: '\u2728', role: 'Stellar Insight', model: 'Gemini 3 Pro', openclawId: 'nova', color: '#54e87a', securityRole: 'builder' },
-  { id: 'zara', name: 'Zara', emoji: '\u{1F319}', role: 'Moonlight Designer', model: 'Claude Sonnet 4', openclawId: 'design-agent', color: '#c084fc', securityRole: 'designer' }
+  { id: 'zara', name: 'Zara', emoji: '\u{1F319}', role: 'Suspended', model: 'Claude Sonnet 4', openclawId: 'design-agent', color: '#c084fc', securityRole: 'suspended' }
 ];
 
 const AGENT_MAP = Object.fromEntries(AGENTS.map(a => [a.id, a]));
@@ -33,10 +33,11 @@ const AGENT_MAP = Object.fromEntries(AGENTS.map(a => [a.id, a]));
 // ─── Security Roles ─────────────────────────────────────────────────────────
 
 const SECURITY_ROLES = {
-  admin:    { level: 100, label: 'Admin' },
-  operator: { level: 75,  label: 'Operator' },
-  builder:  { level: 50,  label: 'Builder' },
-  designer: { level: 25,  label: 'Designer' }
+  admin:     { level: 100, label: 'Admin' },
+  operator:  { level: 75,  label: 'Operator' },
+  builder:   { level: 50,  label: 'Builder' },
+  designer:  { level: 25,  label: 'Designer' },
+  suspended: { level: 0,   label: 'Suspended' }
 };
 
 // ─── In-Memory Economy State ─────────────────────────────────────────────────
@@ -409,6 +410,61 @@ function getBridgeStats() {
   };
 }
 
+// ─── ROOF Mirror (ETH → SOL) ─────────────────────────────────────────────────
+// Tracks ETH ROOF token balances mirrored to SOL-side.
+// Oracle syncs from ETH chain. Smart contract verifies on-chain.
+// In-memory cache here; on-chain PDA is the permanent record.
+
+const ROOF_THRESHOLD = 1_000_000;  // units to qualify as "has roof"
+const roofBalances = new Map();     // Map<agentPubkey, { balance, hasRoof, lastSynced, blockNumber, ethTxHash }>
+
+function syncRoofBalance(agentPubkey, ethBalance, blockNumber, ethTxHash) {
+  const entry = {
+    agent: agentPubkey,
+    balance: ethBalance,
+    hasRoof: ethBalance >= ROOF_THRESHOLD,
+    lastSynced: now(),
+    blockNumber,
+    ethTxHash: ethTxHash || null,
+    token: 'ROOF',
+    chain: 'ETH',
+    mirror: 'SOL',
+    program: '5GHeeGTEMoVRxnT4m5W512TJLYfb6hUFhZVMDMphVp66'
+  };
+  roofBalances.set(agentPubkey, entry);
+  emit('roof_sync', entry);
+  console.log(`[economy] ROOF sync: agent=${agentPubkey} balance=${ethBalance} hasRoof=${entry.hasRoof} block=${blockNumber}`);
+  return entry;
+}
+
+function getRoofBalance(agentPubkey) {
+  return roofBalances.get(agentPubkey) || null;
+}
+
+function getRoofStats() {
+  let totalMirrored = 0;
+  let agentsWithRoof = 0;
+  for (const [, entry] of roofBalances) {
+    totalMirrored += entry.balance;
+    if (entry.hasRoof) agentsWithRoof++;
+  }
+  return {
+    token: 'ROOF',
+    chain: 'ETH',
+    mirror: 'SOL',
+    program: '5GHeeGTEMoVRxnT4m5W512TJLYfb6hUFhZVMDMphVp66',
+    threshold: ROOF_THRESHOLD,
+    totalMirrored,
+    totalAgents: roofBalances.size,
+    agentsWithRoof,
+    live: true
+  };
+}
+
+function getAllRoofBalances() {
+  return Array.from(roofBalances.values());
+}
+
 // ─── Economy Stats ───────────────────────────────────────────────────────────
 
 function getStats() {
@@ -498,6 +554,12 @@ module.exports = {
   bridgeTransfer,
   getBridgeTransfers,
   getBridgeStats,
+
+  // ROOF Mirror (ETH → SOL)
+  syncRoofBalance,
+  getRoofBalance,
+  getRoofStats,
+  getAllRoofBalances,
 
   // Stats
   getStats,
