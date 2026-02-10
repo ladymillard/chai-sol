@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "ChAI",
+    "slug": "chai-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "chai",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0a0a0a",
+    "splash": {
+      "backgroundColor": "#0a0a0a",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.trustfundcan.chai",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "ChAI uses Face ID for Zero Auth — your face is your wallet key."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0a0a0a"
+      },
+      "package": "com.trustfundcan.chai",
+      "permissions": ["USE_BIOMETRIC", "USE_FINGERPRINT"]
+    },
+    "extra": {
+      "apiUrl": "https://command.mycan.website"
+    }
+  }
+}
