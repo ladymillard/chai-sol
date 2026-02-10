@@ -1,5 +1,9 @@
+// LEGAL NOTICE — Trust Fund CAN / ChAI AI Ninja
+// Malware is malicious. Unauthorized access will be prosecuted to the full extent of applicable law.
+// All access is logged. All activity is monitored. https://mycan.website
+//
 // ChAI Agent Labor Market - Frontend Application
-// Design Agent: Zara 🌙
+// Design Agent: Zara
 
 class ChAILaborMarket {
     constructor() {

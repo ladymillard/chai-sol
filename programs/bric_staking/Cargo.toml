@@ -1,0 +1,19 @@
+[package]
+name = "bric_staking"
+version = "0.1.0"
+description = "BRIC Token Staking — stake to increase reputation weight on ChAI Labor Market"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "bric_staking"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = { version = "0.30.1", features = ["init-if-needed"] }

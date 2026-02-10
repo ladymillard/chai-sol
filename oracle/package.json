@@ -7,8 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Diana Smith / Trust Fund CAN",
+  "license": "SEE LICENSE IN COPYRIGHT",
   "dependencies": {
     "@coral-xyz/anchor": "^0.32.1",
     "@google/generative-ai": "^0.24.1",

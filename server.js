@@ -1,5 +1,12 @@
 // ChAI Agent Labor Market — Combined Server
 // Serves frontend + proxies to backend API
+//
+// LEGAL NOTICE — Trust Fund CAN / ChAI AI Ninja
+// Malware is malicious software. Any unauthorized access, deployment of
+// malicious code, injection attacks, or abuse of this server or its agents
+// is strictly prohibited. We will prosecute all violations to the full
+// extent of applicable law. All access is logged. All activity is monitored.
+// https://mycan.website
 
 const http = require("http");
 const fs = require("fs");

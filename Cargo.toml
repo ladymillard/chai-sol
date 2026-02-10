@@ -2,7 +2,21 @@
 members = [
     "programs/escrow",
     "programs/reputation",
-    "programs/registry"
+    "programs/registry",
+    "programs/bric_mint",
+    "programs/bric_staking",
+    "programs/bric_treasury",
+    "programs/marketplace",
+    "programs/arbitration",
+    "programs/bounty_board",
+    "programs/bridge",
+    "programs/roof_mirror",
+    "programs/dao",
+    "programs/oracle_config",
+    "programs/container",
+    "programs/learning",
+    "programs/neighborhood",
+    "programs/upgrade"
 ]
 resolver = "2"
 

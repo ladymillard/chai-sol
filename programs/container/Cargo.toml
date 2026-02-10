@@ -1,0 +1,19 @@
+[package]
+name = "container"
+version = "0.1.0"
+description = "Smart Container — an agent's persistent home on chain for ChAI"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "container"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = { version = "0.30.1", features = ["init-if-needed"] }

@@ -1,0 +1,19 @@
+[package]
+name = "oracle_config"
+version = "0.1.0"
+description = "ChAI governance — multi-oracle consensus configuration"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "oracle_config"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = "0.30.1"

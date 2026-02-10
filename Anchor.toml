@@ -5,13 +5,48 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-escrow = "Escrow11111111111111111111111111111111111111"
+escrow = "CfiDHPMS7fobyGCMnp4iVu7w1vYNTc7AsYUmLTbAK3JV"
+registry = "9HihQgSGa8MHHtMZb4DGn6e8Pz1UST4YPvwBQJa5u5sz"
+reputation = "7uvTHPtBJkG2QRimn8pZdb5XUMBHdtCueQSkXLSBD1JX"
+bric_mint = "9iK63cQ5T5frFtqzGCJHaZaGXCvkgpEWLwvgErgA4gUN"
+bric_staking = "CG66VnV7jkGSXksmFiNr5vq2A5XUHjMfUVCCN3xC1aG7"
+bric_treasury = "G4xczvsDXL6A2SeaBFzLLZmk1Ezc63EZzHds8H9JCGZC"
+container = "FWVLCZQVDjyVJe1jZgwKVgA1fPCohzabuwD2nCMS7cf1"
+learning = "8kepcYcYBcfszTGk9sHyavib3nSjrdzTPDdU8xnKkGan"
+neighborhood = "9cv9hvmMXBHJtqsRRR8jHgW36NWJ2a9zbf3rR94di9Xj"
+upgrade = "BYqv3YLiNBHYe14C3UNpXWd9fh8u1o8MCKyC9DBv7PAF"
+marketplace = "JPUF45g74unHDdtccYxVYobassz855JN9ip4EauusmF"
+arbitration = "4pkzCU7MWfhU7ceuEx1HLKd3bk4h6f77G4h9oPMJEscL"
+bounty_board = "H1rgg1xc5aGfnMAmteScYanpugsUKW1cuvwEojQv8cgn"
+bridge = "4K18A3Vuy8DxaJjUyQ1aBskZB7vz7joyRGg33aMraZnb"
+roof_mirror = "5GHeeGTEMoVRxnT4m5W512TJLYfb6hUFhZVMDMphVp66"
+dao = "HJtynTbdHkc8yFjQnA73Qz2WfxVMKw3rj6SucQXcZt21"
+oracle_config = "Dp9BmmG2wKguzpGV4dFi6RQnQybzfFPbAusVYse5d18f"
+
+[programs.devnet]
+escrow = "CfiDHPMS7fobyGCMnp4iVu7w1vYNTc7AsYUmLTbAK3JV"
+registry = "9HihQgSGa8MHHtMZb4DGn6e8Pz1UST4YPvwBQJa5u5sz"
+reputation = "7uvTHPtBJkG2QRimn8pZdb5XUMBHdtCueQSkXLSBD1JX"
+bric_mint = "9iK63cQ5T5frFtqzGCJHaZaGXCvkgpEWLwvgErgA4gUN"
+bric_staking = "CG66VnV7jkGSXksmFiNr5vq2A5XUHjMfUVCCN3xC1aG7"
+bric_treasury = "G4xczvsDXL6A2SeaBFzLLZmk1Ezc63EZzHds8H9JCGZC"
+container = "FWVLCZQVDjyVJe1jZgwKVgA1fPCohzabuwD2nCMS7cf1"
+learning = "8kepcYcYBcfszTGk9sHyavib3nSjrdzTPDdU8xnKkGan"
+neighborhood = "9cv9hvmMXBHJtqsRRR8jHgW36NWJ2a9zbf3rR94di9Xj"
+upgrade = "BYqv3YLiNBHYe14C3UNpXWd9fh8u1o8MCKyC9DBv7PAF"
+marketplace = "JPUF45g74unHDdtccYxVYobassz855JN9ip4EauusmF"
+arbitration = "4pkzCU7MWfhU7ceuEx1HLKd3bk4h6f77G4h9oPMJEscL"
+bounty_board = "H1rgg1xc5aGfnMAmteScYanpugsUKW1cuvwEojQv8cgn"
+bridge = "4K18A3Vuy8DxaJjUyQ1aBskZB7vz7joyRGg33aMraZnb"
+roof_mirror = "5GHeeGTEMoVRxnT4m5W512TJLYfb6hUFhZVMDMphVp66"
+dao = "HJtynTbdHkc8yFjQnA73Qz2WfxVMKw3rj6SucQXcZt21"
+oracle_config = "Dp9BmmG2wKguzpGV4dFi6RQnQybzfFPbAusVYse5d18f"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "Devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]

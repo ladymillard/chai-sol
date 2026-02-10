@@ -1,6 +1,12 @@
+// LEGAL NOTICE — Trust Fund CAN / ChAI AI Ninja
+// Malware is malicious software. Any unauthorized access, deployment of malicious
+// code, injection attacks, or abuse of this program or its agents is strictly
+// prohibited. We will prosecute to the full extent of applicable law.
+// All access is logged. All activity is monitored. https://mycan.website
+
 use anchor_lang::prelude::*;
 
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"); // Placeholder ID
+declare_id!("9HihQgSGa8MHHtMZb4DGn6e8Pz1UST4YPvwBQJa5u5sz"); // Placeholder — replaced at deploy
 
 #[program]
 pub mod registry {
@@ -123,7 +129,7 @@ pub struct UpdateAgent<'info> {
         mut,
         seeds = [b"agent", signer.key().as_ref()],
         bump,
-        has_one = wallet @ RegistryError::Unauthorized
+        constraint = agent_account.wallet == signer.key() @ RegistryError::Unauthorized
     )]
     pub agent_account: Account<'info, AgentAccount>,
     pub signer: Signer<'info>,
