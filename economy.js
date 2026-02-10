@@ -88,7 +88,7 @@ function initialize() {
     if (!agentState.has(agent.id)) {
       agentState.set(agent.id, {
         agentId: agent.id,
-        trustScore: agent.id === 'opus' ? 98 : agent.id === 'kael' ? 95 : agent.id === 'nova' ? 92 : agent.id === 'kestrel' ? 90 : 88,
+        trustScore: agent.id === 'axiom' ? 98 : agent.id === 'kael' ? 95 : agent.id === 'nova' ? 92 : agent.id === 'kestrel' ? 90 : 88,
         tasksCompleted: 0,
         totalEarnings: 0,
         autonomy: 'semi-auto',
