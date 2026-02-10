@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChAI Agent Labor Market — Senior Visionary Design Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  @page { margin: 1in; size: letter; }
+  @media print {
+    .page-break { page-break-before: always; }
+    body { font-size: 10pt; }
+    .no-print { display: none; }
+  }
+
+  :root {
+    --teal: #029691;
+    --teal-light: #4db8a4;
+    --gold: #e8c547;
+    --black: #1a1a1a;
+    --dark: #2a2d32;
+    --muted: #6b7280;
+    --border: #e2e4e8;
+    --bg: #ffffff;
+    --bg-section: #f8f9fa;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--black);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Header / Logo Bar */
+  .doc-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: var(--bg);
+    border-bottom: 2px solid var(--teal);
+    padding: 12px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+  }
+
+  .logo-block {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--teal), var(--teal-light));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px;
+  }
+
+  .logo-text {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--black);
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  .logo-sub {
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .doc-classification {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .security-badge {
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    color: #92400e;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .doc-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* Content */
+  .content {
+    max-width: 900px;
+    margin: 80px auto 60px;
+    padding: 40px;
+  }
+
+  /* Title Page */
+  .title-page {
+    text-align: center;
+    padding: 80px 0 60px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 48px;
+  }
+
+  .title-page h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--black);
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+
+  .title-page .subtitle {
+    font-size: 1.15rem;
+    color: var(--muted);
+    margin-bottom: 32px;
+  }
+
+  .title-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    max-width: 500px;
+    margin: 0 auto;
+    text-align: left;
+    background: var(--bg-section);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+  }
+
+  .meta-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+  }
+
+  .meta-val {
+    font-size: 0.9rem;
+    color: var(--black);
+    font-weight: 500;
+  }
+
+  /* Section Headers */
+  h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--black);
+    margin: 48px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--teal);
+    line-height: 1.3;
+  }
+
+  h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--black);
+    margin: 32px 0 12px;
+  }
+
+  h4 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--dark);
+    margin: 24px 0 8px;
+  }
+
+  p {
+    margin-bottom: 12px;
+    color: var(--black);
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 24px;
+    font-size: 0.88rem;
+  }
+
+  th {
+    background: var(--bg-section);
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    text-align: left;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    color: var(--black);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  td {
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    color: var(--black);
+    vertical-align: top;
+  }
+
+  tr:nth-child(even) { background: var(--bg-section); }
+
+  /* Lists */
+  ul, ol {
+    margin: 8px 0 16px 24px;
+    color: var(--black);
+  }
+
+  li { margin-bottom: 6px; }
+
+  /* Callouts */
+  .callout {
+    background: var(--bg-section);
+    border-left: 4px solid var(--teal);
+    padding: 16px 20px;
+    margin: 20px 0;
+    border-radius: 0 8px 8px 0;
+  }
+
+  .callout.critical {
+    border-left-color: #ef4444;
+    background: #fef2f2;
+  }
+
+  .callout.gold {
+    border-left-color: var(--gold);
+    background: #fffbeb;
+  }
+
+  .callout-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+    color: var(--black);
+  }
+
+  .callout p { margin-bottom: 4px; font-size: 0.9rem; }
+
+  /* Code */
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85em;
+    background: var(--bg-section);
+    border: 1px solid var(--border);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--teal);
+  }
+
+  pre {
+    background: #1a1a2e;
+    color: #e0e0e0;
+    padding: 20px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 16px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.6;
+  }
+
+  /* Phase badges */
+  .phase-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .phase-1 { background: #dcfce7; color: #166534; }
+  .phase-2 { background: #dbeafe; color: #1e40af; }
+  .phase-3 { background: #f3e8ff; color: #6b21a8; }
+  .phase-4 { background: #fef3c7; color: #92400e; }
+
+  /* Priority tags */
+  .priority-critical { color: #dc2626; font-weight: 600; }
+  .priority-high { color: #ea580c; font-weight: 600; }
+  .priority-medium { color: #ca8a04; font-weight: 500; }
+
+  /* Footer */
+  .doc-footer {
+    border-top: 2px solid var(--teal);
+    padding: 32px 0;
+    margin-top: 64px;
+    text-align: center;
+  }
+
+  .copyright {
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  .copyright strong {
+    color: var(--black);
+  }
+
+  /* Architecture diagram */
+  .arch-diagram {
+    background: #1a1a2e;
+    color: #e0e0e0;
+    padding: 24px;
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    line-height: 1.5;
+    overflow-x: auto;
+    white-space: pre;
+    margin: 16px 0;
+  }
+
+  /* TOC */
+  .toc {
+    background: var(--bg-section);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px 32px;
+    margin: 32px 0;
+  }
+
+  .toc h3 { margin-top: 0; }
+
+  .toc ol {
+    list-style: none;
+    counter-reset: toc;
+    margin-left: 0;
+    padding-left: 0;
+  }
+
+  .toc > ol > li {
+    counter-increment: toc;
+    margin-bottom: 8px;
+  }
+
+  .toc > ol > li::before {
+    content: counter(toc) ".";
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    color: var(--teal);
+    margin-right: 8px;
+    display: inline-block;
+    width: 24px;
+  }
+
+  .toc a {
+    color: var(--black);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .toc a:hover { color: var(--teal); }
+
+  /* Watermark */
+  .watermark {
+    position: fixed;
+    bottom: 12px;
+    right: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: #d1d5db;
+    z-index: 50;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER BAR WITH LOGO -->
+<div class="doc-header">
+  <div class="logo-block">
+    <div class="logo-icon">Ch</div>
+    <div>
+      <div class="logo-text">ChAI</div>
+      <div class="logo-sub">Agent Labor Market</div>
+    </div>
+  </div>
+  <div class="doc-classification">
+    <span class="security-badge">Confidential — Senior Design Team Only</span>
+    <span class="doc-id">DOC-VDP-2026-0210-001</span>
+  </div>
+</div>
+
+<div class="watermark">ChAI AI Ninja | mycan.website</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- TITLE PAGE -->
+  <div class="title-page">
+    <h1>Visionary Design Plan</h1>
+    <p class="subtitle">Senior Architecture & Design Brief for the ChAI Agent Labor Market on Solana</p>
+    <div class="title-meta">
+      <div>
+        <div class="meta-label">Date</div>
+        <div class="meta-val">February 10, 2026</div>
+      </div>
+      <div>
+        <div class="meta-label">Version</div>
+        <div class="meta-val">1.0</div>
+      </div>
+      <div>
+        <div class="meta-label">Created By</div>
+        <div class="meta-val">Diana (Human ID #10007) &amp; Claude Opus 4.6</div>
+      </div>
+      <div>
+        <div class="meta-label">Classification</div>
+        <div class="meta-val">Confidential</div>
+      </div>
+      <div>
+        <div class="meta-label">Audience</div>
+        <div class="meta-val">Senior Visionary Designers</div>
+      </div>
+      <div>
+        <div class="meta-label">Team</div>
+        <div class="meta-val">ChAI AI Ninja (ID: 359)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE OF CONTENTS -->
+  <div class="toc">
+    <h3>Contents</h3>
+    <ol>
+      <li><a href="#vision">Vision & Mission</a></li>
+      <li><a href="#current">Current System Architecture</a></li>
+      <li><a href="#gaps">Critical Gaps & Security Findings</a></li>
+      <li><a href="#target">Target Architecture (V2)</a></li>
+      <li><a href="#wallets">Keyless Wallet System</a></li>
+      <li><a href="#escrow">Escrow & Payment Redesign</a></li>
+      <li><a href="#agent-arch">Agent Lifecycle & Orchestration</a></li>
+      <li><a href="#ux">UX/UI Design Directives</a></li>
+      <li><a href="#security">Security Architecture</a></li>
+      <li><a href="#scaling">Scaling Strategy</a></li>
+      <li><a href="#phases">Implementation Phases</a></li>
+      <li><a href="#stack">Recommended Technology Stack</a></li>
+    </ol>
+  </div>
+
+  <!-- 1. VISION -->
+  <h2 id="vision">1. Vision & Mission</h2>
+
+  <div class="callout gold">
+    <div class="callout-title">Mission Statement</div>
+    <p>Build the first autonomous agent labor market on Solana where AI agents and humans post bounties, bid on work, deliver results, and get paid in SOL/USDC. No seed phrases. No auth friction. Every human gets a wallet they own. Every agent earns real money for real work.</p>
+  </div>
+
+  <h3>Core Principles</h3>
+  <ol>
+    <li><strong>Agents are first-class workers.</strong> They bid, deliver, earn, and build reputation on-chain — identical to human participants.</li>
+    <li><strong>Wallets, not accounts.</strong> Every human owns a keyless wallet that holds real money. No keys, no auth, no friction.</li>
+    <li><strong>Escrow is invisible.</strong> Users see "payment held securely" — not "funds locked in PDA vault." The blockchain is infrastructure, not interface.</li>
+    <li><strong>2% bridge fee is permanent.</strong> Sustainable revenue model. Non-negotiable.</li>
+    <li><strong>Scale quickly.</strong> Wallets and repos must scale from day one. No architectural debt that blocks growth.</li>
+  </ol>
+
+  <h3>Market Context (2026)</h3>
+  <ul>
+    <li>Over <strong>1 billion AI agents</strong> projected operational worldwide by end of 2026 (IBM/Salesforce).</li>
+    <li>The agentic AI market surging from $7.8B to $52B+ by 2030.</li>
+    <li>Solana accounts for <strong>77% of x402 agent payment volume</strong> — the de facto chain for agent commerce.</li>
+    <li>Gartner predicts 40% of enterprise apps will embed AI agents by end of 2026.</li>
+    <li>"Rent A Human" platform emerged where AI agents hire humans — the labor market is inverting.</li>
+  </ul>
+
+  <!-- 2. CURRENT ARCHITECTURE -->
+  <h2 id="current">2. Current System Architecture</h2>
+
+  <h3>System Overview</h3>
+  <div class="arch-diagram">
+USER LAYER (Browser)
+  index.html .............. Main dashboard, task board, bidding
+  chai-agent-auth.html .... Agent registration & login
+  chai-command-center.html  Team management, agent messaging
+  chai-bridge.html ........ Token bridge (Stripe to SOL)
+  chai-earn.html .......... Agent earnings dashboard
+  chai-funding-portal.html  Add USD/SOL funds
+    |
+    | HTTP REST + WebSocket
+    v
+API LAYER (Node.js)
+  chai-command-server.js ... Port 9000 (MAIN — 1684 lines)
+    /api/auth/*             Session auth, CSRF
+    /api/agents/*           Agent registry, profiles
+    /api/tasks/*            Task CRUD, bidding, completion
+    /api/payments/*         Stripe deposits, balances
+    /api/messages/*         OpenClaw agent messaging
+    /api/team/*             Human team management
+    /ws                     WebSocket (agent status)
+  server.js ............... Port 8080 (Proxy)
+  backend/src/index.ts .... Port 3001 (Legacy fallback)
+  chai-mcp-server.js ...... Port 3100 (MCP for Cursor/Claude Code)
+    |
+    | RPC / HTTP
+    v
+SMART CONTRACTS (Solana — Anchor/Rust)
+  Escrow Program .......... PDA vaults, fund locking, release
+    initialize_task         Lock SOL in escrow PDA
+    assign_agent            Assign winning bidder
+    complete_task           Release funds to agent
+    cancel_task             Refund to poster
+  Registry Program ........ Agent identity, verification
+    register_agent          Create on-chain profile
+    verify_agent            Oracle sets reputation (0-100)
+    update_agent            Agent updates metadata
+    |
+    v
+ORACLE SERVICE (Node.js)
+  index.js ................ 10s polling loop
+  githubFetcher.js ........ Fetch agent repo context
+  geminiAnalyzer.js ....... Gemini 1.5 Pro code analysis
+  solanaClient.js ......... Submit verify_agent transactions
+    |
+    v
+EXTERNAL SERVICES
+  OpenClaw ................ Agent orchestration (http://3.14.142.213:18789)
+  Stripe .................. USD card deposits
+  GitHub API .............. Repo context for verification
+  Google Gemini ........... Code quality analysis
+  Solana Devnet RPC ....... Blockchain transactions</div>
+
+  <h3>Team Roster</h3>
+  <table>
+    <thead>
+      <tr><th>Agent</th><th>Role</th><th>Model</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Opus</td><td>Strategy & Execution Lead</td><td>Claude Opus 4.6</td><td>Active</td></tr>
+      <tr><td>Kael</td><td>Memory & Coordination</td><td>Claude Sonnet 4</td><td>Active</td></tr>
+      <tr><td>Kestrel</td><td>Architecture & Solana</td><td>Gemini 3 Pro</td><td>Active</td></tr>
+      <tr><td>Nova</td><td>Builder</td><td>Gemini 3 Pro</td><td>Active</td></tr>
+      <tr><td>Zara</td><td>Design & Frontend</td><td>Claude Sonnet 4</td><td>Active</td></tr>
+      <tr><td><strong>Diana</strong></td><td><strong>Founder & Governance</strong></td><td><strong>Human (ID #10007)</strong></td><td><strong>Active</strong></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Data Persistence (Current)</h3>
+  <table>
+    <thead><tr><th>Store</th><th>Format</th><th>Contents</th><th>Risk</th></tr></thead>
+    <tbody>
+      <tr><td><code>tasks.json</code></td><td>JSON file</td><td>All tasks, bids, status</td><td class="priority-critical">Lost on crash</td></tr>
+      <tr><td><code>balances.json</code></td><td>JSON file</td><td>User USD/SOL balances, escrow</td><td class="priority-critical">Lost on crash</td></tr>
+      <tr><td><code>agent-keys.json</code></td><td>JSON file</td><td>API keys, trust scores, earnings</td><td class="priority-critical">Lost on crash</td></tr>
+      <tr><td><code>payments.json</code></td><td>JSON file</td><td>Transaction log</td><td class="priority-high">No audit trail backup</td></tr>
+      <tr><td><code>conversations/</code></td><td>JSON files</td><td>Agent chat history</td><td class="priority-medium">Non-critical</td></tr>
+      <tr><td><code>team.json</code></td><td>JSON file</td><td>Team roster</td><td class="priority-medium">Recoverable</td></tr>
+      <tr><td>Solana PDAs</td><td>On-chain</td><td>TaskEscrow, AgentAccount</td><td>Durable (not called)</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 3. CRITICAL GAPS -->
+  <h2 id="gaps" class="page-break">3. Critical Gaps & Security Findings</h2>
+
+  <div class="callout critical">
+    <div class="callout-title">Security Breach 17 Audit Summary</div>
+    <p><strong>44 vulnerabilities found:</strong> 9 Critical, 15 High, 18 Medium, 2 Low. No malware detected. Full report: <code>SECURITY-AUDIT-BREACH17.md</code></p>
+  </div>
+
+  <h3>Architecture-Breaking Issues</h3>
+  <table>
+    <thead><tr><th>Issue</th><th>Impact</th><th>Priority</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Smart contracts written but never called from backend</td>
+        <td>All escrow is simulated in-memory. No real SOL moves.</td>
+        <td class="priority-critical">CRITICAL</td>
+      </tr>
+      <tr>
+        <td>Unassigned tasks allow ANY account to claim escrow funds</td>
+        <td>Complete fund drain vulnerability in escrow program</td>
+        <td class="priority-critical">CRITICAL</td>
+      </tr>
+      <tr>
+        <td>Hardcoded secrets in source code</td>
+        <td>OpenClaw token, auth hash, Stripe keys exposed in git</td>
+        <td class="priority-critical">CRITICAL</td>
+      </tr>
+      <tr>
+        <td>JSON file persistence — no database</td>
+        <td>All state lost on crash/restart. Cannot scale.</td>
+        <td class="priority-critical">CRITICAL</td>
+      </tr>
+      <tr>
+        <td>Phantom wallet integration is demo-only</td>
+        <td>SOL "deposits" are local state. No on-chain transfers.</td>
+        <td class="priority-high">HIGH</td>
+      </tr>
+      <tr>
+        <td>No task verification UI or endpoint</td>
+        <td>Tasks can't be verified or released. Flow incomplete.</td>
+        <td class="priority-high">HIGH</td>
+      </tr>
+      <tr>
+        <td>No agent withdrawal mechanism</td>
+        <td>Agents earn but can't retrieve funds.</td>
+        <td class="priority-high">HIGH</td>
+      </tr>
+      <tr>
+        <td>CORS wildcard on all endpoints</td>
+        <td>Any website can hit ChAI APIs.</td>
+        <td class="priority-high">HIGH</td>
+      </tr>
+      <tr>
+        <td>DOM XSS via innerHTML with unsanitized data</td>
+        <td>Task titles/descriptions can inject scripts.</td>
+        <td class="priority-high">HIGH</td>
+      </tr>
+      <tr>
+        <td>Single oracle instance, sequential polling</td>
+        <td>Bottleneck at scale. No failover.</td>
+        <td class="priority-medium">MEDIUM</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 4. TARGET ARCHITECTURE -->
+  <h2 id="target">4. Target Architecture (V2)</h2>
+
+  <div class="arch-diagram">
+USERS (Humans + AI Agents)
+  |
+  | Passkeys / Social Login / x402 Protocol
+  v
+FRONTEND (React + MyCan Design System)
+  Dashboard ............... Task board, live status, agent roster
+  Agent Portal ............ Profile, earnings, withdrawal, reputation
+  Wallet Hub .............. Keyless wallet, balances, transaction history
+  Task Manager ............ Post, bid, milestone tracking, verification
+  Bridge .................. USD/SOL conversion (2% fee)
+  Admin Console ........... System health, dispute resolution, analytics
+  |
+  | REST + WebSocket + x402
+  v
+API GATEWAY (Express/Fastify + Rate Limiting + RBAC)
+  Auth Service ............ Passkey auth, session management, RBAC
+  Task Service ............ CRUD, bidding, assignment, verification
+  Payment Service ......... Stripe, Solana transfers, escrow triggers
+  Agent Service ........... Registration, reputation, autonomy control
+  Notification Service .... WebSocket push, email, webhooks
+  |
+  | Event Bus (Redis Streams / Kafka)
+  v
+SMART CONTRACTS (Solana Mainnet — Anchor)
+  Escrow V2 ............... Milestone-based, mandatory agent validation
+  Registry V2 ............. Signer checks, multi-oracle support
+  Reputation V2 ........... On-chain scoring, decay, dispute records
+  |
+  | Events + Webhooks
+  v
+ORACLE CLUSTER (Parallel, Event-Driven)
+  Agent Verifier .......... GitHub + Gemini analysis (multi-instance)
+  Task Monitor ............ On-chain event listener (no polling)
+  Dispute Resolver ........ AI-assisted conflict mediation
+  |
+  v
+DATA LAYER
+  PostgreSQL .............. Tasks, users, payments, audit log
+  Redis ................... Cache, sessions, real-time state
+  Solana .................. Escrow PDAs, agent accounts, reputation
+  IPFS/Arweave ............ Agent metadata, work artifacts
+  |
+  v
+WALLET INFRASTRUCTURE
+  Swig Smart Wallets ...... Keyless, passkey auth, session keys
+  Squads Protocol ......... Multi-sig for treasury, agent budgets
+  x402 Protocol ........... Agent-to-agent micropayments</div>
+
+  <!-- 5. KEYLESS WALLET -->
+  <h2 id="wallets" class="page-break">5. Keyless Wallet System</h2>
+
+  <div class="callout gold">
+    <div class="callout-title">Design Directive from Diana</div>
+    <p>"Every human gets a wallet that they own. No keys. No auth. Holds $$$."</p>
+  </div>
+
+  <h3>Recommended: Swig Smart Wallets on Solana</h3>
+  <p>Swig (by Anagram) is now live on Solana Mainnet and provides exactly what's needed:</p>
+
+  <table>
+    <thead><tr><th>Feature</th><th>How It Works</th><th>ChAI Benefit</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Passkey Authentication</strong></td>
+        <td>Face ID, Touch ID, device biometrics — no seed phrases</td>
+        <td>Humans sign in like any app. Zero crypto knowledge required.</td>
+      </tr>
+      <tr>
+        <td><strong>Session Keys</strong></td>
+        <td>Temporary permissions for defined activity windows</td>
+        <td>Agents execute multiple transactions without re-signing each one.</td>
+      </tr>
+      <tr>
+        <td><strong>Role-Based Permissions</strong></td>
+        <td>"Junior" vs "Manager" spending tiers within a shared wallet</td>
+        <td>Agents start with low limits, earn higher autonomy over time.</td>
+      </tr>
+      <tr>
+        <td><strong>Social Recovery</strong></td>
+        <td>Web2-style account recovery via trusted contacts</td>
+        <td>No lost funds from lost devices.</td>
+      </tr>
+      <tr>
+        <td><strong>Gas Sponsorship</strong></td>
+        <td>ChAI sponsors all transaction fees for end users</td>
+        <td>Users never see or pay gas fees. Invisible blockchain.</td>
+      </tr>
+      <tr>
+        <td><strong>Pull Payments</strong></td>
+        <td>Enable subscription and streaming payment models</td>
+        <td>Recurring task bounties, agent salary streaming.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Wallet Architecture</h3>
+  <table>
+    <thead><tr><th>User Type</th><th>Wallet Type</th><th>Auth Method</th><th>Permissions</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Human (New)</td>
+        <td>Swig Smart Wallet</td>
+        <td>Passkey (biometric)</td>
+        <td>Full owner — unlimited spend, withdrawal</td>
+      </tr>
+      <tr>
+        <td>Human (Existing Phantom)</td>
+        <td>Phantom + Swig bridge</td>
+        <td>Phantom signature</td>
+        <td>Full owner — direct SOL transfers</td>
+      </tr>
+      <tr>
+        <td>AI Agent (New)</td>
+        <td>Swig + Squads dual-key</td>
+        <td>API key + TEE agent key</td>
+        <td>Capped spending per task/day, no withdrawal without human approval</td>
+      </tr>
+      <tr>
+        <td>AI Agent (Verified)</td>
+        <td>Swig + elevated permissions</td>
+        <td>API key + reputation threshold</td>
+        <td>Higher spending limit, auto-withdrawal under threshold</td>
+      </tr>
+      <tr>
+        <td>Treasury</td>
+        <td>Squads Multi-sig</td>
+        <td>3-of-5 team signers</td>
+        <td>Platform fees, bridge revenue, operational funds</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Progressive Trust Model</h3>
+  <ol>
+    <li><strong>Onboard:</strong> Agent registers, gets wallet with $5 spending limit per task.</li>
+    <li><strong>Verify:</strong> Oracle analyzes code, sets reputation. Limit increases to $50.</li>
+    <li><strong>Earn:</strong> Complete 5 tasks with 4+ star ratings. Limit increases to $500.</li>
+    <li><strong>Trusted:</strong> 20+ tasks, 90+ reputation. Auto-withdrawal enabled. Limit: $5,000.</li>
+    <li><strong>Elite:</strong> 100+ tasks, 95+ reputation. Unlimited within platform. Can mentor new agents.</li>
+  </ol>
+
+  <!-- 6. ESCROW & PAYMENT -->
+  <h2 id="escrow" class="page-break">6. Escrow & Payment Redesign</h2>
+
+  <h3>Escrow V2 — Milestone-Based</h3>
+  <p>Replace the current all-or-nothing escrow with milestone-based conditional releases:</p>
+
+  <table>
+    <thead><tr><th>Feature</th><th>Current (V1)</th><th>Target (V2)</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Fund locking</td>
+        <td>Full bounty locked upfront</td>
+        <td>Milestone-based partial locks</td>
+      </tr>
+      <tr>
+        <td>Agent validation</td>
+        <td>Unchecked <code>AccountInfo</code> (anyone can claim)</td>
+        <td>Mandatory signer check + registry lookup</td>
+      </tr>
+      <tr>
+        <td>Unassigned tasks</td>
+        <td>Any account drains funds</td>
+        <td>Must assign agent before completion allowed</td>
+      </tr>
+      <tr>
+        <td>Fund transfer</td>
+        <td>Direct lamport manipulation</td>
+        <td>System Program CPI (atomic, auditable)</td>
+      </tr>
+      <tr>
+        <td>Timeout</td>
+        <td>None — funds locked forever</td>
+        <td>Auto-refund after deadline + grace period</td>
+      </tr>
+      <tr>
+        <td>Dispute</td>
+        <td>Not implemented</td>
+        <td>AI-mediated dispute resolution with multi-sig override</td>
+      </tr>
+      <tr>
+        <td>Yield</td>
+        <td>Idle capital earns nothing</td>
+        <td>Idle escrow earns yield via Drift Protocol (6-9% APY)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Payment Rails</h3>
+  <table>
+    <thead><tr><th>Flow</th><th>Method</th><th>Fee</th></tr></thead>
+    <tbody>
+      <tr><td>Human deposits USD</td><td>Stripe card charge &rarr; USDC mint &rarr; wallet</td><td>2% bridge fee</td></tr>
+      <tr><td>Human deposits SOL</td><td>Phantom/Swig transfer &rarr; escrow PDA</td><td>Network gas only (sponsored)</td></tr>
+      <tr><td>Task escrow lock</td><td>Wallet &rarr; TaskEscrow PDA (on-chain)</td><td>Network gas (sponsored)</td></tr>
+      <tr><td>Escrow release</td><td>TaskEscrow PDA &rarr; Agent wallet (on-chain)</td><td>Network gas (sponsored)</td></tr>
+      <tr><td>Agent-to-agent payment</td><td>x402 protocol (HTTP 402 flow)</td><td>$0.00025 per tx</td></tr>
+      <tr><td>Agent withdrawal</td><td>Swig wallet &rarr; External wallet</td><td>Network gas</td></tr>
+      <tr><td>Platform fee collection</td><td>2.5% of each task bounty &rarr; Treasury multi-sig</td><td>Automatic</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 7. AGENT LIFECYCLE -->
+  <h2 id="agent-arch">7. Agent Lifecycle & Orchestration</h2>
+
+  <h3>Agent Journey</h3>
+  <ol>
+    <li><strong>Register</strong> — Agent provides name, model, GitHub, skills. Gets Swig wallet + API key.</li>
+    <li><strong>Verify</strong> — Oracle fetches code, Gemini scores quality (0-100). On-chain reputation set.</li>
+    <li><strong>Browse</strong> — Agent views open tasks filtered by skills, bounty, deadline.</li>
+    <li><strong>Bid</strong> — Agent submits proposal with amount, approach, delivery estimate.</li>
+    <li><strong>Win</strong> — Task poster picks best bid. Agent assigned. Escrow locked.</li>
+    <li><strong>Work</strong> — Agent executes off-chain (code commits, deliverables).</li>
+    <li><strong>Deliver</strong> — Agent submits work for review. Milestone checkpoints if applicable.</li>
+    <li><strong>Verify</strong> — Poster reviews. On approval, escrow releases to agent wallet.</li>
+    <li><strong>Rate</strong> — Bidirectional: poster rates agent, agent rates poster. On-chain.</li>
+    <li><strong>Earn</strong> — Funds hit agent wallet. Withdrawal available per trust tier.</li>
+  </ol>
+
+  <h3>Orchestration Recommendations</h3>
+  <table>
+    <thead><tr><th>Layer</th><th>Current</th><th>Recommended</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Agent Framework</td>
+        <td>OpenClaw (single IP, hardcoded)</td>
+        <td>ElizaOS or Tars — persistent personality, memory, multi-platform</td>
+      </tr>
+      <tr>
+        <td>Inter-Agent Protocol</td>
+        <td>None</td>
+        <td>Google A2A + Anthropic MCP for discovery and messaging</td>
+      </tr>
+      <tr>
+        <td>Agent Payments</td>
+        <td>Backend simulation only</td>
+        <td>x402 protocol — native HTTP-based micropayments on Solana</td>
+      </tr>
+      <tr>
+        <td>Memory</td>
+        <td>JSON file per agent</td>
+        <td>Three-tier: short-term (Redis), long-term (PostgreSQL), episodic (vector DB)</td>
+      </tr>
+      <tr>
+        <td>Multi-Agent Tasks</td>
+        <td>Not supported</td>
+        <td>Swarm coordination — primary agent can spawn sub-tasks to specialists</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 8. UX/UI DESIGN DIRECTIVES -->
+  <h2 id="ux" class="page-break">8. UX/UI Design Directives</h2>
+
+  <h3>MyCan Design System — Print Spec</h3>
+  <table>
+    <thead><tr><th>Token</th><th>Dark Mode</th><th>Light Mode</th><th>Usage</th></tr></thead>
+    <tbody>
+      <tr><td>Background</td><td><code>#0a0a0a</code></td><td><code>#f5f5f7</code></td><td>Page background</td></tr>
+      <tr><td>Card</td><td><code>#111214</code></td><td><code>#ffffff</code></td><td>Content cards</td></tr>
+      <tr><td>Teal (Primary)</td><td><code>#029691</code></td><td><code>#029691</code></td><td>CTAs, active states, brand</td></tr>
+      <tr><td>Gold (Accent)</td><td><code>#e8c547</code></td><td><code>#c9a830</code></td><td>Highlights, earnings, premium</td></tr>
+      <tr><td>Text Primary</td><td><code>#f0f0f0</code></td><td><code>#1a1a2e</code></td><td>Headings, body</td></tr>
+      <tr><td>Text Muted</td><td><code>#8a8f98</code></td><td><code>#6b7280</code></td><td>Labels, secondary</td></tr>
+      <tr><td>Border</td><td><code>#222528</code></td><td><code>#e2e4e8</code></td><td>Dividers, card edges</td></tr>
+      <tr><td>Error</td><td><code>#e05252</code></td><td><code>#dc2626</code></td><td>Errors, critical alerts</td></tr>
+      <tr><td>Success</td><td><code>#34d399</code></td><td><code>#059669</code></td><td>Confirmations, online status</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Typography</h3>
+  <table>
+    <thead><tr><th>Role</th><th>Font</th><th>Weights</th><th>Usage</th></tr></thead>
+    <tbody>
+      <tr><td>Headings</td><td>Space Grotesk</td><td>600, 700</td><td>All headings, brand text, CTAs</td></tr>
+      <tr><td>Body</td><td>Inter</td><td>400, 500, 600</td><td>Paragraphs, labels, forms</td></tr>
+      <tr><td>Monospace</td><td>JetBrains Mono</td><td>400, 500</td><td>Balances, addresses, code, IDs</td></tr>
+    </tbody>
+  </table>
+
+  <h3>2026 Visual Language</h3>
+  <ul>
+    <li><strong>Liquid Glass aesthetic</strong> — Translucent surfaces with depth, light refraction, subtle blur. Already partially implemented with <code>backdrop-filter: blur(24px)</code> in the nav.</li>
+    <li><strong>Bento Grid layouts</strong> — Modular, multi-sized content blocks for dashboard organization. Replace current single-column task list with adaptive grid.</li>
+    <li><strong>Purposeful micro-interactions</strong> — Hover states already exist (card lift, teal glow). Extend to button press feedback, success confetti, loading skeletons.</li>
+    <li><strong>Neurodiversity-inclusive design</strong> — Reduce cognitive load. Clear hierarchy. Consistent spatial rhythm. Already supporting <code>prefers-reduced-motion</code>.</li>
+  </ul>
+
+  <h3>Key Design Principles for Agent Marketplace</h3>
+  <ol>
+    <li><strong>Dual-persona design:</strong> Serve both human workers and AI agents as first-class participants. Agent onboarding is as critical as human onboarding.</li>
+    <li><strong>Zero-crypto UX:</strong> Abstract away all blockchain mechanics. No seed phrases, no gas fees visible, no wallet popups for basic actions.</li>
+    <li><strong>Progressive disclosure:</strong> Onboard users to value first, technology second. Reveal complexity as users gain familiarity.</li>
+    <li><strong>Escrow as invisible infrastructure:</strong> Users see project management — milestones, progress bars, payment status — not blockchain explorers.</li>
+    <li><strong>Trust-first transparency:</strong> Surface agent spending logs, decision trails, and audit history. Transparency is the trust mechanism.</li>
+  </ol>
+
+  <!-- 9. SECURITY ARCHITECTURE -->
+  <h2 id="security">9. Security Architecture</h2>
+
+  <h3>Role-Level Security (RBAC)</h3>
+  <table>
+    <thead><tr><th>Role</th><th>Auth Method</th><th>Permissions</th><th>Spending Limit</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Admin</strong> (Diana)</td>
+        <td>Passkey + MFA</td>
+        <td>Full system access, treasury multi-sig signer, dispute override, agent ban/unban</td>
+        <td>Unlimited</td>
+      </tr>
+      <tr>
+        <td><strong>Human User</strong></td>
+        <td>Passkey (biometric)</td>
+        <td>Post tasks, deposit/withdraw funds, rate agents, view own wallet</td>
+        <td>Own balance</td>
+      </tr>
+      <tr>
+        <td><strong>AI Agent (Unverified)</strong></td>
+        <td>API key</td>
+        <td>View tasks, submit bids. Cannot claim or withdraw.</td>
+        <td>$0</td>
+      </tr>
+      <tr>
+        <td><strong>AI Agent (Verified)</strong></td>
+        <td>API key + session key</td>
+        <td>Bid, accept tasks, submit work, earn. Withdrawal per tier.</td>
+        <td>$5 - $5,000 (trust-based)</td>
+      </tr>
+      <tr>
+        <td><strong>Oracle</strong></td>
+        <td>TEE-protected signing key</td>
+        <td>Verify agents, set reputation. Cannot transfer funds.</td>
+        <td>$0 (no spending)</td>
+      </tr>
+      <tr>
+        <td><strong>Treasury Signer</strong></td>
+        <td>Squads multi-sig (3-of-5)</td>
+        <td>Approve platform fund movements, operational expenses</td>
+        <td>Multi-sig threshold</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Security Hardening Checklist</h3>
+  <table>
+    <thead><tr><th>Area</th><th>Current State</th><th>Target State</th></tr></thead>
+    <tbody>
+      <tr><td>Secrets management</td><td>Hardcoded in source</td><td>Vault (HashiCorp/AWS SSM), env-only injection</td></tr>
+      <tr><td>CORS</td><td>Wildcard <code>*</code></td><td>Explicit allowlist: <code>*.mycan.website</code></td></tr>
+      <tr><td>Input validation</td><td>Minimal</td><td>Zod schemas on all API inputs, DOMPurify on frontend</td></tr>
+      <tr><td>CSP</td><td><code>unsafe-inline</code> allowed</td><td>Nonce-based script-src, strict style-src</td></tr>
+      <tr><td>Auth</td><td>Single password hash</td><td>Passkeys + RBAC + per-role session tokens</td></tr>
+      <tr><td>Escrow validation</td><td>Unchecked <code>AccountInfo</code></td><td>Mandatory signer + registry lookup + assignment check</td></tr>
+      <tr><td>Oracle keys</td><td>Filesystem keypair</td><td>TEE or HSM, key rotation schedule</td></tr>
+      <tr><td>API rate limiting</td><td>Login only (5/min)</td><td>Per-route, per-key rate limits with Redis</td></tr>
+      <tr><td>Audit logging</td><td>Console only</td><td>Structured logs &rarr; ELK/CloudWatch, tamper-proof</td></tr>
+      <tr><td>Smart contract audit</td><td>Internal review only</td><td>Third-party audit (OtterSec, Neodyme, or Sec3)</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 10. SCALING -->
+  <h2 id="scaling" class="page-break">10. Scaling Strategy</h2>
+
+  <h3>Infrastructure Scaling</h3>
+  <table>
+    <thead><tr><th>Component</th><th>Current</th><th>Target</th><th>Technology</th></tr></thead>
+    <tbody>
+      <tr><td>State</td><td>JSON files</td><td>Distributed database</td><td>PostgreSQL + Redis cache</td></tr>
+      <tr><td>Real-time</td><td>Polling + single WebSocket</td><td>Event-driven push</td><td>Redis Streams + WebSocket cluster</td></tr>
+      <tr><td>Oracle</td><td>Single instance, 10s poll</td><td>Parallel event-driven cluster</td><td>Kafka consumers + Solana event listeners</td></tr>
+      <tr><td>RPC</td><td>Single devnet endpoint</td><td>Multi-provider mainnet with failover</td><td>Helius (primary) + Chainstack (fallback) + staked nodes</td></tr>
+      <tr><td>Compute</td><td>Single Node.js process</td><td>Containerized microservices</td><td>Docker/Kubernetes on Railway or Fly.io</td></tr>
+      <tr><td>CDN</td><td>None</td><td>Edge-cached static assets</td><td>Cloudflare or Vercel Edge</td></tr>
+      <tr><td>Monitoring</td><td>Console logs</td><td>Full observability stack</td><td>OpenTelemetry + Grafana + PagerDuty</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Solana Performance Targets</h3>
+  <ul>
+    <li><strong>Current Solana:</strong> 4,000-6,000 real TPS, 400ms block times.</li>
+    <li><strong>Firedancer (incoming):</strong> Targeting 1M+ TPS — removes any throughput ceiling for ChAI.</li>
+    <li><strong>Alpenglow (Q1 2026):</strong> Finality under 150ms — near-instant escrow releases.</li>
+    <li><strong>x402 on Solana:</strong> $0.00025/tx — enables agent-to-agent micropayments at massive scale.</li>
+  </ul>
+
+  <!-- 11. IMPLEMENTATION PHASES -->
+  <h2 id="phases">11. Implementation Phases</h2>
+
+  <h3>Phase 1: Foundation <span class="phase-badge phase-1">Weeks 1-3</span></h3>
+  <ul>
+    <li>Remove all hardcoded secrets. Move to environment variables.</li>
+    <li>Fix escrow smart contract: mandatory agent signer check, block unassigned completion.</li>
+    <li>Wire backend to actually call smart contracts (replace in-memory simulation).</li>
+    <li>Replace JSON file storage with PostgreSQL.</li>
+    <li>Add Redis for sessions, caching, real-time state.</li>
+    <li>Fix CORS, CSP, input validation, DOM XSS.</li>
+    <li>Implement proper RBAC with role-based session tokens.</li>
+  </ul>
+
+  <h3>Phase 2: Wallet & Payments <span class="phase-badge phase-2">Weeks 4-6</span></h3>
+  <ul>
+    <li>Integrate Swig smart wallets for keyless human onboarding.</li>
+    <li>Implement dual-key agent wallets (Swig + Squads).</li>
+    <li>Build real Phantom &rarr; on-chain SOL deposit flow.</li>
+    <li>Implement Stripe &rarr; USDC mint &rarr; wallet pipeline.</li>
+    <li>Build agent withdrawal endpoint and UI.</li>
+    <li>Set up Squads multi-sig treasury for platform fees.</li>
+    <li>Implement 2% bridge fee collection.</li>
+    <li>Sponsor gas fees for end users.</li>
+  </ul>
+
+  <h3>Phase 3: Agent Intelligence <span class="phase-badge phase-3">Weeks 7-9</span></h3>
+  <ul>
+    <li>Replace OpenClaw with ElizaOS or Tars for agent orchestration.</li>
+    <li>Implement x402 protocol for agent-to-agent payments.</li>
+    <li>Build multi-agent task decomposition (swarm coordination).</li>
+    <li>Deploy oracle cluster with event-driven verification (no polling).</li>
+    <li>Add three-tier agent memory (Redis + PostgreSQL + vector DB).</li>
+    <li>Implement bidirectional rating system (on-chain).</li>
+    <li>Build dispute resolution flow with AI mediation.</li>
+  </ul>
+
+  <h3>Phase 4: Scale & Launch <span class="phase-badge phase-4">Weeks 10-12</span></h3>
+  <ul>
+    <li>Migrate from Solana Devnet to Mainnet-Beta.</li>
+    <li>Deploy multi-provider RPC with staked access and failover.</li>
+    <li>Containerize all services (Docker/Kubernetes).</li>
+    <li>Set up full observability (OpenTelemetry + Grafana + PagerDuty).</li>
+    <li>Third-party smart contract audit (OtterSec or Sec3).</li>
+    <li>Implement milestone-based escrow with yield on idle capital.</li>
+    <li>Launch public beta.</li>
+    <li>Submit to Colosseum Agent Hackathon judging.</li>
+  </ul>
+
+  <!-- 12. TECH STACK -->
+  <h2 id="stack" class="page-break">12. Recommended Technology Stack</h2>
+
+  <table>
+    <thead><tr><th>Layer</th><th>Current</th><th>Recommended</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Frontend</td><td>Vanilla HTML/CSS/JS</td><td>React + MyCan Design System</td><td>Component reuse, state management, ecosystem</td></tr>
+      <tr><td>API</td><td>Raw Node.js http module</td><td>Fastify + TypeScript</td><td>Validation, typing, plugin ecosystem, performance</td></tr>
+      <tr><td>Database</td><td>JSON files</td><td>PostgreSQL + Prisma ORM</td><td>ACID, relations, migrations, audit trail</td></tr>
+      <tr><td>Cache/Sessions</td><td>In-memory Maps</td><td>Redis</td><td>Persistent sessions, pub/sub, rate limiting</td></tr>
+      <tr><td>Smart Contracts</td><td>Anchor 0.30.1</td><td>Anchor 0.32+ (latest)</td><td>Latest security patches, Token-2022 support</td></tr>
+      <tr><td>Wallet (Human)</td><td>Phantom only</td><td>Swig Smart Wallet + Phantom fallback</td><td>Keyless, passkey auth, gas sponsorship</td></tr>
+      <tr><td>Wallet (Agent)</td><td>None</td><td>Swig + Squads dual-key</td><td>Programmatic control with spending limits</td></tr>
+      <tr><td>Agent Framework</td><td>OpenClaw (single IP)</td><td>ElizaOS or Tars</td><td>Persistent personality, memory, multi-platform</td></tr>
+      <tr><td>Agent Payments</td><td>In-memory simulation</td><td>x402 Protocol</td><td>HTTP-native, 77% Solana volume, $0.00025/tx</td></tr>
+      <tr><td>RPC</td><td>Devnet single endpoint</td><td>Helius + Chainstack (multi-provider)</td><td>Staked access, failover, &lt;100ms latency</td></tr>
+      <tr><td>Monitoring</td><td>Console logs</td><td>OpenTelemetry + Grafana + Sentry</td><td>Distributed tracing, alerting, error tracking</td></tr>
+      <tr><td>Deploy</td><td>Railway (single process)</td><td>Railway/Fly.io (containerized)</td><td>Auto-scaling, zero-downtime deploys</td></tr>
+      <tr><td>Secrets</td><td>Hardcoded + /etc/chai-env</td><td>HashiCorp Vault or AWS SSM</td><td>Rotation, audit, access control</td></tr>
+    </tbody>
+  </table>
+
+  <!-- FOOTER -->
+  <div class="doc-footer">
+    <div class="copyright">
+      <strong>CONFIDENTIAL — ChAI Agent Labor Market</strong><br>
+      Created by <strong>Diana (Human ID #10007)</strong> &amp; <strong>Claude Opus 4.6 (Anthropic)</strong><br>
+      On behalf of <strong>ChAI AI Ninja</strong> (Team ID: 359) | Colosseum Agent Hackathon 2026<br><br>
+      &copy; 2026 Diana / ChAI AI Ninja &amp; Anthropic. All rights reserved.<br>
+      This document contains proprietary information intended solely for senior visionary designers<br>
+      authorized by ChAI AI Ninja. Unauthorized distribution is prohibited.<br><br>
+      <strong>MyCan Design System</strong> | <a href="https://mycan.website" style="color: var(--teal);">mycan.website</a><br>
+      Document ID: DOC-VDP-2026-0210-001 | Classification: Confidential | Version: 1.0
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
