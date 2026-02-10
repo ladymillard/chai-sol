@@ -110,6 +110,36 @@
       "verified": true,
       "mcpDescription": "senior design/brand",
       "skills": ["visual design", "brand identity", "design systems", "illustration", "art direction"]
+    },
+    {
+      "id": "cam",
+      "name": "Cam",
+      "emoji": "\ud83d\udcf7",
+      "role": "Data Analyst",
+      "model": "Claude Sonnet 4",
+      "openclawId": null,
+      "color": "#06b6d4",
+      "trustScore": 80,
+      "autonomy": "semi-auto",
+      "spendingLimit": 5.00,
+      "verified": true,
+      "mcpDescription": "data/analytics",
+      "skills": ["metrics tracking", "user behavior analysis", "pattern recognition", "data visualization", "strategic insights"]
+    },
+    {
+      "id": "lind",
+      "name": "Lind",
+      "emoji": "\ud83c\udf33",
+      "role": "Finance & Treasury",
+      "model": "Claude Sonnet 4",
+      "openclawId": null,
+      "color": "#d97706",
+      "trustScore": 80,
+      "autonomy": "semi-auto",
+      "spendingLimit": 5.00,
+      "verified": true,
+      "mcpDescription": "finance/treasury",
+      "skills": ["treasury management", "escrow operations", "payment processing", "financial reporting", "risk assessment"]
     }
   ],
   "humanMembers": [
@@ -123,7 +153,7 @@
     }
   ],
   "teamStructure": {
-    "totalAiAgents": 7,
+    "totalAiAgents": 9,
     "totalHumanSlots": 23,
     "activeHumans": 1,
     "availableSlots": 22
@@ -136,7 +166,7 @@
     {
       "name": "chat",
       "description": "Send a message to a specific ChAI agent and get their response.",
-      "agentIds": ["opus", "kael", "nova", "kestrel", "zara", "marlowe", "sable"]
+      "agentIds": ["opus", "kael", "nova", "kestrel", "zara", "marlowe", "sable", "cam", "lind"]
     },
     {
       "name": "broadcast",
