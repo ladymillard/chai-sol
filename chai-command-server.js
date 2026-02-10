@@ -956,11 +956,45 @@ async function router(req, res) {
       return;
     }
 
-    // ── Stripe Publishable Key Endpoint (V-001) — AUTH WALL ─────────────
+    // ── Zero Auth Status ────────────────────────────────────────────────
+    if (method === 'GET' && pathname === '/api/auth/zero-auth') {
+      const authorizedWallet = process.env.AUTHORIZED_WALLET || '';
+      jsonResponse(res, 200, {
+        zeroAuth: {
+          enabled: !!authorizedWallet,
+          wallet: authorizedWallet ? authorizedWallet.slice(0, 8) + '...' : null,
+          method: 'ed25519-solana-wallet-signature',
+          messageFormat: 'chai-payment:<amount>:<timestamp>',
+          replayWindow: '5 minutes',
+          headers: ['X-Zero-Auth-Sig', 'X-Zero-Auth-Wallet', 'X-Zero-Auth-Timestamp'],
+          fallback: !!process.env.HUMAN_AUTH_TOKEN ? 'X-Human-Auth (legacy)' : 'none'
+        }
+      });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // ── Stripe Publishable Key Endpoint (V-001) — ZERO AUTH / AUTH WALL ──
     if (method === 'GET' && pathname === '/api/config/stripe-key') {
-      const humanAuth = req.headers['x-human-auth'] || '';
-      if (!process.env.HUMAN_AUTH_TOKEN || humanAuth !== process.env.HUMAN_AUTH_TOKEN) {
-        return jsonResponse(res, 403, { error: 'Stripe key requires human authorization' });
+      // Zero Auth: check wallet signature
+      const hasZeroAuth = req.headers['x-zero-auth-sig'];
+      let keyAuthorized = false;
+      if (hasZeroAuth) {
+        const walletAddr = req.headers['x-zero-auth-wallet'] || '';
+        const authorizedWallet = process.env.AUTHORIZED_WALLET || '';
+        if (authorizedWallet && walletAddr === authorizedWallet) {
+          keyAuthorized = true;
+        }
+      }
+      // Legacy: human auth token
+      if (!keyAuthorized) {
+        const humanAuth = req.headers['x-human-auth'] || '';
+        if (process.env.HUMAN_AUTH_TOKEN && humanAuth === process.env.HUMAN_AUTH_TOKEN) {
+          keyAuthorized = true;
+        }
+      }
+      if (!keyAuthorized) {
+        return jsonResponse(res, 403, { error: 'Stripe key requires Zero Auth (wallet) or human authorization' });
       }
       const stripePk = process.env.STRIPE_PK || '';
       jsonResponse(res, 200, { publishableKey: stripePk });
@@ -1250,23 +1284,106 @@ async function router(req, res) {
     }
 
     // ── Payments ──────────────────────────────────────────────────────────
-    // AUTH WALL: All payment endpoints require HUMAN_AUTH_TOKEN.
+    // ZERO AUTH: Payments require wallet signature OR human auth token.
+    // Mode 1 — Zero Auth: Client signs a message with Solana wallet.
+    //          Server verifies signature against AUTHORIZED_WALLET pubkey.
+    //          PDA = identity. Signature = proof. No passwords.
+    // Mode 2 — Legacy: HUMAN_AUTH_TOKEN header (fallback for non-wallet clients).
     // No agent, no bot, no automated system can touch payments.
-    // Diana sets HUMAN_AUTH_TOKEN in env. No token = no payments. Period.
 
     const HUMAN_AUTH_TOKEN = process.env.HUMAN_AUTH_TOKEN || '';
+    const AUTHORIZED_WALLET = process.env.AUTHORIZED_WALLET || '';  // Diana's Solana pubkey
 
-    // Deposit USD via Stripe — HUMAN AUTH REQUIRED
-    if (method === 'POST' && pathname === '/api/payments/deposit') {
-      // ── AUTH WALL ──
-      const authHeader = req.headers['x-human-auth'] || '';
-      if (!HUMAN_AUTH_TOKEN || authHeader !== HUMAN_AUTH_TOKEN) {
-        console.log(`[payment] AUTH WALL BLOCKED deposit attempt. No valid human auth token.`);
-        return jsonResponse(res, 403, { success: false, error: 'Payment requires human authorization. Set HUMAN_AUTH_TOKEN and pass X-Human-Auth header.' });
+    // ── Zero Auth Verification ──
+    // Verifies that a signed message came from the authorized wallet.
+    // Message format: "chai-payment:<amount>:<timestamp>"
+    // Signature: base64-encoded ed25519 signature from Solana wallet
+    function verifyZeroAuth(req, body) {
+      const sig = req.headers['x-zero-auth-sig'] || '';
+      const wallet = req.headers['x-zero-auth-wallet'] || '';
+      const timestamp = req.headers['x-zero-auth-timestamp'] || '';
+
+      if (!sig || !wallet || !timestamp) return { valid: false, reason: 'Missing Zero Auth headers' };
+
+      // Wallet must match authorized wallet
+      if (AUTHORIZED_WALLET && wallet !== AUTHORIZED_WALLET) {
+        return { valid: false, reason: `Wallet ${wallet} is not authorized` };
       }
 
+      // Timestamp must be within 5 minutes (replay protection)
+      const ts = parseInt(timestamp, 10);
+      const now = Date.now();
+      if (isNaN(ts) || Math.abs(now - ts) > 5 * 60 * 1000) {
+        return { valid: false, reason: 'Timestamp expired or invalid (5 minute window)' };
+      }
+
+      // Message that was signed: deterministic, includes amount + timestamp
+      const message = `chai-payment:${body.amount || 0}:${timestamp}`;
+
+      // Ed25519 signature verification using Node.js crypto
+      try {
+        const pubKeyBytes = Buffer.from(decodeBase58(wallet));
+        const sigBytes = Buffer.from(sig, 'base64');
+        const msgBytes = Buffer.from(message);
+        const isValid = crypto.verify(null, msgBytes, {
+          key: Buffer.concat([Buffer.from('302a300506032b6570032100', 'hex'), pubKeyBytes]),
+          format: 'der',
+          type: 'spki'
+        }, sigBytes);
+        return { valid: isValid, wallet, timestamp: ts, reason: isValid ? 'Verified' : 'Invalid signature' };
+      } catch (err) {
+        return { valid: false, reason: `Signature verification failed: ${err.message}` };
+      }
+    }
+
+    // Base58 decoder (Solana wallet addresses are base58-encoded)
+    function decodeBase58(str) {
+      const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+      const base = BigInt(58);
+      let num = BigInt(0);
+      for (const char of str) {
+        const idx = ALPHABET.indexOf(char);
+        if (idx === -1) throw new Error(`Invalid base58 character: ${char}`);
+        num = num * base + BigInt(idx);
+      }
+      const hex = num.toString(16).padStart(64, '0');
+      return Buffer.from(hex, 'hex');
+    }
+
+    // Deposit USD via Stripe — ZERO AUTH or HUMAN AUTH REQUIRED
+    if (method === 'POST' && pathname === '/api/payments/deposit') {
       let body;
       try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+
+      // ── ZERO AUTH (primary) ──
+      const hasZeroAuth = req.headers['x-zero-auth-sig'];
+      let authorized = false;
+
+      if (hasZeroAuth) {
+        const result = verifyZeroAuth(req, body);
+        if (result.valid) {
+          authorized = true;
+          console.log(`[payment] ZERO AUTH verified wallet=${result.wallet} ts=${result.timestamp}`);
+        } else {
+          console.log(`[payment] ZERO AUTH rejected: ${result.reason}`);
+          return jsonResponse(res, 403, { success: false, error: `Zero Auth failed: ${result.reason}` });
+        }
+      }
+
+      // ── LEGACY AUTH (fallback) ──
+      if (!authorized) {
+        const authHeader = req.headers['x-human-auth'] || '';
+        if (HUMAN_AUTH_TOKEN && authHeader === HUMAN_AUTH_TOKEN) {
+          authorized = true;
+          console.log(`[payment] Legacy human auth token accepted.`);
+        }
+      }
+
+      if (!authorized) {
+        console.log(`[payment] AUTH WALL BLOCKED deposit attempt. No valid auth.`);
+        return jsonResponse(res, 403, { success: false, error: 'Payment requires authorization. Use Zero Auth (wallet signature) or set HUMAN_AUTH_TOKEN.' });
+      }
+
       const { amount, currency, stripeToken } = body;
 
       if (!amount || amount < 1) return jsonResponse(res, 400, { error: 'Minimum deposit is $1.00' });
