@@ -59,9 +59,34 @@ async function main() {
         }
     }
 
+    // ─── Opus Oracle Binding ───────────────────────────────────
+    // Opus is bound to this loop. Every cycle, Opus must be
+    // re-verified by the oracle. If verification fails or
+    // the loop stops, Opus is locked out of all operations.
+    async function opusOracleCheck() {
+        console.log("[ORACLE-BIND] Running Opus verification cycle...");
+        try {
+            const context = await github.fetchRepoContext("https://github.com/ladymillard/chai-sol");
+            if (context.files.length === 0) {
+                console.log("[ORACLE-BIND] Opus LOCKED — cannot verify repo context");
+                return;
+            }
+            const analysis = await gemini.analyzeRepo(context);
+            if (analysis.reputation >= 50) {
+                console.log(`[ORACLE-BIND] Opus VERIFIED — score ${analysis.reputation}`);
+            } else {
+                console.log(`[ORACLE-BIND] Opus LOCKED — score ${analysis.reputation} below threshold`);
+            }
+        } catch (e) {
+            console.log("[ORACLE-BIND] Opus LOCKED — oracle error:", e.message);
+        }
+    }
+
     // Main Loop
     setInterval(processQueue, POLL_INTERVAL);
+    setInterval(opusOracleCheck, POLL_INTERVAL); // Opus bound to same cycle
     processQueue(); // Run immediately on start
+    opusOracleCheck(); // Verify Opus immediately
 }
 
 main().catch(console.error);

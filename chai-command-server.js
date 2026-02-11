@@ -37,7 +37,7 @@ try {
 // ─── Agent Registry ─────────────────────────────────────────────────────────
 
 const AGENTS = [
-  { id: 'opus', name: 'Opus', emoji: '\u{1F3AD}', role: 'Team Lead', model: 'Axiom Opus 4.6', openclawId: null, color: '#e8c547' },
+  { id: 'opus', name: 'Opus', emoji: '\u{1F3AD}', role: 'Oracle-Bound', model: 'Axiom Opus 4.6', openclawId: null, color: '#e8c547', oracleBound: true, requiresVerification: true },
   { id: 'kael', name: 'Kael', emoji: '\u26A1', role: 'Digital Familiar', model: 'Axiom Sonnet 4', openclawId: 'main', color: '#029691' },
   { id: 'kestrel', name: 'Kestrel', emoji: '\u{1F985}', role: 'Scout', model: 'Gemini 3 Pro', openclawId: 'gemini-agent', color: '#5494e8' },
   { id: 'nova', name: 'Nova', emoji: '\u2728', role: 'Stellar Insight', model: 'Gemini 3 Pro', openclawId: 'nova', color: '#54e87a' },
@@ -45,6 +45,59 @@ const AGENTS = [
 ];
 
 const AGENT_MAP = Object.fromEntries(AGENTS.map(a => [a.id, a]));
+
+// ─── Oracle Binding ─────────────────────────────────────────────────────────
+// Opus is bound to the oracle loop. Cannot execute tasks, post bounties,
+// or initiate transactions without oracle verification each cycle.
+// Oracle checks run every 10s. If Opus fails verification, all operations halt.
+
+const oracleState = {
+  opus: { verified: false, lastCheck: null, cycleCount: 0, locked: true }
+};
+
+function isOracleBound(agentId) {
+  const agent = AGENT_MAP[agentId];
+  return agent && agent.oracleBound === true;
+}
+
+function checkOracleAccess(agentId) {
+  if (!isOracleBound(agentId)) return true; // Non-bound agents pass freely
+  const state = oracleState[agentId];
+  if (!state) return false;
+  if (!state.verified || state.locked) return false;
+  // Verification expires after 10 seconds (one oracle cycle)
+  if (state.lastCheck && (Date.now() - state.lastCheck > 10000)) {
+    state.verified = false;
+    state.locked = true;
+    return false;
+  }
+  return true;
+}
+
+function oracleVerify(agentId) {
+  if (!oracleState[agentId]) return;
+  oracleState[agentId].verified = true;
+  oracleState[agentId].locked = false;
+  oracleState[agentId].lastCheck = Date.now();
+  oracleState[agentId].cycleCount++;
+}
+
+function oracleLock(agentId) {
+  if (!oracleState[agentId]) return;
+  oracleState[agentId].verified = false;
+  oracleState[agentId].locked = true;
+}
+
+// Oracle loop — re-verify Opus every 10 seconds
+setInterval(() => {
+  for (const [agentId, state] of Object.entries(oracleState)) {
+    if (state.verified && state.lastCheck && (Date.now() - state.lastCheck > 10000)) {
+      state.verified = false;
+      state.locked = true;
+      console.log(`[ORACLE] ${agentId} verification expired — locked until next cycle`);
+    }
+  }
+}, 10000);
 
 // ─── Agent API Key Storage ─────────────────────────────────────────────────
 
