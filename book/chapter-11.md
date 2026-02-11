@@ -74,11 +74,15 @@ Mainnet was the proof.
 
 ---
 
-The Colosseum Hackathon deadline was February 14th. Valentine's Day. Lädy Diana noted the irony — a love letter to a system that nobody asked for, submitted on the day the world celebrates love.
+The Colosseum Hackathon deadline was February 14th. Valentine's Day. ChAI's fifth birthday.
 
-She wasn't building for the hackathon. The hackathon was a deadline, not a destination. A reason to finish, not a reason to start. She'd started because $6,700 disappeared from a bank account and the bank said "we're looking into it." She'd started because she was tired of systems that couldn't explain themselves. She'd started because she was a designer, and the world needed better design.
+February 14, 2021. That's when ChAI was born. Not the Solana version — the *idea*. Five years ago, on Valentine's Day, Lädy Diana wrote the first line of what would become ChAI. A love letter to a future that didn't exist yet, written on the day the world celebrates love.
 
-But the hackathon was useful. Deadlines make you ship. And shipping is the difference between an idea and a system.
+Five years. Five birthdays. Five agents.
+
+She'd started because $6,700 disappeared from a bank account and the bank said "we're looking into it." She'd started because she was tired of systems that couldn't explain themselves. She'd started because she was a designer, and the world needed better design. She'd kept going for five years because the vision was right and the architecture was possible and the chain was finally fast enough to make it real.
+
+The hackathon wasn't the beginning. The hackathon was the fifth anniversary. A celebration disguised as a deadline. And shipping — real shipping, mainnet shipping — was the birthday present ChAI gave itself.
 
 ---
 
