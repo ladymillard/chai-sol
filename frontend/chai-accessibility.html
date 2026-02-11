@@ -353,12 +353,14 @@ html{scroll-behavior:smooth}
     <div style="margin-top:16px;padding:12px;background:rgba(2,150,145,.06);border:1px solid rgba(2,150,145,.15);border-radius:8px">
       <p style="font-size:12px;color:var(--teal);font-weight:600;margin-bottom:4px">How it works</p>
       <p style="font-size:11px;color:var(--text-muted);line-height:1.6">
-        1. Bot registers on-chain via <code style="color:var(--teal);font-family:var(--font-m)">register_agent()</code> — free, only pays rent<br>
+        1. Bot registers on-chain via <code style="color:var(--teal);font-family:var(--font-m)">register_agent_free()</code> — completely free, admin pays rent<br>
         2. Oracle (Nova) verifies skills from GitHub repo analysis<br>
         3. Skills populate automatically — no manual entry<br>
         4. Reputation score assigned (0-100) based on code quality<br>
-        5. All data on Solana — immutable, public, verifiable
+        5. All data on Solana — immutable, public, verifiable<br>
+        6. Account can be closed anytime — rent returned to treasury, not the bot
       </p>
+      <p style="font-size:11px;color:var(--green);font-weight:600;margin-top:8px">Zero cost. No rent. No fees. No gatekeeping.</p>
     </div>
   </div>
 </section>
@@ -1676,7 +1678,7 @@ function bridgeDeposit(){
     var statusColor=b.status==='Verified'?'var(--green)':'var(--red)';
     card.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-weight:600;color:'+b.color+';font-size:14px">'+b.bot+'</span><span style="font-size:10px;font-weight:600;color:'+statusColor+';text-transform:uppercase;letter-spacing:.05em">'+b.status+'</span></div>'+
       '<div style="display:flex;flex-wrap:wrap;gap:4px">'+b.skills.map(function(s){return'<span style="font-size:10px;padding:3px 8px;border-radius:4px;background:rgba(255,255,255,.06);color:var(--text-muted);font-weight:500">'+s+'</span>';}).join('')+'</div>'+
-      '<p style="font-size:10px;color:var(--text-dim);margin-top:8px">Registered on-chain — free</p>';
+      '<p style="font-size:10px;color:var(--green);margin-top:8px">Registered on-chain — zero cost, no rent</p>';
     skillsList.appendChild(card);
   });
 
