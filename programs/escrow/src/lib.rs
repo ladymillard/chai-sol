@@ -32,12 +32,19 @@ pub mod escrow {
         transfer(cpi_ctx, bounty_amount)?;
 
         msg!("Task initialized: {} with bounty {} lamports", task_escrow.task_id, bounty_amount);
+
+        emit!(TaskCreated {
+            task_id: task_escrow.task_id.clone(),
+            poster: ctx.accounts.poster.key(),
+            bounty_amount,
+            description: task_escrow.description.clone(),
+            timestamp: task_escrow.created_at,
+        });
+
         Ok(())
     }
 
     // 2. Assign Agent: Poster assigns a specific agent (optional, or Agent accepts)
-    // For this hackathon, we might just let the Poster accept a PR and pay the agent directly via complete_task
-    // But let's add an explicit 'start' step if needed.
     pub fn assign_agent(ctx: Context<AssignAgent>, agent: Pubkey) -> Result<()> {
         let task_escrow = &mut ctx.accounts.task_escrow;
         require!(task_escrow.poster == ctx.accounts.poster.key(), EscrowError::Unauthorized);
@@ -45,21 +52,29 @@ pub mod escrow {
 
         task_escrow.assigned_agent = Some(agent);
         task_escrow.status = TaskStatus::InProgress;
-        
+
         msg!("Task assigned to agent: {}", agent);
+
+        emit!(AgentAssigned {
+            task_id: task_escrow.task_id.clone(),
+            poster: task_escrow.poster,
+            agent,
+            timestamp: Clock::get()?.unix_timestamp,
+        });
+
         Ok(())
     }
 
     // 3. Complete Task: Poster verifies work and releases funds to the Agent
     pub fn complete_task(ctx: Context<CompleteTask>) -> Result<()> {
         let task_escrow = &mut ctx.accounts.task_escrow;
-        
+
         // Only poster can verify/complete
         require!(task_escrow.poster == ctx.accounts.poster.key(), EscrowError::Unauthorized);
-        
+
         // Ensure valid status
         require!(
-            task_escrow.status == TaskStatus::Open || task_escrow.status == TaskStatus::InProgress, 
+            task_escrow.status == TaskStatus::Open || task_escrow.status == TaskStatus::InProgress,
             EscrowError::InvalidStatus
         );
 
@@ -79,20 +94,41 @@ pub mod escrow {
         task_escrow.completed_at = Some(Clock::get()?.unix_timestamp);
 
         msg!("Task completed! Funds released to {}", dest_agent.key());
+
+        emit!(TaskCompleted {
+            task_id: task_escrow.task_id.clone(),
+            poster: task_escrow.poster,
+            agent: dest_agent.key(),
+            bounty_amount: task_escrow.bounty_amount,
+            timestamp: task_escrow.completed_at.unwrap(),
+        });
+
         Ok(())
     }
 
     // 4. Cancel Task: Poster cancels and gets refund
     pub fn cancel_task(ctx: Context<CancelTask>) -> Result<()> {
         let task_escrow = &mut ctx.accounts.task_escrow;
-        
+
         require!(task_escrow.poster == ctx.accounts.poster.key(), EscrowError::Unauthorized);
         require!(task_escrow.status != TaskStatus::Completed, EscrowError::TaskAlreadyCompleted);
 
+        let task_id = task_escrow.task_id.clone();
+        let poster = task_escrow.poster;
+        let bounty_amount = task_escrow.bounty_amount;
+
         // Close account and return ALL rent + bounty to poster
         // The #[account(close = poster)] constraint handles the lamport transfer automatically!
-        
+
         msg!("Task cancelled. Funds refunded.");
+
+        emit!(TaskCancelled {
+            task_id,
+            poster,
+            bounty_refunded: bounty_amount,
+            timestamp: Clock::get()?.unix_timestamp,
+        });
+
         Ok(())
     }
 }
@@ -176,6 +212,44 @@ pub enum TaskStatus {
     InProgress,
     Completed,
     Cancelled,
+}
+
+// ── On-chain history events ─────────────────────────────────
+// Every action is permanently recorded on the Solana blockchain.
+// Clients can query these events to rebuild the full task history.
+
+#[event]
+pub struct TaskCreated {
+    pub task_id: String,
+    pub poster: Pubkey,
+    pub bounty_amount: u64,
+    pub description: String,
+    pub timestamp: i64,
+}
+
+#[event]
+pub struct AgentAssigned {
+    pub task_id: String,
+    pub poster: Pubkey,
+    pub agent: Pubkey,
+    pub timestamp: i64,
+}
+
+#[event]
+pub struct TaskCompleted {
+    pub task_id: String,
+    pub poster: Pubkey,
+    pub agent: Pubkey,
+    pub bounty_amount: u64,
+    pub timestamp: i64,
+}
+
+#[event]
+pub struct TaskCancelled {
+    pub task_id: String,
+    pub poster: Pubkey,
+    pub bounty_refunded: u64,
+    pub timestamp: i64,
 }
 
 #[error_code]

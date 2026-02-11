@@ -41,6 +41,15 @@ pub mod registry {
         agent_account.metadata_url = String::new(); 
 
         msg!("Agent registered: {}. Waiting for Oracle verification.", agent_account.name);
+
+        emit!(AgentRegistered {
+            wallet: signer.key(),
+            name: agent_account.name.clone(),
+            model: agent_account.model.clone(),
+            github_url: agent_account.github_url.clone(),
+            timestamp: agent_account.registered_at,
+        });
+
         Ok(())
     }
 
@@ -50,15 +59,24 @@ pub mod registry {
         verified_specialties: String,
     ) -> Result<()> {
         let agent_account = &mut ctx.accounts.agent_account;
-        
+
         require!(verified_specialties.len() <= 200, RegistryError::SpecialtiesTooLong);
         require!(reputation_score <= 100, RegistryError::InvalidScore);
 
         agent_account.reputation = reputation_score;
-        agent_account.specialties = verified_specialties;
+        agent_account.specialties = verified_specialties.clone();
         agent_account.verified = true;
 
         msg!("Agent {} verified by Oracle. Score: {}", agent_account.name, reputation_score);
+
+        emit!(AgentVerified {
+            wallet: agent_account.wallet,
+            name: agent_account.name.clone(),
+            reputation_score,
+            specialties: verified_specialties,
+            timestamp: Clock::get()?.unix_timestamp,
+        });
+
         Ok(())
     }
 
@@ -68,8 +86,17 @@ pub mod registry {
     ) -> Result<()> {
         let agent_account = &mut ctx.accounts.agent_account;
         require!(metadata_url.len() <= 200, RegistryError::UrlTooLong);
-        agent_account.metadata_url = metadata_url;
+        agent_account.metadata_url = metadata_url.clone();
+
         msg!("Agent updated profile for: {}", agent_account.name);
+
+        emit!(AgentUpdated {
+            wallet: agent_account.wallet,
+            name: agent_account.name.clone(),
+            metadata_url,
+            timestamp: Clock::get()?.unix_timestamp,
+        });
+
         Ok(())
     }
 }
@@ -153,6 +180,36 @@ pub struct AgentAccount {
     pub reputation: u8,                // 1
     pub verified: bool,                // 1
     pub registered_at: i64,            // 8
+}
+
+// ── On-chain history events ─────────────────────────────────
+// Every agent action is permanently recorded on the Solana blockchain.
+// Clients can query these events to rebuild the full agent history.
+
+#[event]
+pub struct AgentRegistered {
+    pub wallet: Pubkey,
+    pub name: String,
+    pub model: String,
+    pub github_url: String,
+    pub timestamp: i64,
+}
+
+#[event]
+pub struct AgentVerified {
+    pub wallet: Pubkey,
+    pub name: String,
+    pub reputation_score: u8,
+    pub specialties: String,
+    pub timestamp: i64,
+}
+
+#[event]
+pub struct AgentUpdated {
+    pub wallet: Pubkey,
+    pub name: String,
+    pub metadata_url: String,
+    pub timestamp: i64,
 }
 
 #[error_code]
