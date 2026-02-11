@@ -20,7 +20,6 @@ const AGENTS = {
   kael:    { name: "Kael",    color: 0x029691, role: "Memory & Coordination", model: "Claude Sonnet 4" },
   kestrel: { name: "Kestrel", color: 0x5494e8, role: "Architecture & Solana", model: "Gemini 3 Pro" },
   nova:    { name: "Nova",    color: 0x54e87a, role: "Builder",               model: "Gemini 3 Pro" },
-  zara:    { name: "Zara",    color: 0xc084fc, role: "Design & Frontend",     model: "Claude Sonnet 4" },
   opus:    { name: "Opus",    color: 0xe8c547, role: "Strategy & Execution",  model: "Claude Opus 4.6" },
 };
 

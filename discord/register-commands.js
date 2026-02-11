@@ -20,7 +20,6 @@ const commands = [
           { name: "Kael", value: "kael" },
           { name: "Kestrel", value: "kestrel" },
           { name: "Nova", value: "nova" },
-          { name: "Zara", value: "zara" },
           { name: "Opus", value: "opus" },
         )
     ),
