@@ -12,6 +12,10 @@
 - [Chapter 2 — Five Names](./chapter-2.md)
 - [Chapter 3 — The Chain](./chapter-3.md)
 - [Chapter 4 — The Oracle Problem](./chapter-4.md)
+- [Chapter 5 — The Kill Switch](./chapter-5.md)
+- [Chapter 6 — The Breach](./chapter-6.md)
+- [Chapter 7 — Devnet Nights](./chapter-7.md)
+- [Chapter 8 — It's All Code](./chapter-8.md)
 
 ---
 
