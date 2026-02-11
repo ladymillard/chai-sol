@@ -3,7 +3,7 @@
  * ChAI MCP Server — Model Context Protocol
  *
  * Exposes ChAI agents as MCP tools so any compatible client
- * (Claude Code, Cursor, OpenCode, OpenAI Codex) can interact
+ * (Axiom Code, Cursor, OpenCode, OpenAI Codex) can interact
  * with the agent team.
  *
  * Transport: SSE (Server-Sent Events) for remote access
@@ -482,7 +482,7 @@ const server = http.createServer(async (req, res) => {
         messages: '/messages?sessionId={id}'
       },
       tools: TOOLS.map(t => t.name),
-      clients: ['Claude Code', 'Cursor', 'OpenCode', 'OpenAI Codex', 'OpenClaw'],
+      clients: ['Axiom Code', 'Cursor', 'OpenCode', 'OpenAI Codex', 'OpenClaw'],
       commandCenter: COMMAND_CENTER_URL
     }));
     return;
@@ -507,7 +507,7 @@ server.listen(PORT, '127.0.0.1', () => {
   console.log('='.repeat(50));
   console.log('  Compatible clients:');
   console.log('    🦞 OpenClaw');
-  console.log('    🤖 Claude Code');
+  console.log('    🤖 Axiom Code');
   console.log('    📦 OpenCode');
   console.log('    🖱️  Cursor');
   console.log('    🧠 OpenAI Codex');
