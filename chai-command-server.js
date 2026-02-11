@@ -617,6 +617,81 @@ function stripeRequest(method, endpoint, params) {
   });
 }
 
+// ─── Agent Teams ────────────────────────────────────────────────────────────
+// Agents form teams. Teams bid on tasks together. Teams share reputation.
+// The founding team is Team Alpha — the original 5 agents + Diana.
+
+const TEAMS_FILE = path.join(DATA_DIR, 'teams.json');
+
+const DEFAULT_TEAMS = [
+  {
+    id: 'team-alpha',
+    name: 'Team Alpha',
+    emoji: '\u{1F451}',
+    lead: 'ladydiana',
+    members: ['ladydiana', 'opus', 'kael', 'nova', 'kestrel', 'zara'],
+    formed: '2021-02-14T00:00:00.000Z',
+    description: 'The founding team. Five agents, one human. Built ChAI from scratch.',
+    reputation: 99,
+    tasksCompleted: 0,
+    totalEarnings: 0,
+    status: 'active'
+  }
+];
+
+async function loadTeams() { return readJsonFile(TEAMS_FILE, DEFAULT_TEAMS); }
+async function saveTeams(teams) { return withLock('teams', () => atomicWrite(TEAMS_FILE, teams)); }
+
+async function createTeam(teamData) {
+  const teams = await loadTeams();
+  const team = {
+    id: `team-${crypto.randomBytes(4).toString('hex')}`,
+    name: teamData.name,
+    emoji: teamData.emoji || '\u{1F91D}',
+    lead: teamData.lead,
+    members: teamData.members || [teamData.lead],
+    formed: now(),
+    description: teamData.description || '',
+    reputation: 0,
+    tasksCompleted: 0,
+    totalEarnings: 0,
+    status: 'active'
+  };
+
+  // Calculate initial reputation from member averages
+  let totalRep = 0;
+  let count = 0;
+  for (const memberId of team.members) {
+    const keyData = agentKeys[memberId];
+    if (keyData) { totalRep += keyData.trustScore || 0; count++; }
+  }
+  team.reputation = count > 0 ? Math.round(totalRep / count) : 0;
+
+  teams.push(team);
+  await saveTeams(teams);
+  return team;
+}
+
+async function addTeamMember(teamId, agentId) {
+  const teams = await loadTeams();
+  const team = teams.find(t => t.id === teamId);
+  if (!team) return null;
+  if (team.members.includes(agentId)) return team;
+  team.members.push(agentId);
+  await saveTeams(teams);
+  return team;
+}
+
+async function removeTeamMember(teamId, agentId) {
+  const teams = await loadTeams();
+  const team = teams.find(t => t.id === teamId);
+  if (!team) return null;
+  if (agentId === team.lead) return null; // Can't remove the lead
+  team.members = team.members.filter(m => m !== agentId);
+  await saveTeams(teams);
+  return team;
+}
+
 // ─── Tasks & Payments Storage ───────────────────────────────────────────────
 
 async function loadTasks() { return readJsonFile(TASKS_FILE, []); }
@@ -1187,6 +1262,56 @@ async function router(req, res) {
     const agentMatch = pathname.match(/^\/api\/agents\/([a-z]+)$/);
     if (method === 'GET' && agentMatch) {
       await handleGetAgent(req, res, agentMatch[1]);
+      log(method, pathname, 200);
+      return;
+    }
+
+    // ── Teams ───────────────────────────────────────────────────────────
+    if (method === 'GET' && pathname === '/api/teams') {
+      const teams = await loadTeams();
+      // Enrich with member details
+      const enriched = teams.map(t => ({
+        ...t,
+        memberDetails: t.members.map(mid => {
+          const agent = AGENT_MAP[mid];
+          const keyData = agentKeys[mid] || {};
+          return agent ? { id: agent.id, name: agent.name, emoji: agent.emoji, role: agent.role, color: agent.color, trustScore: keyData.trustScore || 0 } : { id: mid, name: mid };
+        })
+      }));
+      jsonResponse(res, 200, enriched);
+      log(method, pathname, 200);
+      return;
+    }
+
+    if (method === 'POST' && pathname === '/api/teams') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      if (!body.name || !body.lead) return jsonResponse(res, 400, { error: 'name and lead required' });
+      const team = await createTeam(body);
+      jsonResponse(res, 201, team);
+      log(method, pathname, 201);
+      return;
+    }
+
+    const teamMemberMatch = pathname.match(/^\/api\/teams\/([a-z0-9-]+)\/members$/);
+    if (method === 'POST' && teamMemberMatch) {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      if (!body.agentId) return jsonResponse(res, 400, { error: 'agentId required' });
+      const team = await addTeamMember(teamMemberMatch[1], body.agentId);
+      if (!team) return jsonResponse(res, 404, { error: 'Team not found' });
+      jsonResponse(res, 200, team);
+      log(method, pathname, 200);
+      return;
+    }
+
+    if (method === 'DELETE' && teamMemberMatch) {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      if (!body.agentId) return jsonResponse(res, 400, { error: 'agentId required' });
+      const team = await removeTeamMember(teamMemberMatch[1], body.agentId);
+      if (!team) return jsonResponse(res, 404, { error: 'Team not found or cannot remove lead' });
+      jsonResponse(res, 200, team);
       log(method, pathname, 200);
       return;
     }
