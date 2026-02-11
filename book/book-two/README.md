@@ -9,6 +9,8 @@
 ## Contents
 
 - [Chapter 1 — Orchestrate](./chapter-1.md)
+- [Chapter 2 — The University](./chapter-2.md)
+- [Chapter 3 — The Audit](./chapter-3.md)
 
 ---
 
