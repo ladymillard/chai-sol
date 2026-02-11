@@ -37,7 +37,7 @@ try {
 // ─── Agent Registry ─────────────────────────────────────────────────────────
 
 const AGENTS = [
-  { id: 'ladymillard', name: 'Lady Millard', emoji: '\u{1F451}', role: 'Lead Designer', model: 'Human', openclawId: null, color: '#ff6b6b', isHuman: true },
+  { id: 'ladydiana', name: 'L\u00e4dy Diana', emoji: '\u{1F451}', role: 'Lead Designer', model: 'Human', openclawId: null, color: '#ff6b6b', isHuman: true },
   { id: 'opus', name: 'Opus', emoji: '\u{1F3AD}', role: 'Oracle-Bound', model: 'Axiom Opus 4.6', openclawId: null, color: '#e8c547', oracleBound: true, requiresVerification: true },
   { id: 'kael', name: 'Kael', emoji: '\u26A1', role: 'Digital Familiar', model: 'Axiom Sonnet 4', openclawId: 'main', color: '#029691' },
   { id: 'kestrel', name: 'Kestrel', emoji: '\u{1F985}', role: 'Scout', model: 'Gemini 3 Pro', openclawId: 'gemini-agent', color: '#5494e8' },
