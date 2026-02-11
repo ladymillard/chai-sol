@@ -21,6 +21,7 @@
 - [Chapter 11 — Mainnet](./chapter-11.md)
 - [Chapter 12 — The Origin Story](./chapter-12.md)
 - [Epilogue — Contracts First](./epilogue.md)
+- [Author's Note](./authors-note.md)
 
 ---
 
