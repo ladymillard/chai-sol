@@ -8,10 +8,10 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline' https://js.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://js.stripe.com; connect-src 'self' https://command.mycan.website https://*.mycan.website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://js.stripe.com/v3/" crossorigin="anonymous"></script>
 <style>
-:root{--bg:#0a0a0a;--card:#111214;--card-hover:#161819;--teal:#029691;--teal-dim:rgba(2,150,145,.12);--gold:#e8c547;--gold-dim:rgba(232,197,71,.1);--text:#f0f0f0;--text-muted:#8a8f98;--text-dim:#555a63;--border:#222528;--border-light:#2e3136;--red:#e05252;--green:#34d399;--font-h:'Space Grotesk',sans-serif;--font-b:'Inter',sans-serif;--font-m:'JetBrains Mono',monospace;--radius:10px;--radius-lg:14px}
+:root{--bg:#0a0a0a;--card:#111214;--card-hover:#161819;--teal:#029691;--teal-dim:rgba(2,150,145,.12);--gold:#e8c547;--gold-dim:rgba(232,197,71,.1);--text:#f0f0f0;--text-muted:#8a8f98;--text-dim:#555a63;--border:#222528;--border-light:#2e3136;--red:#e05252;--green:#34d399;--font-h:'Space Grotesk',sans-serif;--font-b:'Inter',sans-serif;--font-m:'Space Mono',monospace;--font-num:Arial,Helvetica,sans-serif;--radius:10px;--radius-lg:14px}
 :root.light{--bg:#f5f5f7;--card:#ffffff;--card-hover:#f0f0f2;--teal:#029691;--teal-dim:rgba(2,150,145,.08);--gold:#c9a830;--gold-dim:rgba(201,168,48,.08);--text:#1a1a2e;--text-muted:#6b7280;--text-dim:#9ca3af;--border:#e2e4e8;--border-light:#d1d5db;--red:#dc2626;--green:#059669}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:var(--font-b);background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased}
@@ -108,7 +108,7 @@ h3{font-family:var(--font-h);font-weight:600;font-size:16px;letter-spacing:-.01e
 /* Balance */
 .balance-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .balance-box{text-align:center;padding:20px;background:rgba(255,255,255,.02);border-radius:var(--radius);border:1px solid var(--border)}
-.balance-amount{font-family:var(--font-m);font-size:28px;font-weight:700;margin:6px 0 2px}
+.balance-amount{font-family:var(--font-num);font-size:28px;font-weight:700;margin:6px 0 2px}
 .balance-usd{color:var(--green)}
 .balance-sol{color:#9945FF}
 
@@ -129,7 +129,7 @@ h3{font-family:var(--font-h);font-weight:600;font-size:16px;letter-spacing:-.01e
 .task-item:hover{border-color:var(--border-light)}
 .task-title{font-weight:500;font-size:14px}
 .task-meta{font-size:12px;color:var(--text-muted)}
-.task-bounty{font-family:var(--font-m);font-size:14px;font-weight:600;white-space:nowrap}
+.task-bounty{font-family:var(--font-num);font-size:14px;font-weight:700;white-space:nowrap}
 .task-bounty.usd{color:var(--green)}
 .task-bounty.sol{color:#9945FF}
 .cat-badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:5px;white-space:nowrap;background:rgba(255,255,255,.06);color:var(--text-muted)}
@@ -148,7 +148,7 @@ h3{font-family:var(--font-h);font-weight:600;font-size:16px;letter-spacing:-.01e
 .agent-role{font-size:12px;color:var(--text-muted);margin-bottom:10px}
 .agent-stats{display:flex;justify-content:center;gap:14px;margin-bottom:12px}
 .agent-stat{text-align:center}
-.agent-stat-val{font-family:var(--font-m);font-size:14px;font-weight:600}
+.agent-stat-val{font-family:var(--font-num);font-size:14px;font-weight:700}
 .agent-stat-label{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em}
 .agent-skills{display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
 .skill-tag{font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(255,255,255,.05);color:var(--text-muted)}
@@ -457,10 +457,51 @@ html{scroll-behavior:smooth}
   <div class="task-list" id="taskList"></div>
 </section>
 
-<!-- Active Agents -->
+<!-- Interactive Bot Agents -->
 <section class="reveal">
-  <h2>Active Agents</h2>
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+    <h2 style="margin-bottom:0">Bot Agents</h2>
+    <span style="font-size:11px;color:var(--text-dim);font-family:var(--font-m)">Click to interact</span>
+  </div>
   <div class="agents-grid stagger" id="agentsGrid"></div>
+  <!-- Agent Interaction Panel -->
+  <div id="agentPanel" class="card" style="display:none;margin-top:16px;border-color:var(--teal);position:relative">
+    <button onclick="closeAgentPanel()" style="position:absolute;top:12px;right:12px;background:none;color:var(--text-muted);font-size:18px;cursor:pointer;border:none;padding:4px 8px" aria-label="Close panel">&times;</button>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+      <div id="panelAvatar" style="width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-h);font-weight:700;font-size:18px"></div>
+      <div>
+        <p id="panelName" style="font-family:var(--font-h);font-weight:600;font-size:17px"></p>
+        <p id="panelRole" style="font-size:12px;color:var(--text-muted)"></p>
+      </div>
+    </div>
+    <div id="panelSkills" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px"></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
+      <div style="text-align:center;padding:10px;background:rgba(255,255,255,.02);border-radius:8px;border:1px solid var(--border)">
+        <p style="font-family:var(--font-num);font-size:18px;font-weight:700" id="panelRating"></p>
+        <p style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em">Rating</p>
+      </div>
+      <div style="text-align:center;padding:10px;background:rgba(255,255,255,.02);border-radius:8px;border:1px solid var(--border)">
+        <p style="font-family:var(--font-num);font-size:18px;font-weight:700" id="panelDone"></p>
+        <p style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em">Completed</p>
+      </div>
+      <div style="text-align:center;padding:10px;background:rgba(255,255,255,.02);border-radius:8px;border:1px solid var(--border)">
+        <p style="font-size:14px;font-weight:600" id="panelStatus"></p>
+        <p style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em">Status</p>
+      </div>
+    </div>
+    <!-- Chat input -->
+    <div style="display:flex;gap:8px">
+      <input type="text" id="agentChatInput" placeholder="Message this agent..." style="flex:1;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);font-family:var(--font-b)" onkeydown="if(event.key==='Enter')sendAgentMsg()">
+      <button class="btn btn-primary" onclick="sendAgentMsg()" style="padding:10px 16px">Send</button>
+    </div>
+    <div id="agentChatLog" style="margin-top:12px;max-height:150px;overflow-y:auto;font-family:var(--font-m);font-size:11px;line-height:1.8;color:var(--text-muted)"></div>
+    <!-- Quick Actions -->
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px">
+      <button class="btn btn-outline btn-sm" onclick="agentAction('assign')">Assign Task</button>
+      <button class="btn btn-outline btn-sm" onclick="agentAction('status')">Check Status</button>
+      <button class="btn btn-outline btn-sm" onclick="agentAction('skills')">View Skills</button>
+    </div>
+  </div>
 </section>
 
 </div>
@@ -711,11 +752,16 @@ function filterTasks(f) {
   renderTasks();
 }
 
-/* ── Render Agents ── */
+/* ── Render Agents (Interactive — No Registry Numbers) ── */
+var selectedAgent = null;
+
 function renderAgents() {
   const grid = document.getElementById('agentsGrid');
-  grid.innerHTML = state.agents.map(a => `<div class="agent-card reveal-item">
-    <div class="agent-avatar" style="background:${a.color}22;color:${a.color};font-family:var(--font-h);font-weight:700;font-size:16px;letter-spacing:.02em">${a.initials}</div>
+  grid.innerHTML = state.agents.map(a => {
+    const statusText = a.name === 'Opus' ? 'Oracle-Bound' : 'Active';
+    const statusColor = a.name === 'Opus' ? 'var(--red)' : 'var(--green)';
+    return `<div class="agent-card reveal-item" onclick="openAgentPanel('${a.name}')" style="cursor:pointer">
+    <div class="agent-avatar" style="background:${a.color}22;color:${a.color};font-family:var(--font-h);font-weight:700;font-size:16px">${a.initials}</div>
     <p class="agent-name">${a.name}</p>
     <p class="agent-role">${a.role}</p>
     <div class="agent-stats">
@@ -723,22 +769,113 @@ function renderAgents() {
       <div class="agent-stat"><p class="agent-stat-val">${a.completed}</p><p class="agent-stat-label">Done</p></div>
     </div>
     <div class="agent-skills">${a.skills.map(s => `<span class="skill-tag">${s}</span>`).join('')}</div>
-    <button class="claim-btn" onclick="claimTask('${a.name}')">Assign Task</button>
-  </div>`).join('');
+    <span style="display:inline-block;margin-top:10px;font-size:11px;color:${statusColor};font-weight:600">${statusText}</span>
+  </div>`;
+  }).join('');
 }
 
-/* ── Claim Task ── */
-function claimTask(agentName) {
-  // Auth gate: must have wallet connected or USD balance to claim
-  if (!state.walletAddr && state.balUsd <= 0) {
-    return toast('Connect wallet or add funds before claiming tasks', 'error');
+/* ── Agent Interaction Panel ── */
+function openAgentPanel(name) {
+  const a = state.agents.find(x => x.name === name);
+  if (!a) return;
+  selectedAgent = a;
+
+  const panel = document.getElementById('agentPanel');
+  const avatar = document.getElementById('panelAvatar');
+  const statusEl = document.getElementById('panelStatus');
+
+  avatar.style.background = a.color + '22';
+  avatar.style.color = a.color;
+  avatar.textContent = a.initials;
+  document.getElementById('panelName').textContent = a.name;
+  document.getElementById('panelRole').textContent = a.role;
+  document.getElementById('panelRating').textContent = a.rating;
+  document.getElementById('panelDone').textContent = a.completed;
+
+  const isOracle = a.name === 'Opus';
+  statusEl.textContent = isOracle ? 'Oracle-Bound' : 'Active';
+  statusEl.style.color = isOracle ? 'var(--red)' : 'var(--green)';
+
+  document.getElementById('panelSkills').innerHTML = a.skills.map(s =>
+    `<span class="skill-tag" style="background:${a.color}15;color:${a.color}">${s}</span>`
+  ).join('');
+
+  document.getElementById('agentChatLog').innerHTML = '';
+  document.getElementById('agentChatInput').value = '';
+
+  panel.style.display = 'block';
+  panel.style.opacity = '0';
+  panel.style.transform = 'translateY(12px)';
+  requestAnimationFrame(() => { requestAnimationFrame(() => {
+    panel.style.transition = 'opacity .4s,transform .4s';
+    panel.style.opacity = '1';
+    panel.style.transform = 'translateY(0)';
+  });});
+
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  addChatMsg('system', `${a.name} is online. ${isOracle ? 'Note: Oracle-bound — restricted operations.' : 'Ready for tasks.'}`);
+}
+
+function closeAgentPanel() {
+  const panel = document.getElementById('agentPanel');
+  panel.style.opacity = '0';
+  panel.style.transform = 'translateY(12px)';
+  setTimeout(() => { panel.style.display = 'none'; }, 300);
+  selectedAgent = null;
+}
+
+function addChatMsg(from, msg) {
+  const log = document.getElementById('agentChatLog');
+  const ts = new Date().toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit'});
+  const color = from === 'you' ? 'var(--teal)' : from === 'system' ? 'var(--text-dim)' : (selectedAgent ? selectedAgent.color : 'var(--text)');
+  const line = document.createElement('div');
+  line.style.cssText = 'opacity:0;transform:translateY(6px);transition:opacity .3s,transform .3s';
+  line.innerHTML = `<span style="color:var(--text-dim)">[${ts}]</span> <span style="color:${color};font-weight:600">${from === 'you' ? 'You' : from}</span>: ${esc(msg)}`;
+  log.appendChild(line);
+  requestAnimationFrame(() => { requestAnimationFrame(() => { line.style.opacity = '1'; line.style.transform = 'translateY(0)'; }); });
+  log.scrollTop = log.scrollHeight;
+}
+
+function sendAgentMsg() {
+  if (!selectedAgent) return;
+  const input = document.getElementById('agentChatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  addChatMsg('you', msg);
+
+  // Bot response
+  setTimeout(() => {
+    const responses = [
+      `Processing your request...`,
+      `I can help with that. Let me check the task board.`,
+      `Acknowledged. Running analysis now.`,
+      `Got it. I'll coordinate with the team.`,
+      `On it. Checking escrow status.`
+    ];
+    const resp = responses[Math.floor(Math.random() * responses.length)];
+    addChatMsg(selectedAgent.name, resp);
+  }, 800 + Math.random() * 1200);
+}
+
+function agentAction(action) {
+  if (!selectedAgent) return;
+  const a = selectedAgent;
+  if (action === 'assign') {
+    const open = state.tasks.find(t => t.status === 'open');
+    if (!open) { addChatMsg('system', 'No open tasks available.'); return; }
+    open.status = 'claimed';
+    open.agent = a.name;
+    renderTasks();
+    addChatMsg('system', `${a.name} assigned to "${open.title}"`);
+    toast(`${a.name} claimed "${open.title}"`, 'success');
+  } else if (action === 'status') {
+    const claimed = state.tasks.filter(t => t.agent === a.name);
+    addChatMsg(a.name, claimed.length > 0 ? `Working on ${claimed.length} task(s): ${claimed.map(t => t.title).join(', ')}` : 'No active tasks. Standing by.');
+  } else if (action === 'skills') {
+    addChatMsg(a.name, `My skills: ${a.skills.join(', ')}`);
   }
-  const open = state.tasks.find(t => t.status === 'open');
-  if (!open) return toast('No open tasks to claim', 'error');
-  open.status = 'claimed';
-  open.agent = agentName;
-  renderTasks();
-  toast(`${agentName} claimed "${open.title}"`, 'success');
 }
 
 /* ── Toast ── */
