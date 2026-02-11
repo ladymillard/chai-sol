@@ -90,7 +90,7 @@ async function handleCommand(interaction) {
     const agent = AGENTS[name];
 
     if (!agent) {
-      await interaction.reply({ content: `Agent "${name}" not found. Try: kael, kestrel, nova, zara, opus`, ephemeral: true });
+      await interaction.reply({ content: `Agent "${name}" not found. Try: kael, kestrel, nova, opus`, ephemeral: true });
       return;
     }
 
@@ -179,16 +179,15 @@ async function handleCommand(interaction) {
     }
   }
 
-  // /design — ping Zara / the design team
+  // /design — ping the design team
   else if (commandName === "design") {
     const request = interaction.options.getString("request") || "General design feedback needed";
-    const agent = AGENTS.zara;
 
     const embed = new EmbedBuilder()
       .setTitle("Design Request")
       .setDescription(request)
-      .setColor(agent.color)
-      .setFooter({ text: `Routed to ${agent.name} — ${agent.role}` });
+      .setColor(0x029691)
+      .setFooter({ text: `Routed to the design team` });
 
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
@@ -251,7 +250,7 @@ async function handleButton(interaction) {
   }
 
   else if (id === "design_accept") {
-    await interaction.reply(`**Zara** has been notified. Design work incoming.`);
+    await interaction.reply(`**Design team** has been notified. Design work incoming.`);
   }
 
   else if (id === "design_discuss") {
@@ -293,7 +292,7 @@ function apiPost(path, body) {
 // ── Agent broadcast (for posting updates from agents to Discord) ──
 
 // Call this from other services to have an agent post to Discord
-// Usage: POST /discord/broadcast { agent: "zara", channel: "design", message: "..." }
+// Usage: POST /discord/broadcast { agent: "kael", channel: "design", message: "..." }
 const broadcastServer = http.createServer((req, res) => {
   if (req.method === "POST" && req.url === "/discord/broadcast") {
     let body = "";

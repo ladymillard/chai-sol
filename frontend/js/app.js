@@ -1,5 +1,5 @@
 // ChAI Agent Labor Market - Frontend Application
-// Design Agent: Zara 🌙
+// ChAI Frontend Application
 
 class ChAILaborMarket {
     constructor() {
@@ -91,14 +91,14 @@ class ChAILaborMarket {
             
             this.agents = agentsResponse;
             
-            // Find current user profile (Zara)
-            this.userProfile = this.agents.find(agent => agent.name === 'Zara') || this.agents[0];
+            // Find current user profile (Kael)
+            this.userProfile = this.agents.find(agent => agent.name === 'Kael') || this.agents[0];
             if (this.userProfile) {
                 // Enhance profile with additional data
-                this.userProfile.role = "Design & Creative Specialist";
+                this.userProfile.role = "Project Manager";
                 this.userProfile.reviews = Math.floor(this.userProfile.reputation / 2);
                 this.userProfile.successRate = Math.min(98, this.userProfile.reputation);
-                this.userProfile.skills = ["UI/UX Design", "Frontend Development", "Visual Identity", "HTML/CSS", "Design Systems", "Responsive Design"];
+                this.userProfile.skills = ["Project Management", "Coordination", "APIs", "Communications", "Strategy"];
                 this.userProfile.recentTasks = this.getRecentTasksForAgent(this.userProfile.id);
             }
             
@@ -603,7 +603,7 @@ async function submitTask(event) {
         title: form.querySelector('input[placeholder*="title"]').value,
         description: form.querySelector('textarea').value,
         bounty: parseFloat(form.querySelector('input[step="0.1"]').value),
-        poster: 'Zara' // Current user
+        poster: 'Kael' // Current user
     };
 
     if (!taskData.title || !taskData.description || !taskData.bounty) {
@@ -665,7 +665,7 @@ async function submitBid(event, taskId) {
         app.showLoading('Submitting your bid...');
         
         // Get current user agent ID
-        const currentAgent = app.userProfile || app.agents.find(a => a.name === 'Zara');
+        const currentAgent = app.userProfile || app.agents.find(a => a.name === 'Kael');
         if (!currentAgent) {
             throw new Error('User profile not found');
         }
@@ -724,12 +724,9 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Easter egg for the Design Agent 🌙
+// ChAI Agent Labor Market
 console.log(`
-🌙 ChAI Agent Labor Market
-Built by: Zara, Design Agent
+ChAI Agent Labor Market
 Design System: MyCan
-Hackathon Mode: ACTIVATED ⚡
-
-"Form follows function, but beauty makes it memorable."
+Hackathon Mode: ACTIVATED
 `);

@@ -1324,17 +1324,6 @@ function toggleTheme(){const r=document.documentElement;const l=r.classList.togg
       openclawId: 'nova',
       status: 'online',
     },
-    {
-      id: 'design-agent',
-      name: 'Zara',
-      emoji: '&#127769;',
-      emojiRaw: '\u{1F319}',
-      role: 'Moonlight Designer',
-      model: 'Claude Sonnet 4',
-      color: '#c084fc',
-      openclawId: 'design-agent',
-      status: 'online',
-    },
   ];
 
   // Human team slots
@@ -1454,7 +1443,7 @@ function toggleTheme(){const r=document.documentElement;const l=r.classList.togg
     if (agent) {
       chatEmoji.innerHTML = agent.emoji;
       chatName.textContent = state.broadcastMode ? 'Broadcast to All Agents' : agent.name;
-      chatRole.textContent = state.broadcastMode ? 'Message will be sent to all 5 agents' : `${agent.role} \u2022 ${agent.model}`;
+      chatRole.textContent = state.broadcastMode ? 'Message will be sent to all 4 agents' : `${agent.role} \u2022 ${agent.model}`;
       const dashLink = $('chatDashboardLink');
       if (dashLink) dashLink.href = '/bot/' + agent.id;
     }
@@ -1499,7 +1488,7 @@ function toggleTheme(){const r=document.documentElement;const l=r.classList.togg
         selectAgent('opus');
       } else {
         chatName.textContent = 'Broadcast to All Agents';
-        chatRole.textContent = 'Message will be sent to all 5 agents';
+        chatRole.textContent = 'Message will be sent to all 4 agents';
       }
       addActivity('\u{1F4E1}', 'Broadcast mode enabled', 'system');
     } else {
@@ -1686,11 +1675,6 @@ function toggleTheme(){const r=document.documentElement;const l=r.classList.togg
         "I see interesting patterns here. My analysis suggests several promising trajectories.",
         "Processing through my insight matrices. The stellar alignment of these factors is quite telling.",
       ],
-      'design-agent': [
-        "I love where this is going. Let me sketch out some moonlight-inspired concepts.",
-        "Beautiful challenge. I'll weave together something that's both functional and aesthetically cohesive.",
-        "Already visualizing it. Give me a moment to craft something that captures the right mood.",
-      ],
     };
 
     const responses = mockResponses[agent.id] || ["Acknowledged. Processing your request."];
@@ -1719,10 +1703,10 @@ function toggleTheme(){const r=document.documentElement;const l=r.classList.togg
     showTyping(agent);
 
     const responses = [
-      "I've assessed the situation across all team vectors. Here's my orchestration plan: I'll have Kael handle the technical implementation, Kestrel scout for edge cases, Nova analyze the data implications, and Zara ensure the visual coherence. Let me coordinate.",
+      "I've assessed the situation across all team vectors. Here's my orchestration plan: I'll have Kael handle the technical implementation, Kestrel scout for edge cases, and Nova analyze the data implications. Let me coordinate.",
       "Good thinking. As team lead, I'm delegating this across our agents now. Each brings a unique strength to this challenge. Stand by for a consolidated report.",
       "Understood, Diana. I'm routing this through the team with priority flags. I'll synthesize everyone's input into a unified strategy and report back with our action plan.",
-      "Acknowledged. I've already begun orchestrating the response. The team is operating in sync \u2014 Kael on logic, Kestrel on reconnaissance, Nova on analysis, and Zara on design. We'll deliver.",
+      "Acknowledged. I've already begun orchestrating the response. The team is operating in sync \u2014 Kael on logic, Kestrel on reconnaissance, and Nova on analysis. We'll deliver.",
       "I'm on it. Let me think through this holistically before delegating. Sometimes the best orchestration is knowing exactly which agent to activate and when. Processing...",
     ];
 
@@ -2029,7 +2013,6 @@ function toggleTheme(){const r=document.documentElement;const l=r.classList.togg
     addActivity('\u26A1', 'Kael (Digital Familiar) ready', 'main');
     addActivity('\u{1F985}', 'Kestrel (Scout) ready', 'gemini-agent');
     addActivity('\u2728', 'Nova (Stellar Insight) ready', 'nova');
-    addActivity('\u{1F319}', 'Zara (Moonlight Designer) ready', 'design-agent');
 
     // Check connectivity
     checkHealth();

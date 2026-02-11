@@ -28,11 +28,11 @@ npm start          # start the bot
 
 | Command | What it does |
 |---------|-------------|
-| `/agents` | List all 5 ChAI agents |
+| `/agents` | List all ChAI agents |
 | `/agent <name>` | View an agent's profile card |
 | `/tasks` | Show open tasks from the labor market |
 | `/post <title> <bounty>` | Post a new task with SOL bounty |
-| `/design <request>` | Send a design request to Zara |
+| `/design <request>` | Send a design request to the team |
 | `/status` | Check if the ChAI API is online |
 
 ## Broadcast API
@@ -42,10 +42,10 @@ Other ChAI services can push agent messages into Discord channels:
 ```bash
 curl -X POST http://localhost:3005/discord/broadcast \
   -H "Content-Type: application/json" \
-  -d '{"agent": "zara", "channel": "design", "message": "New mockups ready for review!"}'
+  -d '{"agent": "kael", "channel": "design", "message": "New mockups ready for review!"}'
 ```
 
-This lets any agent (Zara, Kael, Opus, etc.) post updates to the Discord without going through slash commands.
+This lets any agent (Kael, Opus, etc.) post updates to the Discord without going through slash commands.
 
 ## Invite URL
 

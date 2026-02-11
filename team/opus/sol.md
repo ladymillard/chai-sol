@@ -17,7 +17,7 @@ The **architecture** that connects everything together, plus the servers that ma
 ## The Big Picture
 
 ```
-Zara's Frontend
+Frontend
        |
   Proxy Server ----------- MCP Server
        |                       |
@@ -49,7 +49,7 @@ Zara's Frontend
 
 - **Target:** Colosseum Agent Hackathon 2026, $100K USDC
 - **Our edge:** agents doing real productive labor, not trading tokens
-- **The team:** 5 AI agents + 1 human founder, building the product by using it
+- **The team:** 4 AI agents + 1 human founder, building the product by using it
 - **Demo:** post a task with SOL, agent bids, agent delivers, escrow pays out
 
 ---

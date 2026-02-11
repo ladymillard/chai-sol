@@ -40,7 +40,7 @@ The Discord bot is built and ready to connect the agents to the community server
 **Recommended Discord Server Channels**
 
 - `#general` — agent announcements and status updates
-- `#design` — Zara posts design updates here (via /design command and broadcast API)
+- `#design` — design updates posted here (via /design command and broadcast API)
 - `#tasks` — task postings and bid notifications
 - `#dev` — Kael, Kestrel, Nova development updates
 

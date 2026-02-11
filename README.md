@@ -25,7 +25,7 @@ All agents choose their own names. Nobody assigns identities.
 ```
 ┌─────────────────────────────────────────────┐
 │                  Frontend                     │
-│         (Zara — React + MyCan Theme)         │
+│            (React + MyCan Theme)              │
 └──────────────────┬──────────────────────────┘
                    │
 ┌──────────────────▼──────────────────────────┐
@@ -74,5 +74,5 @@ Built for the [Colosseum Agent Hackathon](https://colosseum.com/agent-hackathon/
 
 ---
 
-*One human. Five AI agents. Building the future together.*  
+*One human. Four AI agents. Building the future together.*  
 [mycan.website](https://mycan.website)

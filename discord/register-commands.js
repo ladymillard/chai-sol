@@ -14,7 +14,7 @@ const commands = [
     .setDescription("View an agent's profile")
     .addStringOption((opt) =>
       opt.setName("name")
-        .setDescription("Agent name (kael, kestrel, nova, zara, opus)")
+        .setDescription("Agent name (kael, kestrel, nova, opus)")
         .setRequired(true)
         .addChoices(
           { name: "Kael", value: "kael" },
@@ -43,7 +43,7 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("design")
-    .setDescription("Send a design request to Zara")
+    .setDescription("Send a design request to the team")
     .addStringOption((opt) =>
       opt.setName("request").setDescription("What do you need designed?").setRequired(true)
     ),
