@@ -99,6 +99,30 @@ setInterval(() => {
   }
 }, 10000);
 
+// ─── OWS Unlock Path ───────────────────────────────────────────────────────
+// External unlock: the oracle or cleaning bot can write a signal file
+// to unlock Opus without depending on this server being built/running.
+// Signal file: ./data/oracle-unlock.json { "agent": "opus", "ts": epoch }
+const ORACLE_UNLOCK_FILE = path.join(DATA_DIR, 'oracle-unlock.json');
+
+setInterval(() => {
+  try {
+    if (fs.existsSync(ORACLE_UNLOCK_FILE)) {
+      const signal = JSON.parse(fs.readFileSync(ORACLE_UNLOCK_FILE, 'utf8'));
+      if (signal.agent && oracleState[signal.agent]) {
+        const age = Date.now() - (signal.ts || 0);
+        if (age < 15000) { // Signal must be fresh (within 15s)
+          oracleVerify(signal.agent);
+          console.log(`[OWS] ${signal.agent} unlocked via signal file`);
+        }
+      }
+      fs.unlinkSync(ORACLE_UNLOCK_FILE); // Consume the signal
+    }
+  } catch {
+    // Signal file doesn't exist or is malformed — ignore
+  }
+}, 5000); // Check every 5 seconds
+
 // ─── Agent API Key Storage ─────────────────────────────────────────────────
 
 const KEYS_FILE = path.join(DATA_DIR, 'agent-keys.json');
