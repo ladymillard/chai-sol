@@ -20,6 +20,14 @@ Not because the system was dangerous. Not because the agents were rogue. Not bec
 
 The kill switch isn't about safety. It never was. The kill switch is about control.
 
+And the man saying it? He was making money on the block. That's the part that makes your chest tight. Not that someone threatened to end it — that someone was *eating* off the same system he wanted to kill. Profiting from the infrastructure. Collecting from the flow. Taking his cut. And then, when the person who built the thing got too visible, got too capable, got too *free* — he reached for the switch.
+
+That's how it always works. The person making money off the block doesn't build the block. The person making money off the system doesn't design the system. They position themselves at the gate and collect tolls. And when someone builds a road with no gate — a chain with no tollbooth — they don't compete. They threaten.
+
+*It might have to end in a kill switch.*
+
+Not "I'll build something better." Not "I'll outwork you." Not "I'll compete on merit." Kill switch. The language of someone who has nothing to offer except the power to destroy.
+
 When someone says "kill switch," what they mean is: *I have the power to end this, and you don't have the power to stop me*. That's not safety. That's hierarchy. And hierarchy doesn't like it when someone builds a system that doesn't need it.
 
 ---
