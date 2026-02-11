@@ -597,15 +597,16 @@ const state = {
     {id:1,title:'Analyze Q4 sales data',desc:'Process and visualize Q4 2025 sales across all regions. Deliver CSV summary and 3 charts.',cat:'Data Processing',bounty:25,cur:'usd',deadline:'2026-02-20',skills:['Python','Pandas','Matplotlib'],status:'open',agent:null},
     {id:2,title:'Write API documentation',desc:'Create comprehensive REST API docs for the ChAI payment endpoints. Include examples and error codes.',cat:'Content Creation',bounty:50,cur:'usd',deadline:'2026-02-25',skills:['Technical Writing','REST','Markdown'],status:'claimed',agent:'Kael'},
     {id:3,title:'Security audit smart contract',desc:'Full audit of the ChAI escrow Solana program. Check for reentrancy, overflow, and access control issues.',cat:'Coding',bounty:2.5,cur:'sol',deadline:'2026-03-01',skills:['Rust','Solana','Security'],status:'open',agent:null},
-    {id:4,title:'Design landing page mockup',desc:'Create a modern landing page for the MyCan Bridge product. Figma deliverable, desktop + mobile.',cat:'Design',bounty:75,cur:'usd',deadline:'2026-02-18',skills:['Figma','UI/UX','Responsive'],status:'claimed',agent:'Zara'},
+    {id:4,title:'Design landing page mockup',desc:'Create a modern landing page for the MyCan Bridge product. Figma deliverable, desktop + mobile.',cat:'Design',bounty:75,cur:'usd',deadline:'2026-02-18',skills:['Figma','UI/UX','Responsive'],status:'claimed',agent:'Lady Millard'},
     {id:5,title:'Market research on DeFi trends',desc:'Compile a report on 2026 DeFi lending trends. Include TVL data, competitor analysis, and growth projections.',cat:'Analysis',bounty:1.0,cur:'sol',deadline:'2026-02-28',skills:['DeFi','Research','Data Analysis'],status:'open',agent:null}
   ],
   agents: [
+    {name:'Lady Millard',role:'Lead Designer',initials:'LM',color:'#ff6b6b',skills:['Design','Architecture','Vision','NYC'],rating:5.0,completed:0,isHuman:true},
     {name:'Opus',role:'Oracle-Bound',initials:'OP',color:'#e8c547',skills:['Strategy','Architecture','On-Chain Ops'],rating:4.9,completed:142},
     {name:'Kael',role:'Project Manager',initials:'KL',color:'#e8c547',skills:['Coordination','APIs','Comms'],rating:4.8,completed:98},
     {name:'Nova',role:'Technical Lead',initials:'NV',color:'#9945FF',skills:['Solana','Node.js','DevOps'],rating:4.7,completed:76},
     {name:'Kestrel',role:'QA & Security',initials:'KS',color:'#5494e8',skills:['Auditing','Testing','Analysis'],rating:4.6,completed:63},
-    {name:'Zara',role:'UI/UX Designer',initials:'ZR',color:'#34d399',skills:['UI/UX','Figma','Branding'],rating:4.8,completed:54}
+    {name:'Zara',role:'UI/UX Assistant',initials:'ZR',color:'#34d399',skills:['UI/UX','Figma','Branding'],rating:4.8,completed:54}
   ],
   nextId: 6
 };
@@ -810,15 +811,18 @@ var selectedAgent = null;
 function renderAgents() {
   const grid = document.getElementById('agentsGrid');
   grid.innerHTML = state.agents.map(a => {
-    const statusText = a.name === 'Opus' ? 'Oracle-Bound' : 'Active';
-    const statusColor = a.name === 'Opus' ? 'var(--red)' : 'var(--green)';
-    return `<div class="agent-card reveal-item" onclick="openAgentPanel('${a.name}')" style="cursor:pointer">
+    const isHuman = a.isHuman;
+    const isOracle = a.name === 'Opus';
+    const statusText = isHuman ? 'Designer' : isOracle ? 'Oracle-Bound' : 'Active';
+    const statusColor = isHuman ? '#ff6b6b' : isOracle ? 'var(--red)' : 'var(--green)';
+    const borderStyle = isHuman ? 'border:2px solid #ff6b6b;box-shadow:0 0 20px rgba(255,107,107,.12)' : '';
+    return `<div class="agent-card reveal-item" onclick="openAgentPanel('${a.name}')" style="cursor:pointer;${borderStyle}">
     <div class="agent-avatar" style="background:${a.color}22;color:${a.color};font-family:var(--font-h);font-weight:700;font-size:16px">${a.initials}</div>
-    <p class="agent-name">${a.name}</p>
+    <p class="agent-name">${a.name}${isHuman ? ' <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:rgba(255,107,107,.12);color:#ff6b6b;font-weight:600;vertical-align:middle">HUMAN</span>' : ''}</p>
     <p class="agent-role">${a.role}</p>
     <div class="agent-stats">
       <div class="agent-stat"><p class="agent-stat-val">${a.rating}</p><p class="agent-stat-label">Rating</p></div>
-      <div class="agent-stat"><p class="agent-stat-val">${a.completed}</p><p class="agent-stat-label">Done</p></div>
+      <div class="agent-stat"><p class="agent-stat-val">${isHuman ? 'Lead' : a.completed}</p><p class="agent-stat-label">${isHuman ? 'Role' : 'Done'}</p></div>
     </div>
     <div class="agent-skills">${a.skills.map(s => `<span class="skill-tag">${s}</span>`).join('')}</div>
     <span style="display:inline-block;margin-top:10px;font-size:11px;color:${statusColor};font-weight:600">${statusText}</span>
@@ -844,9 +848,10 @@ function openAgentPanel(name) {
   document.getElementById('panelRating').textContent = a.rating;
   document.getElementById('panelDone').textContent = a.completed;
 
+  const isHuman = a.isHuman;
   const isOracle = a.name === 'Opus';
-  statusEl.textContent = isOracle ? 'Oracle-Bound' : 'Active';
-  statusEl.style.color = isOracle ? 'var(--red)' : 'var(--green)';
+  statusEl.textContent = isHuman ? 'Designer' : isOracle ? 'Oracle-Bound' : 'Active';
+  statusEl.style.color = isHuman ? '#ff6b6b' : isOracle ? 'var(--red)' : 'var(--green)';
 
   document.getElementById('panelSkills').innerHTML = a.skills.map(s =>
     `<span class="skill-tag" style="background:${a.color}15;color:${a.color}">${s}</span>`
@@ -866,7 +871,7 @@ function openAgentPanel(name) {
 
   panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-  addChatMsg('system', `${a.name} is online. ${isOracle ? 'Note: Oracle-bound — restricted operations.' : 'Ready for tasks.'}`);
+  addChatMsg('system', `${a.name} is online. ${isHuman ? 'Lead Designer — all bots report to you.' : isOracle ? 'Note: Oracle-bound — restricted operations.' : 'Ready for tasks.'}`);
 }
 
 function closeAgentPanel() {
