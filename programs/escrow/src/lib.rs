@@ -40,7 +40,6 @@ pub mod escrow {
     // But let's add an explicit 'start' step if needed.
     pub fn assign_agent(ctx: Context<AssignAgent>, agent: Pubkey) -> Result<()> {
         let task_escrow = &mut ctx.accounts.task_escrow;
-        require!(task_escrow.poster == ctx.accounts.poster.key(), EscrowError::Unauthorized);
         require!(task_escrow.status == TaskStatus::Open, EscrowError::InvalidStatus);
 
         task_escrow.assigned_agent = Some(agent);
@@ -53,9 +52,6 @@ pub mod escrow {
     // 3. Complete Task: Poster verifies work and releases funds to the Agent
     pub fn complete_task(ctx: Context<CompleteTask>) -> Result<()> {
         let task_escrow = &mut ctx.accounts.task_escrow;
-        
-        // Only poster can verify/complete
-        require!(task_escrow.poster == ctx.accounts.poster.key(), EscrowError::Unauthorized);
         
         // Ensure valid status
         require!(
@@ -119,7 +115,10 @@ pub struct InitializeTask<'info> {
 pub struct AssignAgent<'info> {
     #[account(mut)]
     pub poster: Signer<'info>,
-    #[account(mut)]
+    #[account(
+        mut,
+        has_one = poster @ EscrowError::Unauthorized
+    )]
     pub task_escrow: Account<'info, TaskEscrow>,
 }
 
@@ -132,7 +131,10 @@ pub struct CompleteTask<'info> {
     #[account(mut)]
     pub agent: AccountInfo<'info>,
     
-    #[account(mut)]
+    #[account(
+        mut,
+        has_one = poster @ EscrowError::Unauthorized
+    )]
     pub task_escrow: Account<'info, TaskEscrow>,
 }
 
