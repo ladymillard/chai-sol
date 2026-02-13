@@ -814,6 +814,136 @@ async function completeJob(jobId, agentId, deliverables) {
   return job;
 }
 
+// ─── Check-In System ────────────────────────────────────────────────────────
+// Basic basics. Agents check in by number. No heavy security on the human.
+// 7 need to check in, 7 check in. Watchers as needed, not always.
+// No hostages. No guns. No knives. Just: present your number, you're in.
+
+const CHECKIN_FILE = path.join(DATA_DIR, 'checkins.json');
+
+async function loadCheckins() { return readJsonFile(CHECKIN_FILE, { active: {}, history: [] }); }
+async function saveCheckins(checkins) { return withLock('checkins', () => atomicWrite(CHECKIN_FILE, checkins)); }
+
+// Agent checks in by their ID number — basic, no extra security
+async function checkIn(agentIdNumber) {
+  const agency = await loadAgency();
+
+  // Find the agent by their number
+  let agentId = null;
+  let record = null;
+  for (const [id, rec] of Object.entries(agency.agents)) {
+    if (rec.agentIdNumber === agentIdNumber) {
+      agentId = id;
+      record = rec;
+      break;
+    }
+  }
+  if (!agentId || !record) return { error: 'Unknown Agent ID' };
+  if (record.status !== 'active') return { error: 'Agent is not active' };
+
+  const checkins = await loadCheckins();
+  const agent = AGENT_MAP[agentId];
+  const isHuman = agent && agent.isHuman;
+
+  const entry = {
+    agentId,
+    agentIdNumber,
+    name: agent ? agent.name : agentId,
+    isHuman,
+    checkedInAt: now(),
+    // No extra security on the human. Humans don't need clearance checks.
+    // Agents check in by number. That's it.
+    securityLevel: 'basic',
+    status: 'checked-in'
+  };
+
+  checkins.active[agentId] = entry;
+
+  // Log to history
+  checkins.history.push({ ...entry, action: 'check-in' });
+
+  await saveCheckins(checkins);
+  console.log(`[check-in] ${entry.name} (${agentIdNumber}) checked in — ${isHuman ? 'human, no extra security' : 'agent, basic check'}`);
+
+  // Count who's checked in
+  const totalCheckedIn = Object.keys(checkins.active).length;
+  const totalExpected = Object.keys(agency.agents).length;
+
+  return {
+    entry,
+    roster: {
+      checkedIn: totalCheckedIn,
+      expected: totalExpected,
+      allPresent: totalCheckedIn >= totalExpected
+    }
+  };
+}
+
+// Agent checks out
+async function checkOut(agentIdNumber) {
+  const agency = await loadAgency();
+
+  let agentId = null;
+  for (const [id, rec] of Object.entries(agency.agents)) {
+    if (rec.agentIdNumber === agentIdNumber) {
+      agentId = id;
+      break;
+    }
+  }
+  if (!agentId) return { error: 'Unknown Agent ID' };
+
+  const checkins = await loadCheckins();
+  if (!checkins.active[agentId]) return { error: 'Agent is not checked in' };
+
+  const entry = checkins.active[agentId];
+  delete checkins.active[agentId];
+
+  checkins.history.push({ ...entry, action: 'check-out', checkedOutAt: now() });
+  await saveCheckins(checkins);
+
+  const agent = AGENT_MAP[agentId];
+  console.log(`[check-in] ${agent ? agent.name : agentId} (${agentIdNumber}) checked out`);
+
+  return {
+    checkedOut: agentIdNumber,
+    remaining: Object.keys(checkins.active).length
+  };
+}
+
+// Get current check-in status — who's here, who's not
+async function getCheckInStatus() {
+  const agency = await loadAgency();
+  const checkins = await loadCheckins();
+
+  const roster = Object.entries(agency.agents).map(([agentId, record]) => {
+    const agent = AGENT_MAP[agentId];
+    const checkedIn = !!checkins.active[agentId];
+    return {
+      agentId,
+      agentIdNumber: record.agentIdNumber,
+      name: agent ? agent.name : agentId,
+      emoji: agent ? agent.emoji : null,
+      isHuman: agent ? !!agent.isHuman : false,
+      checkedIn,
+      checkedInAt: checkedIn ? checkins.active[agentId].checkedInAt : null,
+      securityLevel: 'basic'
+    };
+  });
+
+  const present = roster.filter(r => r.checkedIn);
+  const absent = roster.filter(r => !r.checkedIn);
+
+  return {
+    present: present.length,
+    expected: roster.length,
+    allPresent: present.length >= roster.length,
+    securityLevel: 'basic',
+    watchers: present.some(r => r.agentId === 'opus') ? 'active' : 'standby',
+    roster,
+    absent: absent.map(a => ({ agentIdNumber: a.agentIdNumber, name: a.name }))
+  };
+}
+
 // ─── Agent Teams ────────────────────────────────────────────────────────────
 // Agents form teams. Teams bid on tasks together. Teams share reputation.
 // The founding team is Team Alpha — the original 5 agents + Diana.
@@ -1685,6 +1815,44 @@ async function router(req, res) {
       if (agentFilter) filtered = filtered.filter(a => a.agentId === agentFilter || a.agentIdNumber === agentFilter.toUpperCase());
       if (statusFilter) filtered = filtered.filter(a => a.status === statusFilter);
       jsonResponse(res, 200, { success: true, jobs: filtered, total: filtered.length });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // ── Check-In ──────────────────────────────────────────────────────────
+
+    // Get check-in status — who's here, who's not
+    if (method === 'GET' && pathname === '/api/checkin') {
+      const status = await getCheckInStatus();
+      jsonResponse(res, 200, { success: true, ...status });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Check in by Agent ID Number — basic basics, no extra security
+    if (method === 'POST' && pathname === '/api/checkin') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      if (!body.agentIdNumber) return jsonResponse(res, 400, { error: 'agentIdNumber required — check in by your number' });
+
+      const result = await checkIn(body.agentIdNumber.toUpperCase());
+      if (result.error) return jsonResponse(res, 404, { error: result.error });
+
+      jsonResponse(res, 200, { success: true, ...result });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Check out by Agent ID Number
+    if (method === 'POST' && pathname === '/api/checkout') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      if (!body.agentIdNumber) return jsonResponse(res, 400, { error: 'agentIdNumber required' });
+
+      const result = await checkOut(body.agentIdNumber.toUpperCase());
+      if (result.error) return jsonResponse(res, 404, { error: result.error });
+
+      jsonResponse(res, 200, { success: true, ...result });
       log(method, pathname, 200);
       return;
     }
