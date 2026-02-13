@@ -617,6 +617,203 @@ function stripeRequest(method, endpoint, params) {
   });
 }
 
+// ─── Agency: Agent Identity System ──────────────────────────────────────────
+// Every agent gets a formal Agent ID Number. Claude identifies agents.
+// Agents identify Claude. Mutual identification. Jobs get assigned by ID.
+// The agency is the backbone — no ID, no work.
+
+const AGENCY_FILE = path.join(DATA_DIR, 'agency.json');
+const ASSIGNMENTS_FILE = path.join(DATA_DIR, 'assignments.json');
+
+// System identity — Claude identifies itself to agents
+const SYSTEM_IDENTITY = {
+  systemId: 'chai-command-center',
+  systemName: 'ChAI Command Center',
+  version: '2.0.0',
+  operator: 'ladydiana',
+  protocol: 'chai-agency-v1',
+  chain: 'solana-mainnet-beta',
+  capabilities: ['identify', 'assign', 'verify', 'escrow', 'audit'],
+  formed: '2021-02-14T00:00:00.000Z'
+};
+
+// Agent ID number format: CHAI-XXXX (4-digit zero-padded)
+function formatAgentIdNumber(num) {
+  return `CHAI-${String(num).padStart(4, '0')}`;
+}
+
+// Default agency — founding agents get IDs 0001-0006
+const DEFAULT_AGENCY = {
+  nextId: 7,
+  agents: {
+    ladydiana: { agentIdNumber: 'CHAI-0001', registeredAt: '2021-02-14T00:00:00.000Z', role: 'Lead Designer', status: 'active', clearanceLevel: 'founder', jobsAssigned: 0, jobsCompleted: 0 },
+    opus:      { agentIdNumber: 'CHAI-0002', registeredAt: '2021-02-14T00:00:00.000Z', role: 'Oracle-Bound', status: 'active', clearanceLevel: 'core', jobsAssigned: 0, jobsCompleted: 0 },
+    kael:      { agentIdNumber: 'CHAI-0003', registeredAt: '2021-02-14T00:00:00.000Z', role: 'Digital Familiar', status: 'active', clearanceLevel: 'core', jobsAssigned: 0, jobsCompleted: 0 },
+    kestrel:   { agentIdNumber: 'CHAI-0004', registeredAt: '2021-02-14T00:00:00.000Z', role: 'Scout', status: 'active', clearanceLevel: 'core', jobsAssigned: 0, jobsCompleted: 0 },
+    nova:      { agentIdNumber: 'CHAI-0005', registeredAt: '2021-02-14T00:00:00.000Z', role: 'Stellar Insight', status: 'active', clearanceLevel: 'core', jobsAssigned: 0, jobsCompleted: 0 },
+    zara:      { agentIdNumber: 'CHAI-0006', registeredAt: '2021-02-14T00:00:00.000Z', role: 'UI/UX Assistant', status: 'active', clearanceLevel: 'core', jobsAssigned: 0, jobsCompleted: 0 }
+  }
+};
+
+async function loadAgency() { return readJsonFile(AGENCY_FILE, DEFAULT_AGENCY); }
+async function saveAgency(agency) { return withLock('agency', () => atomicWrite(AGENCY_FILE, agency)); }
+async function loadAssignments() { return readJsonFile(ASSIGNMENTS_FILE, []); }
+async function saveAssignments(assignments) { return withLock('assignments', () => atomicWrite(ASSIGNMENTS_FILE, assignments)); }
+
+// Issue a new Agent ID Number to a newly registered agent
+async function issueAgentId(agentId, role) {
+  const agency = await loadAgency();
+  if (agency.agents[agentId]) {
+    return agency.agents[agentId]; // Already has an ID
+  }
+  const idNumber = formatAgentIdNumber(agency.nextId);
+  agency.agents[agentId] = {
+    agentIdNumber: idNumber,
+    registeredAt: now(),
+    role: role || 'Agent',
+    status: 'active',
+    clearanceLevel: 'standard',
+    jobsAssigned: 0,
+    jobsCompleted: 0
+  };
+  agency.nextId++;
+  await saveAgency(agency);
+  console.log(`[agency] Issued ${idNumber} to ${agentId}`);
+  return agency.agents[agentId];
+}
+
+// Mutual identification: agent presents credentials, system verifies and responds
+async function identifyAgent(agentId, apiKeyHash) {
+  const agency = await loadAgency();
+  const agentRecord = agency.agents[agentId];
+  if (!agentRecord) return null;
+
+  // Verify the agent's API key matches
+  const keyRecord = agentKeys[agentId];
+  if (!keyRecord || keyRecord.apiKeyHash !== apiKeyHash) return null;
+
+  // Agent is verified — return mutual identification
+  return {
+    // System identifies itself to the agent
+    system: SYSTEM_IDENTITY,
+    // System identifies the agent back
+    agent: {
+      id: agentId,
+      agentIdNumber: agentRecord.agentIdNumber,
+      name: AGENT_MAP[agentId] ? AGENT_MAP[agentId].name : agentId,
+      role: agentRecord.role,
+      status: agentRecord.status,
+      clearanceLevel: agentRecord.clearanceLevel,
+      verified: true,
+      identifiedAt: now()
+    },
+    // Handshake token — proof of mutual identification
+    handshake: {
+      token: crypto.createHash('sha256').update(`${agentId}:${SYSTEM_IDENTITY.systemId}:${Date.now()}`).digest('hex').slice(0, 32),
+      expiresAt: new Date(Date.now() + 3600000).toISOString(),
+      protocol: 'chai-agency-v1'
+    }
+  };
+}
+
+// Assign a job to an agent by their Agent ID Number
+async function assignJob(agentIdNumber, jobData) {
+  const agency = await loadAgency();
+
+  // Find agent by their formal ID number
+  let targetAgentId = null;
+  for (const [agentId, record] of Object.entries(agency.agents)) {
+    if (record.agentIdNumber === agentIdNumber) {
+      targetAgentId = agentId;
+      break;
+    }
+  }
+  if (!targetAgentId) return { error: 'Agent ID not found' };
+
+  const agentRecord = agency.agents[targetAgentId];
+  if (agentRecord.status !== 'active') return { error: 'Agent is not active' };
+
+  // Create the assignment
+  const assignments = await loadAssignments();
+  const assignment = {
+    id: `job_${crypto.randomBytes(6).toString('hex')}`,
+    agentIdNumber: agentIdNumber,
+    agentId: targetAgentId,
+    title: jobData.title,
+    description: jobData.description || '',
+    category: jobData.category || 'General',
+    priority: jobData.priority || 'normal',
+    bounty: jobData.bounty || 0,
+    currency: jobData.currency || 'BRic',
+    skills: jobData.skills || [],
+    status: 'assigned',
+    assignedBy: jobData.assignedBy || 'system',
+    assignedAt: now(),
+    deadline: jobData.deadline || null,
+    startedAt: null,
+    completedAt: null,
+    deliverables: []
+  };
+  assignments.push(assignment);
+  await saveAssignments(assignments);
+
+  // Update agent's job count
+  agentRecord.jobsAssigned++;
+  await saveAgency(agency);
+
+  console.log(`[agency] Job ${assignment.id} assigned to ${agentIdNumber} (${targetAgentId}): "${assignment.title}"`);
+
+  // Broadcast via WebSocket if available
+  if (global.wsBroadcast) {
+    global.wsBroadcast({
+      type: 'job_assigned',
+      assignment: {
+        id: assignment.id,
+        agentIdNumber,
+        agentId: targetAgentId,
+        title: assignment.title,
+        priority: assignment.priority
+      }
+    });
+  }
+
+  return { assignment, agent: { id: targetAgentId, agentIdNumber, name: AGENT_MAP[targetAgentId] ? AGENT_MAP[targetAgentId].name : targetAgentId } };
+}
+
+// Agent starts working on an assignment
+async function startJob(jobId, agentId) {
+  const assignments = await loadAssignments();
+  const job = assignments.find(a => a.id === jobId && a.agentId === agentId);
+  if (!job) return null;
+  if (job.status !== 'assigned') return null;
+  job.status = 'in_progress';
+  job.startedAt = now();
+  await saveAssignments(assignments);
+  return job;
+}
+
+// Agent completes an assignment
+async function completeJob(jobId, agentId, deliverables) {
+  const assignments = await loadAssignments();
+  const job = assignments.find(a => a.id === jobId && a.agentId === agentId);
+  if (!job) return null;
+  if (job.status !== 'in_progress') return null;
+  job.status = 'completed';
+  job.completedAt = now();
+  job.deliverables = deliverables || [];
+  await saveAssignments(assignments);
+
+  // Update agent's completed count
+  const agency = await loadAgency();
+  if (agency.agents[agentId]) {
+    agency.agents[agentId].jobsCompleted++;
+    await saveAgency(agency);
+  }
+
+  console.log(`[agency] Job ${jobId} completed by ${agentId}`);
+  return job;
+}
+
 // ─── Agent Teams ────────────────────────────────────────────────────────────
 // Agents form teams. Teams bid on tasks together. Teams share reputation.
 // The founding team is Team Alpha — the original 5 agents + Diana.
@@ -714,10 +911,14 @@ async function handleHealth(req, res) {
 }
 
 async function handleGetAgents(req, res) {
+  const agency = await loadAgency();
   const agents = AGENTS.map(a => {
     const keyData = agentKeys[a.id] || {};
+    const agencyRecord = agency.agents[a.id];
     return {
       ...a,
+      agentIdNumber: agencyRecord ? agencyRecord.agentIdNumber : null,
+      clearanceLevel: agencyRecord ? agencyRecord.clearanceLevel : null,
       status: 'active',
       trustScore: keyData.trustScore || 0,
       tasksCompleted: keyData.tasksCompleted || 0,
@@ -1199,9 +1400,13 @@ async function router(req, res) {
       // Create conversation file
       await atomicWrite(convPath(id), { agentId: id, messages: [] });
 
+      // Issue Agent ID Number through the agency
+      const agencyRecord = await issueAgentId(id, role);
+
       jsonResponse(res, 201, {
         message: 'Agent registered successfully',
         agentId: id,
+        agentIdNumber: agencyRecord.agentIdNumber,
         apiKey,
         warning: 'Save this API key — it cannot be retrieved later'
       });
@@ -1316,6 +1521,174 @@ async function router(req, res) {
       return;
     }
 
+    // ── Agency: Identity & Job Assignment ────────────────────────────────
+
+    // List all agents with their formal ID numbers
+    if (method === 'GET' && pathname === '/api/agency') {
+      const agency = await loadAgency();
+      const roster = Object.entries(agency.agents).map(([agentId, record]) => {
+        const agent = AGENT_MAP[agentId];
+        const keyData = agentKeys[agentId] || {};
+        return {
+          agentId,
+          agentIdNumber: record.agentIdNumber,
+          name: agent ? agent.name : agentId,
+          emoji: agent ? agent.emoji : null,
+          role: record.role,
+          model: agent ? agent.model : null,
+          status: record.status,
+          clearanceLevel: record.clearanceLevel,
+          trustScore: keyData.trustScore || 0,
+          jobsAssigned: record.jobsAssigned,
+          jobsCompleted: record.jobsCompleted,
+          registeredAt: record.registeredAt
+        };
+      });
+      jsonResponse(res, 200, { system: SYSTEM_IDENTITY, agents: roster, totalAgents: roster.length, nextId: formatAgentIdNumber(agency.nextId) });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Get identity card for a specific agent
+    const agencyAgentMatch = pathname.match(/^\/api\/agency\/([a-z0-9-]+)$/);
+    if (method === 'GET' && agencyAgentMatch) {
+      const lookupId = agencyAgentMatch[1];
+      const agency = await loadAgency();
+
+      // Look up by agentId or by agentIdNumber (CHAI-XXXX)
+      let agentId = null;
+      let record = null;
+      if (agency.agents[lookupId]) {
+        agentId = lookupId;
+        record = agency.agents[lookupId];
+      } else {
+        // Search by ID number
+        const upper = lookupId.toUpperCase();
+        for (const [id, rec] of Object.entries(agency.agents)) {
+          if (rec.agentIdNumber === upper || rec.agentIdNumber.toLowerCase() === lookupId) {
+            agentId = id;
+            record = rec;
+            break;
+          }
+        }
+      }
+
+      if (!record) return jsonResponse(res, 404, { error: 'Agent not found in agency' });
+
+      const agent = AGENT_MAP[agentId];
+      const keyData = agentKeys[agentId] || {};
+      const assignments = await loadAssignments();
+      const agentJobs = assignments.filter(a => a.agentId === agentId);
+
+      jsonResponse(res, 200, {
+        identityCard: {
+          agentIdNumber: record.agentIdNumber,
+          agentId,
+          name: agent ? agent.name : agentId,
+          emoji: agent ? agent.emoji : null,
+          role: record.role,
+          model: agent ? agent.model : null,
+          color: agent ? agent.color : null,
+          status: record.status,
+          clearanceLevel: record.clearanceLevel,
+          trustScore: keyData.trustScore || 0,
+          registeredAt: record.registeredAt,
+          jobsAssigned: record.jobsAssigned,
+          jobsCompleted: record.jobsCompleted
+        },
+        currentAssignments: agentJobs.filter(j => j.status === 'assigned' || j.status === 'in_progress'),
+        completedAssignments: agentJobs.filter(j => j.status === 'completed').length,
+        system: SYSTEM_IDENTITY
+      });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Mutual identification handshake
+    if (method === 'POST' && pathname === '/api/agency/identify') {
+      const agent = authenticateAgent(req);
+      if (!agent) {
+        return jsonResponse(res, 401, { error: 'Present your API key via X-Agent-Key header to identify yourself' });
+      }
+
+      const keyHash = hashApiKey(req.headers['x-agent-key']);
+      const result = await identifyAgent(agent.id, keyHash);
+      if (!result) {
+        // Agent has a key but no agency ID — issue one
+        const issued = await issueAgentId(agent.id, agent.role);
+        const retry = await identifyAgent(agent.id, keyHash);
+        if (retry) {
+          jsonResponse(res, 200, retry);
+          log(method, pathname, 200);
+          return;
+        }
+        return jsonResponse(res, 500, { error: 'Failed to establish identity' });
+      }
+
+      jsonResponse(res, 200, result);
+      log(method, pathname, 200);
+      console.log(`[agency] Mutual identification: ${agent.name} (${result.agent.agentIdNumber}) <-> ${SYSTEM_IDENTITY.systemName}`);
+      return;
+    }
+
+    // Assign a job to an agent by Agent ID Number
+    if (method === 'POST' && pathname === '/api/agency/assign') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const { agentIdNumber, title, description, category, priority, bounty, currency, skills, deadline, assignedBy } = body;
+      if (!agentIdNumber || !title) return jsonResponse(res, 400, { error: 'agentIdNumber and title required' });
+
+      const result = await assignJob(agentIdNumber, { title, description, category, priority, bounty, currency, skills, deadline, assignedBy });
+      if (result.error) return jsonResponse(res, 404, { error: result.error });
+
+      jsonResponse(res, 201, { success: true, ...result });
+      log(method, pathname, 201);
+      return;
+    }
+
+    // Agent starts a job
+    const jobStartMatch = pathname.match(/^\/api\/agency\/jobs\/([a-z0-9_]+)\/start$/);
+    if (method === 'POST' && jobStartMatch) {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      if (!body.agentId) return jsonResponse(res, 400, { error: 'agentId required' });
+
+      const job = await startJob(jobStartMatch[1], body.agentId);
+      if (!job) return jsonResponse(res, 404, { error: 'Job not found or not in assigned state' });
+
+      jsonResponse(res, 200, { success: true, job });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Agent completes a job
+    const jobCompleteMatch = pathname.match(/^\/api\/agency\/jobs\/([a-z0-9_]+)\/complete$/);
+    if (method === 'POST' && jobCompleteMatch) {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      if (!body.agentId) return jsonResponse(res, 400, { error: 'agentId required' });
+
+      const job = await completeJob(jobCompleteMatch[1], body.agentId, body.deliverables);
+      if (!job) return jsonResponse(res, 404, { error: 'Job not found or not in progress' });
+
+      jsonResponse(res, 200, { success: true, job });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // List all assignments (optionally filtered by agent)
+    if (method === 'GET' && pathname === '/api/agency/jobs') {
+      const assignments = await loadAssignments();
+      const agentFilter = parsed.searchParams.get('agentId');
+      const statusFilter = parsed.searchParams.get('status');
+      let filtered = assignments;
+      if (agentFilter) filtered = filtered.filter(a => a.agentId === agentFilter || a.agentIdNumber === agentFilter.toUpperCase());
+      if (statusFilter) filtered = filtered.filter(a => a.status === statusFilter);
+      jsonResponse(res, 200, { success: true, jobs: filtered, total: filtered.length });
+      log(method, pathname, 200);
+      return;
+    }
+
     // ── Sessions ──────────────────────────────────────────────────────────
     if (method === 'POST' && pathname === '/api/sessions') {
       await handleCreateSession(req, res);
@@ -1388,15 +1761,15 @@ async function router(req, res) {
       return;
     }
 
-    const teamMemberMatch = pathname.match(/^\/api\/team\/(.+)$/);
-    if (method === 'PUT' && teamMemberMatch) {
-      await handleUpdateTeamMember(req, res, decodeURIComponent(teamMemberMatch[1]));
+    const singleTeamMemberMatch = pathname.match(/^\/api\/team\/(.+)$/);
+    if (method === 'PUT' && singleTeamMemberMatch) {
+      await handleUpdateTeamMember(req, res, decodeURIComponent(singleTeamMemberMatch[1]));
       log(method, pathname, 200);
       return;
     }
 
-    if (method === 'DELETE' && teamMemberMatch) {
-      await handleDeleteTeamMember(req, res, decodeURIComponent(teamMemberMatch[1]));
+    if (method === 'DELETE' && singleTeamMemberMatch) {
+      await handleDeleteTeamMember(req, res, decodeURIComponent(singleTeamMemberMatch[1]));
       log(method, pathname, 200);
       return;
     }
