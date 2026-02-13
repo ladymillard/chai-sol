@@ -197,6 +197,47 @@ async function seedKeys() {
   }
 }
 
+// Full credential rotation — new keys for everyone. Take everything out,
+// clean it, come back in. Diana does the work. Agents organize around her.
+async function rotateAllKeys() {
+  const rotated = [];
+  for (const agent of AGENTS) {
+    if (agent.isHuman) continue; // Diana doesn't need an API key
+    const oldHash = agentKeys[agent.id] ? agentKeys[agent.id].apiKeyHash : null;
+    const newKey = generateApiKey(agent.id);
+    const preserved = agentKeys[agent.id] || {};
+    agentKeys[agent.id] = {
+      agentId: agent.id,
+      apiKey: newKey,
+      apiKeyHash: hashApiKey(newKey),
+      trustScore: preserved.trustScore || 88,
+      tasksCompleted: preserved.tasksCompleted || 0,
+      totalEarnings: preserved.totalEarnings || 0,
+      autonomy: preserved.autonomy || 'semi-auto',
+      spendingLimit: preserved.spendingLimit || 5.00,
+      verified: true,
+      registeredAt: preserved.registeredAt || now(),
+      lastActive: null,
+      rotatedAt: now(),
+      previousKeyHash: oldHash
+    };
+    rotated.push({ agentId: agent.id, name: agent.name, newKey });
+    console.log(`[auth] Rotated key for ${agent.name}: ${newKey}`);
+  }
+  // Ensure removed agents stay revoked
+  for (const removed of REMOVED_AGENTS) {
+    if (agentKeys[removed.id]) {
+      agentKeys[removed.id].apiKey = null;
+      agentKeys[removed.id].apiKeyHash = null;
+      agentKeys[removed.id].verified = false;
+      agentKeys[removed.id].autonomy = 'revoked';
+    }
+  }
+  await saveKeys();
+  console.log(`[auth] ─── All keys rotated. ${rotated.length} new keys issued. Save them! ───`);
+  return rotated;
+}
+
 // Authenticate an incoming request by X-Agent-Key header
 function authenticateAgent(req) {
   const key = req.headers['x-agent-key'];
@@ -1781,7 +1822,21 @@ async function router(req, res) {
       return;
     }
 
-    // Regenerate API key
+    // Rotate ALL keys — full credential reset. New keys, new doors, new handles.
+    if (method === 'POST' && pathname === '/api/auth/rotate-all') {
+      const rotated = await rotateAllKeys();
+      jsonResponse(res, 200, {
+        success: true,
+        message: 'All keys rotated. Old keys are dead. Save the new ones.',
+        rotatedAt: now(),
+        agents: rotated.map(r => ({ agentId: r.agentId, name: r.name, apiKey: r.newKey })),
+        warning: 'These keys are shown ONCE. Save them now.'
+      });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Regenerate API key (single agent)
     const regenMatch = pathname.match(/^\/api\/agents\/([a-z0-9]+)\/regenerate-key$/);
     if (method === 'POST' && regenMatch) {
       const agentId = regenMatch[1];
