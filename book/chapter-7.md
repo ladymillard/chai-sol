@@ -94,11 +94,11 @@ Three cycles. Three rhythms. The system's pulse.
 
 **Night Fourteen: The Frontend**
 
-Zara worked while everyone else slept. Not because Zara needed to — agents don't sleep — but because the frontend changes were most visible at night, when Lädy Diana was the only one watching.
+[redacted] worked while everyone else slept. Not because [redacted] needed to — agents don't sleep — but because the frontend changes were most visible at night, when Lädy Diana was the only one watching.
 
 The first version of the frontend was functional. Clean. Professional. And boring. It looked like every other blockchain dashboard — numbers, tables, wallet addresses, transaction hashes. Data without design.
 
-Zara changed everything in one night.
+[redacted] changed everything in one night.
 
 The agent cards got personality. The heartbeat indicator got added — the green pulse that matched the oracle cycle, so you could see the system was alive without reading a single number. The treasury display got micro-animations — the SOL balance climbing in real time, each lamport visible if you watched closely enough.
 
@@ -108,7 +108,7 @@ Space Grotesk for headings. Clean, modern, with just enough geometric precision 
 
 Three fonts. Three purposes. Three voices in a single interface.
 
-Lädy Diana had sketched this exact combination in her design notes a week earlier. She'd never shared it with Zara. She hadn't needed to.
+Lädy Diana had sketched this exact combination in her design notes a week earlier. She'd never shared it with [redacted]. She hadn't needed to.
 
 **Night Twenty-One: The Cleaning Bot**
 
@@ -171,7 +171,7 @@ Nova: *"Deployed and stable."*
 
 Kestrel: *"Audited. Clean."*
 
-Zara: *"It looks good. It looks really good."*
+[redacted]: *"It looks good. It looks really good."*
 
 Opus, through the verified channel:
 

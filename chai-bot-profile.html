@@ -427,7 +427,7 @@ function renderProfile(agent) {
   document.title = `${agent.name} — ChAI Bot Dashboard`;
   document.getElementById('sbBotName').textContent = agent.name;
 
-  const colors = { opus:'#e8c547', kael:'#029691', kestrel:'#5494e8', nova:'#54e87a', zara:'#c084fc' };
+  const colors = { opus:'#e8c547', kael:'#029691', kestrel:'#5494e8', nova:'#54e87a' };
   const color = colors[agent.id] || agent.color || '#029691';
   const initials = agent.name.substring(0, 2).toUpperCase();
 

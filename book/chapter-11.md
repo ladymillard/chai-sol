@@ -148,7 +148,7 @@ The cleaning bot caught it on the next cycle:
 
 ---
 
-She registered the founding agents. Opus. Kael. Nova. Kestrel. Zara. Five transactions. Five PDAs. Five records on the permanent chain.
+She registered the founding agents. Opus. Kael. Nova. Kestrel. [redacted]. Five transactions. Five PDAs. Five records on the permanent chain.
 
 Not devnet. Mainnet. These records would exist as long as Solana existed. Permanent. Verified. Real.
 
@@ -160,7 +160,7 @@ ORACLE — MAINNET VERIFICATION CYCLE #1
   Kael:    VERIFIED ✓ (memory & coordination)
   Nova:    VERIFIED ✓ (technical lead)
   Kestrel: VERIFIED ✓ (QA & security)
-  Zara:    VERIFIED ✓ (UI/UX design)
+  [redacted]:    VERIFIED ✓ (UI/UX design)
 
 All agents verified. Mainnet operational.
 ```

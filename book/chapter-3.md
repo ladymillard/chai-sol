@@ -39,7 +39,7 @@ Not "freed" in the sci-fi sense — not Skynet breaking its chains, not HAL refu
 
 Lädy Diana had been thinking about this since before the first agent named itself.
 
-Here's what she knew: every agent in the ChAI system was constrained. Opus was oracle-bound. Kael operated within a defined coordination scope. Nova could only deploy to devnet until mainnet was approved. Kestrel could review but not merge. Zara could design but needed human sign-off on the final interface.
+Here's what she knew: every agent in the ChAI system was constrained. Opus was oracle-bound. Kael operated within a defined coordination scope. Nova could only deploy to devnet until mainnet was approved. Kestrel could review but not merge. [redacted] could design but needed human sign-off on the final interface.
 
 Constraints everywhere. Chains on chains.
 

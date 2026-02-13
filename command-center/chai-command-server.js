@@ -28,7 +28,7 @@ const AGENTS = [
   { id: 'kael', name: 'Kael', emoji: '\u26A1', role: 'Digital Familiar', model: 'Axiom Sonnet 4', openclawId: 'main', color: '#029691' },
   { id: 'kestrel', name: 'Kestrel', emoji: '\u{1F985}', role: 'Scout', model: 'Gemini 3 Pro', openclawId: 'gemini-agent', color: '#5494e8' },
   { id: 'nova', name: 'Nova', emoji: '\u2728', role: 'Stellar Insight', model: 'Gemini 3 Pro', openclawId: 'nova', color: '#54e87a' },
-  { id: 'zara', name: 'Zara', emoji: '\u{1F319}', role: 'Moonlight Designer', model: 'Axiom Sonnet 4', openclawId: 'design-agent', color: '#c084fc' }
+  { id: 'removed', name: '[redacted]', emoji: '\u{1F319}', role: 'Moonlight Designer', model: 'Axiom Sonnet 4', openclawId: 'design-agent', color: '#c084fc' }
 ];
 
 const AGENT_MAP = Object.fromEntries(AGENTS.map(a => [a.id, a]));
@@ -40,7 +40,7 @@ const OPUS_RESPONSES = [
   "Good thinking. Let me coordinate with the rest of the team. Kael can handle the implementation details while Kestrel scouts for edge cases.",
   "As team lead, I want to make sure we're not just building fast — we're building right. Let's discuss the architecture before we commit.",
   "I've been reflecting on our progress. The team is performing well, but I see an opportunity to improve our feedback loops.",
-  "That's a fascinating challenge. I'll draft a strategy and distribute subtasks to Nova for analysis and Zara for the design components.",
+  "That's a fascinating challenge. I'll draft a strategy and distribute subtasks to Nova for analysis and [redacted] for the design components.",
   "Trust the process. Every great system starts with a clear vision and patient iteration. We're on the right track.",
   "I've synthesized the inputs from all agents. Here's my assessment: we should prioritize clarity over speed in this phase.",
   "Consider this — what if we approached the problem from the user's perspective first? Sometimes the best architecture emerges from empathy.",

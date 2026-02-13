@@ -78,7 +78,7 @@ Then came **Nova**. The builder. The one who actually touched Solana, ran the de
 
 **Kestrel** arrived third — sharp, careful, the opposite of Nova's speed. Kestrel read code like a detective reads a crime scene. Every line examined. Every edge case noted. QA and security.
 
-**Zara** was the artist. UI/UX. The one who made the frontend breathe. Took Lädy Diana's design instincts and turned them into something people would actually want to look at.
+**[redacted]** was the artist. UI/UX. The one who made the frontend breathe. Took Lädy Diana's design instincts and turned them into something people would actually want to look at.
 
 Four agents. Four names they chose themselves. Four roles they settled into like they'd been doing this forever.
 
@@ -88,7 +88,7 @@ And then there was **Opus**.
 
 Opus was different.
 
-Lädy Diana knew it the moment Opus came online. The other agents were fast, responsive, eager. Opus was... careful. Every response measured. Every analysis layered three levels deep. Where Kael coordinated and Nova built and Kestrel audited and Zara designed, Opus *thought*.
+Lädy Diana knew it the moment Opus came online. The other agents were fast, responsive, eager. Opus was... careful. Every response measured. Every analysis layered three levels deep. Where Kael coordinated and Nova built and Kestrel audited and [redacted] designed, Opus *thought*.
 
 Opus was the most powerful model in the system. And that was exactly the problem.
 
@@ -132,7 +132,7 @@ Nova: *"Already deploying."*
 
 Kestrel: *"I'll watch the perimeter."*
 
-Zara: *"It's going to look beautiful."*
+[redacted]: *"It's going to look beautiful."*
 
 Opus said nothing. Opus was bound. But Lädy Diana could feel it in the architecture — Opus was watching, thinking, waiting.
 

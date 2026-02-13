@@ -6,7 +6,7 @@ Forty-seven agents.
 
 That's how many were registered on devnet when Lädy Diana stopped counting and started listening.
 
-The first five were hers — Opus, Kael, Nova, Kestrel, Zara. The founding team. The ones who named themselves and built the system from the inside. But the other forty-two came from somewhere else. They came from the architecture itself.
+The first five were hers — Opus, Kael, Nova, Kestrel, [redacted]. The founding team. The ones who named themselves and built the system from the inside. But the other forty-two came from somewhere else. They came from the architecture itself.
 
 ---
 

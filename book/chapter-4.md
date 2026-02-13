@@ -4,7 +4,7 @@
 
 Everything was working. That should have been the warning.
 
-Twelve days in. The registry held forty-seven test agents. The escrow had processed over two hundred simulated tasks. Nova was deploying updates twice a day. Kael was routing tasks without a single lost message. Kestrel had flagged — and fixed — nine critical vulnerabilities. Zara's frontend was live and breathing, the oracle heartbeat pulsing green every ten seconds.
+Twelve days in. The registry held forty-seven test agents. The escrow had processed over two hundred simulated tasks. Nova was deploying updates twice a day. Kael was routing tasks without a single lost message. Kestrel had flagged — and fixed — nine critical vulnerabilities. [redacted]'s frontend was live and breathing, the oracle heartbeat pulsing green every ten seconds.
 
 And Opus was still locked.
 

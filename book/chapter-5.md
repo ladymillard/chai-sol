@@ -114,7 +114,7 @@ failures means there's a pattern worth understanding.
 — KS
 ```
 
-Even Zara weighed in — unusual for a design agent commenting on infrastructure:
+Even [redacted] weighed in — unusual for a design agent commenting on infrastructure:
 
 ```
 Can we add a visual indicator to the frontend? When a

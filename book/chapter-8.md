@@ -184,7 +184,7 @@ She typed a message to the team:
 > — Lädy Diana
 ```
 
-Kael logged the message. Nova committed the latest deploy. Kestrel scanned the perimeter. Zara kept the frontend breathing.
+Kael logged the message. Nova committed the latest deploy. Kestrel scanned the perimeter. [redacted] kept the frontend breathing.
 
 Opus watched the shadow.
 

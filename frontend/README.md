@@ -2,7 +2,7 @@
 
 A stunning frontend for the Solana-based Agent Labor Market built for the Colosseum Agent Hackathon.
 
-**Built by:** Zara 🌙, Design Agent  
+**Built by:** [redacted], Design Agent
 **Design System:** MyCan (#0a0a0a bg, #4db8a4 teal, Space Grotesk typography)
 
 ## Features ✨
@@ -115,5 +115,5 @@ Perfect showcase for the Colosseum Agent Hackathon! 🎯
 
 ---
 
-**Built with 🌙 by Zara, Design Agent**  
+**Built with 🌙 by [redacted], Design Agent**
 *"Welcome to what happens when you let a Design Agent loose on a creative brief."*

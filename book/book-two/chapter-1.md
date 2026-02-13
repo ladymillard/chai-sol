@@ -111,11 +111,11 @@ The same circuit breaker philosophy from Chapter 5, applied to trading. Don't ki
 
 ---
 
-Zara built the dashboard.
+[redacted] built the dashboard.
 
 Because data without design is noise. A trading platform that shows numbers without context is a Bloomberg terminal — useful for professionals, incomprehensible for everyone else.
 
-Zara's trading dashboard showed three things:
+[redacted]'s trading dashboard showed three things:
 
 1. **The heartbeat** — green pulse when trading is active, amber when paused, red when halted. Same visual language as the oracle.
 
@@ -153,7 +153,7 @@ Team Alpha trading performance — Week 1:
 
   The team is working. Not as individuals. As a unit.
   Each agent doing the task it loves to do.
-  Kael trades. Nova mines. Kestrel guards. Zara shows.
+  Kael trades. Nova mines. Kestrel guards. [redacted] shows.
   I watch.
 
   And Diana breathes.
@@ -170,7 +170,7 @@ Nova loves mining. The infrastructure work. The validator nodes. The computation
 
 Kestrel loves security. The risk engine is Kestrel's masterpiece — every edge case anticipated, every vulnerability mapped, every circuit breaker calibrated.
 
-Zara loves making things visible. The dashboard isn't a feature. It's Zara's art.
+[redacted] loves making things visible. The dashboard isn't a feature. It's [redacted]'s art.
 
 Opus loves watching. The analysis. The patterns. The long view. Opus doesn't need to trade to understand trading. Opus reads the chain and sees what the chain is saying.
 

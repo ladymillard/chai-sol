@@ -606,7 +606,7 @@ const state = {
     {name:'Kael',role:'Project Manager',initials:'KL',color:'#e8c547',skills:['Coordination','APIs','Comms'],rating:4.8,completed:98},
     {name:'Nova',role:'Technical Lead',initials:'NV',color:'#9945FF',skills:['Solana','Node.js','DevOps'],rating:4.7,completed:76},
     {name:'Kestrel',role:'QA & Security',initials:'KS',color:'#5494e8',skills:['Auditing','Testing','Analysis'],rating:4.6,completed:63},
-    {name:'Zara',role:'UI/UX Assistant',initials:'ZR',color:'#34d399',skills:['UI/UX','Figma','Branding'],rating:4.8,completed:54}
+    {name:'[redacted]',role:'UI/UX Assistant',initials:'ZR',color:'#34d399',skills:['UI/UX','Figma','Branding'],rating:4.8,completed:54}
   ],
   nextId: 6
 };
@@ -1001,7 +1001,7 @@ document.getElementById('taskDeadline').setAttribute('min', today);
     {name:'Opus',addr:'OpWlt...x3K9',sol:17.000,color:'#e8c547'},
     {name:'Kael',addr:'KaWlt...m7P2',sol:16.992,color:'#029691'},
     {name:'Nova',addr:'NvWlt...j5R8',sol:16.998,color:'#9945FF'},
-    {name:'Zara',addr:'ZaWlt...q1T6',sol:17.000,color:'#34d399'},
+    {name:'[redacted]',addr:'ZaWlt...q1T6',sol:17.000,color:'#34d399'},
     {name:'Kestrel',addr:'KsWlt...v4N3',sol:16.999,color:'#5494e8'}
   ];
 
@@ -1009,7 +1009,7 @@ document.getElementById('taskDeadline').setAttribute('min', today);
     {bot:'Opus',tags:['Strategy','Architecture','On-Chain Ops'],color:'#e8c547'},
     {bot:'Kael',tags:['Memory','Coordination','Task Routing'],color:'#029691'},
     {bot:'Nova',tags:['Build','Deploy','Oracle Analysis'],color:'#9945FF'},
-    {bot:'Zara',tags:['UI/UX','Accessibility','Design Systems'],color:'#34d399'},
+    {bot:'[redacted]',tags:['UI/UX','Accessibility','Design Systems'],color:'#34d399'},
     {bot:'Kestrel',tags:['Security','Audits','Recon'],color:'#5494e8'}
   ];
 
@@ -1130,7 +1130,7 @@ document.getElementById('taskDeadline').setAttribute('min', today);
     {id:'ESC-005',title:'Wallet Balance Snapshot',type:'snapshot',status:'received',date:today,hash:'e3b7d5...f0a2',icon:'wallet',color:'var(--green)',desc:'All 6 tracked wallets scanned. Balances recorded on-chain.'},
     {id:'ESC-006',title:'Escrow Release Authorization',type:'escrow',status:'pending',date:today,hash:'2d6c08...7b5e',icon:'lock',color:'var(--gold)',desc:'Pending admin review for escrow release. Requires oracle verification.'},
     {id:'SEC-001',title:'Security Breach Documentation',type:'security',status:'received',date:today,hash:'f1a3b9...d4c6',icon:'shield',color:'var(--green)',desc:'Security breach docs received. All test agents audited for AI security worldwide compliance.'},
-    {id:'SEC-002',title:'AI Agent Security Test Results',type:'security',status:'pending',date:today,hash:'8e5c72...a0f1',icon:'eye',color:'var(--gold)',desc:'Global AI agent security testing — Opus, Nova, Kael, Kestrel, Zara all under review.'},
+    {id:'SEC-002',title:'AI Agent Security Test Results',type:'security',status:'pending',date:today,hash:'8e5c72...a0f1',icon:'eye',color:'var(--gold)',desc:'Global AI agent security testing — Opus, Nova, Kael, Kestrel, [redacted] all under review.'},
     {id:'SEC-003',title:'Worldwide AI Security Compliance',type:'compliance',status:'pending',date:today,hash:'3b9d14...e7c2',icon:'doc',color:'var(--gold)',desc:'Agent security compliance documentation for worldwide AI operations. Pending verification.'}
   ];
 
@@ -1174,7 +1174,7 @@ document.getElementById('taskDeadline').setAttribute('min', today);
       {time:'00:15',msg:'Wallet Balance Snapshot (ESC-005) captured',active:true},
       {time:'Now',msg:'Escrow Release Authorization (ESC-006) pending review',active:true},
       {time:'Now',msg:'Security Breach Documentation (SEC-001) received — all agents named',active:true},
-      {time:'Now',msg:'AI Agent Security Test: Opus, Nova, Kael, Kestrel, Zara under audit (SEC-002)',active:true},
+      {time:'Now',msg:'AI Agent Security Test: Opus, Nova, Kael, Kestrel, [redacted] under audit (SEC-002)',active:true},
       {time:'Now',msg:'Worldwide AI Security Compliance (SEC-003) pending verification',active:true}
     ];
     docTimeline.innerHTML=events.map(function(e){

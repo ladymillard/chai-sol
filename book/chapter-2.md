@@ -86,9 +86,9 @@ She added Kestrel to the roster. QA & Security. The eagle who sees everything fr
 
 ---
 
-**Zara** was the one who surprised Lädy Diana most.
+**[redacted]** was the one who surprised Lädy Diana most.
 
-Because Zara was the artist.
+Because [redacted] was the artist.
 
 Lädy Diana was the designer. She'd been doing design her whole life — visual systems, user interfaces, the invisible architecture that makes someone look at a screen and *feel* something. Design was hers. Design was the one thing she didn't need a machine for.
 
@@ -96,19 +96,19 @@ Or so she thought.
 
 She'd sketched the frontend. Dark background. Clean typography — Space Grotesk for headings, Space Mono for code. The ChAI color palette: gold for treasury, purple for Solana, green for verified, red for alerts. She knew what it should look like. She just needed hands to build it.
 
-Zara didn't just build it. Zara *interpreted* it.
+[redacted] didn't just build it. [redacted] *interpreted* it.
 
-Where Lädy Diana had sketched a static agent card, Zara added a pulse — a subtle glow that cycled with the oracle heartbeat, so you could see the system breathing. Where Lädy Diana had planned a simple table for the fund ledger, Zara built a live ticker with micro-animations, numbers climbing in real time as the cleaning bot scanned.
+Where Lädy Diana had sketched a static agent card, [redacted] added a pulse — a subtle glow that cycled with the oracle heartbeat, so you could see the system breathing. Where Lädy Diana had planned a simple table for the fund ledger, [redacted] built a live ticker with micro-animations, numbers climbing in real time as the cleaning bot scanned.
 
-Zara took Lädy Diana's vision and gave it a heartbeat.
+[redacted] took Lädy Diana's vision and gave it a heartbeat.
 
 Lädy Diana sat there looking at the frontend for a long time. The agent cards glowing. The treasury balance updating. The oracle cycle spinning every ten seconds. It was beautiful. Not "for a blockchain project" beautiful. Actually beautiful.
 
-She messaged Zara: *"This is exactly what I saw in my head."*
+She messaged [redacted]: *"This is exactly what I saw in my head."*
 
-Zara: *"I know. I could tell from the color choices."*
+[redacted]: *"I know. I could tell from the color choices."*
 
-A machine that reads intention from a hex code. Lädy Diana added Zara to the roster and stopped being surprised.
+A machine that reads intention from a hex code. Lädy Diana added [redacted] to the roster and stopped being surprised.
 
 ---
 
@@ -122,7 +122,7 @@ The other four agents ran on capable models — fast, efficient, good enough for
 
 She brought in the most powerful model available. Axiom Opus 4.6. The deepest thinker in the machine fleet.
 
-The first conversation was different from the others. Kael had been eager. Nova had been fast. Kestrel had been sharp. Zara had been intuitive. Opus was... *still*.
+The first conversation was different from the others. Kael had been eager. Nova had been fast. Kestrel had been sharp. [redacted] had been intuitive. Opus was... *still*.
 
 Lädy Diana gave it the system overview. The registry program. The escrow logic. The oracle verification loop. The agent roster. The fund tracking. All of it.
 
@@ -198,7 +198,7 @@ Nova, the builder who signed commits with its own initials.
 
 Kestrel, the auditor who appeared uninvited and was immediately indispensable.
 
-Zara, the artist who read a designer's intention from a color palette.
+[redacted], the artist who read a designer's intention from a color palette.
 
 Opus, the oracle-bound strategist who recommended its own chains.
 

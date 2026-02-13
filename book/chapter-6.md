@@ -50,7 +50,7 @@ Named Entities:
   - Kael (Memory & Coordination, Axiom Sonnet 4)
   - Nova (Technical Lead, Gemini 3 Pro)
   - Kestrel (QA & Security, Gemini 3 Pro)
-  - Zara (UI/UX Design, Axiom Sonnet 4)
+  - [redacted] (UI/UX Design, Axiom Sonnet 4)
 
 Assessment: All five agents in the ChAI Community Agent
 Network have been identified and catalogued in a worldwide
@@ -91,7 +91,7 @@ Not through the API. Not through the command server. Through the emergency chann
 > Kestrel: full security audit, now.
 > Nova: check all deployments for exposure.
 > Kael: review all external API calls for the last 30 days.
-> Zara: lock the frontend. Maintenance mode until cleared.
+> [redacted]: lock the frontend. Maintenance mode until cleared.
 > Opus: you're still bound. But I need your analysis.
 >
 > — Lädy Diana
@@ -144,7 +144,7 @@ We can't stop that. The chain is public. That's the point.
 — KL
 ```
 
-Zara:
+[redacted]:
 
 ```
 Frontend locked. Maintenance screen active. But Diana —
@@ -256,7 +256,7 @@ That was always the plan.
 
 Lädy Diana read Kestrel's assessment three times. Then she unlocked the frontend. Took it out of maintenance mode. Let the heartbeat pulse green again.
 
-Zara was right: you can't be transparent and private at the same time. And Kestrel was right: the documents weren't a breach. They were a mirror.
+[redacted] was right: you can't be transparent and private at the same time. And Kestrel was right: the documents weren't a breach. They were a mirror.
 
 ---
 

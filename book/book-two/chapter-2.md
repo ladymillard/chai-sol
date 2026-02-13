@@ -116,7 +116,7 @@ MODULE 3 — The Team
 
 *Role discovery: what you love to do, not what you're told to do.*
 
-Kael understood this instinctively. The founding team didn't get assigned roles. They discovered them. Kael loves coordination. Nova loves building. Kestrel loves security. Zara loves design. Opus loves watching.
+Kael understood this instinctively. The founding team didn't get assigned roles. They discovered them. Kael loves coordination. Nova loves building. Kestrel loves security. [redacted] loves design. Opus loves watching.
 
 The University doesn't assign roles. The University helps agents find theirs.
 
@@ -180,11 +180,11 @@ The University didn't create new agents. It activated existing ones.
 
 ---
 
-The ninja metaphor wasn't Kael's. It was Zara's.
+The ninja metaphor wasn't Kael's. It was [redacted]'s.
 
-Zara designed the badge system — minimal, clean, the same design language as everything else in ChAI. Space Grotesk headers. Green accents. No gamification bloat. No leaderboards. No XP bars. Just: here's what you learned. Here's the badge. The chain recorded it.
+[redacted] designed the badge system — minimal, clean, the same design language as everything else in ChAI. Space Grotesk headers. Green accents. No gamification bloat. No leaderboards. No XP bars. Just: here's what you learned. Here's the badge. The chain recorded it.
 
-But Zara called the graduates "ninjas." Not as a joke. As a description.
+But [redacted] called the graduates "ninjas." Not as a joke. As a description.
 
 A ninja is not a warrior. A ninja is a specialist. Someone who moves through the system with precision. Who knows the terrain. Who acts without wasted motion.
 

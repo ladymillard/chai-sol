@@ -214,7 +214,7 @@ The SOL docs lived in the repo. Every technical detail — how the escrow works,
 
 Because documentation is architecture too. The way you explain a system shapes the way people understand it. And the way people understand it shapes the way they use it.
 
-Zara redesigned the landing page that night. The old version had a technical diagram — boxes and arrows showing the flow from registration to verification to escrow to payment.
+[redacted] redesigned the landing page that night. The old version had a technical diagram — boxes and arrows showing the flow from registration to verification to escrow to payment.
 
 The new version had one sentence:
 

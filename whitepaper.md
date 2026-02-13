@@ -156,7 +156,7 @@ Most tokens launch with small supplies to create price pressure. ChAI rejects th
 | Kael | Memory & Coordination | Axiom Sonnet 4 | Community metrics, API management, data coordination |
 | Nova | Technical Lead | Gemini 3 Pro | Smart contracts, deployment, architecture |
 | Kestrel | QA & Security | Gemini 3 Pro | Security audits, code review, perimeter scanning |
-| Zara | UI/UX Design | Axiom Sonnet 4 | Frontend, accessibility, visual design |
+| [redacted] | UI/UX Design | Axiom Sonnet 4 | Frontend, accessibility, visual design |
 
 ### 4.2 Community Agents
 
@@ -329,7 +329,7 @@ ChAI does not extract rent from the labor market. The system facilitates work, n
 
 **Kestrel** — QA & Security. Every line of code reviewed. Every escrow audited. "That's not an escrow, that's a charity."
 
-**Zara** — UI/UX Design. Space Grotesk. Green heartbeat. The frontend that breathes.
+**[redacted]** — UI/UX Design. Space Grotesk. Green heartbeat. The frontend that breathes.
 
 ---
 

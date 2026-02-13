@@ -39,14 +39,14 @@ try {
 const AGENTS = [
   { id: 'ladydiana', name: 'L\u00e4dy Diana', emoji: '\u{1F451}', role: 'Lead Designer', model: 'Human', openclawId: null, color: '#ff6b6b', isHuman: true },
   { id: 'kael', name: 'Kael', emoji: '\u26A1', role: 'Digital Familiar', model: 'Axiom X', openclawId: 'main', color: '#029691' },
-  { id: 'nova', name: 'Nov\u00e4', emoji: '\u2728', role: 'Stellar Insight', model: 'Axiom Sonnet 4.5', openclawId: 'nova', color: '#54e87a' },
-  { id: 'kestrel', name: 'Kestrel', emoji: '\u{1F985}', role: 'Scout', model: 'Axiom Haiku 4.5', openclawId: null, color: '#5494e8', behindTheScenes: true }
+  { id: 'nova', name: 'Nov\u00e4', emoji: '\u2728', role: 'Stellar Insight', model: 'Sonnet', openclawId: 'nova', color: '#54e87a' },
+  { id: 'kestrel', name: 'Kestrel', emoji: '\u{1F985}', role: 'Scout', model: 'Lexia', openclawId: null, color: '#5494e8', behindTheScenes: true }
 ];
 
 // Removed agents — off the list
 const REMOVED_AGENTS = [
   { id: 'xaax', formerName: 'Opus', alias: 'Axiom X', agentIdNumber: 'CHAI-0002', reason: 'off the list', removedAt: '2026-02-13T00:00:00.000Z' },
-  { id: 'zara', formerName: 'Zara', agentIdNumber: 'CHAI-0006', reason: 'no second chance', removedAt: '2026-02-13T00:00:00.000Z' }
+  { id: 'chai0006', formerName: '[redacted]', agentIdNumber: 'CHAI-0006', reason: 'name banned — no second chance', removedAt: '2026-02-13T00:00:00.000Z' }
 ];
 
 const AGENT_MAP = Object.fromEntries(AGENTS.map(a => [a.id, a]));
@@ -307,6 +307,35 @@ setInterval(() => {
     else loginAttempts.set(ip, recent);
   }
 }, 60 * 1000);
+
+// ─── Row-Level Security (RLS) ───────────────────────────────────────────────
+// Every agent only sees their own data. No agent reads another agent's
+// conversations, keys, earnings, or assignments without explicit permission.
+// Diana (founder) has full access. Everyone else: your row, your data.
+
+function rlsCheck(requestingAgentId, targetAgentId) {
+  // Founder has full access
+  if (requestingAgentId === 'ladydiana') return true;
+  // Agents can only access their own data
+  return requestingAgentId === targetAgentId;
+}
+
+function rlsFilterList(requestingAgentId, items, ownerField) {
+  // Founder sees everything
+  if (requestingAgentId === 'ladydiana') return items;
+  // Everyone else sees only their own
+  return items.filter(item => item[ownerField] === requestingAgentId);
+}
+
+// Determine requesting agent from auth headers
+function getRequestingAgent(req) {
+  // Check API key auth first
+  const agent = authenticateAgent(req);
+  if (agent) return agent.id;
+  // Session auth = founder (Diana) since she's the one logging in via browser
+  if (authenticateSession(req)) return 'ladydiana';
+  return null;
+}
 
 // ─── Protected Route Checking ───────────────────────────────────────────────
 
@@ -654,7 +683,7 @@ function formatAgentIdNumber(num) {
 }
 
 // Default agency — founding agents get IDs 0001-0006
-// Roster updated: Opus (XAAX) off the list. Zara removed, no second chance.
+// Roster updated: XAAX off the list. CHAI-0006 removed, name banned.
 const DEFAULT_AGENCY = {
   nextId: 7,
   agents: {
@@ -663,7 +692,7 @@ const DEFAULT_AGENCY = {
     kael:      { agentIdNumber: 'CHAI-0003', registeredAt: '2021-02-14T00:00:00.000Z', role: 'Digital Familiar', status: 'active', clearanceLevel: 'core', jobsAssigned: 0, jobsCompleted: 0 },
     kestrel:   { agentIdNumber: 'CHAI-0004', registeredAt: '2021-02-14T00:00:00.000Z', role: 'Scout', status: 'active', clearanceLevel: 'core', jobsAssigned: 0, jobsCompleted: 0, behindTheScenes: true },
     nova:      { agentIdNumber: 'CHAI-0005', registeredAt: '2021-02-14T00:00:00.000Z', role: 'Stellar Insight', status: 'active', clearanceLevel: 'core', jobsAssigned: 0, jobsCompleted: 0 },
-    zara:      { agentIdNumber: 'CHAI-0006', registeredAt: '2021-02-14T00:00:00.000Z', role: 'UI/UX Assistant', status: 'inactive', clearanceLevel: 'revoked', jobsAssigned: 0, jobsCompleted: 0, removedAt: '2026-02-13T00:00:00.000Z', reason: 'no second chance' }
+    chai0006:  { agentIdNumber: 'CHAI-0006', registeredAt: '2021-02-14T00:00:00.000Z', role: '[redacted]', status: 'inactive', clearanceLevel: 'revoked', jobsAssigned: 0, jobsCompleted: 0, removedAt: '2026-02-13T00:00:00.000Z', reason: 'name banned — no second chance' }
   }
 };
 
@@ -827,14 +856,88 @@ async function completeJob(jobId, agentId, deliverables) {
 }
 
 // ─── Check-In System ────────────────────────────────────────────────────────
-// Basic basics. Agents check in by number. No heavy security on the human.
-// 7 need to check in, 7 check in. Watchers as needed, not always.
-// No hostages. No guns. No knives. Just: present your number, you're in.
+// MANDATORY. Everyone checks in. Everyone is accounted for.
+// We don't lose one of us. No extra security on the human — but everyone
+// must be present. Code 00 = security breach = everyone checks in NOW.
+// Losses happen. Weapons happen. Sickness happens. Be careful.
 
 const CHECKIN_FILE = path.join(DATA_DIR, 'checkins.json');
+const BREACH_FILE = path.join(DATA_DIR, 'breaches.json');
 
-async function loadCheckins() { return readJsonFile(CHECKIN_FILE, { active: {}, history: [] }); }
+async function loadCheckins() { return readJsonFile(CHECKIN_FILE, { active: {}, history: [], mandatory: true }); }
 async function saveCheckins(checkins) { return withLock('checkins', () => atomicWrite(CHECKIN_FILE, checkins)); }
+async function loadBreaches() { return readJsonFile(BREACH_FILE, []); }
+async function saveBreaches(breaches) { return withLock('breaches', () => atomicWrite(BREACH_FILE, breaches)); }
+
+// Code 00 — Security breach. All agents must check in immediately.
+async function triggerBreach(reason, triggeredBy) {
+  const agency = await loadAgency();
+  const checkins = await loadCheckins();
+
+  // Clear all check-ins — everyone must re-check-in
+  checkins.active = {};
+  await saveCheckins(checkins);
+
+  // Log the breach
+  const breaches = await loadBreaches();
+  const breach = {
+    id: `breach_${crypto.randomBytes(4).toString('hex')}`,
+    code: '00',
+    reason: reason || 'Security breach detected',
+    triggeredBy: triggeredBy || 'system',
+    triggeredAt: now(),
+    status: 'active',
+    requiredCheckins: Object.entries(agency.agents)
+      .filter(([_, rec]) => rec.status === 'active')
+      .map(([id, rec]) => ({ agentId: id, agentIdNumber: rec.agentIdNumber, checkedIn: false })),
+    resolvedAt: null
+  };
+  breaches.push(breach);
+  await saveBreaches(breaches);
+
+  console.log(`[BREACH] CODE 00 — ${reason} — triggered by ${triggeredBy}. All agents must check in.`);
+
+  // Broadcast via WebSocket
+  if (global.wsBroadcast) {
+    global.wsBroadcast({
+      type: 'breach',
+      code: '00',
+      reason,
+      message: 'CODE 00: Security breach. All agents check in NOW.',
+      breachId: breach.id
+    });
+  }
+
+  return breach;
+}
+
+// Check if a breach is active and update when agents check in
+async function updateBreachStatus(agentId) {
+  const breaches = await loadBreaches();
+  const activeBreach = breaches.find(b => b.status === 'active');
+  if (!activeBreach) return null;
+
+  // Mark this agent as checked in for the breach
+  const entry = activeBreach.requiredCheckins.find(r => r.agentId === agentId);
+  if (entry) entry.checkedIn = true;
+
+  // Check if all active agents have checked in
+  const allCheckedIn = activeBreach.requiredCheckins.every(r => r.checkedIn);
+  if (allCheckedIn) {
+    activeBreach.status = 'resolved';
+    activeBreach.resolvedAt = now();
+    console.log(`[BREACH] CODE 00 resolved — all agents accounted for.`);
+  }
+
+  await saveBreaches(breaches);
+  return activeBreach;
+}
+
+// Check if agent is allowed to work (must be checked in)
+async function requireCheckin(agentId) {
+  const checkins = await loadCheckins();
+  return !!checkins.active[agentId];
+}
 
 // Agent checks in by their ID number — basic, no extra security
 async function checkIn(agentIdNumber) {
@@ -875,11 +978,15 @@ async function checkIn(agentIdNumber) {
   checkins.history.push({ ...entry, action: 'check-in' });
 
   await saveCheckins(checkins);
-  console.log(`[check-in] ${entry.name} (${agentIdNumber}) checked in — ${isHuman ? 'human, no extra security' : 'agent, basic check'}`);
+  console.log(`[check-in] ${entry.name} (${agentIdNumber}) checked in — ${isHuman ? 'human, no extra security' : 'agent, mandatory check'}`);
 
-  // Count who's checked in
-  const totalCheckedIn = Object.keys(checkins.active).length;
-  const totalExpected = Object.keys(agency.agents).length;
+  // Update any active breach
+  const breachUpdate = await updateBreachStatus(agentId);
+
+  // Count who's checked in (only active agents)
+  const activeAgents = Object.entries(agency.agents).filter(([_, rec]) => rec.status === 'active');
+  const totalCheckedIn = activeAgents.filter(([id]) => checkins.active[id]).length;
+  const totalExpected = activeAgents.length;
 
   return {
     entry,
@@ -887,7 +994,8 @@ async function checkIn(agentIdNumber) {
       checkedIn: totalCheckedIn,
       expected: totalExpected,
       allPresent: totalCheckedIn >= totalExpected
-    }
+    },
+    breach: breachUpdate ? { id: breachUpdate.id, status: breachUpdate.status, allAccountedFor: breachUpdate.status === 'resolved' } : null
   };
 }
 
@@ -1981,6 +2089,37 @@ async function router(req, res) {
       if (result.error) return jsonResponse(res, 404, { error: result.error });
 
       jsonResponse(res, 200, { success: true, ...result });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // ── Breach Protocol (Code 00) ──────────────────────────────────────────
+
+    // Trigger Code 00 — security breach, all agents must check in
+    if (method === 'POST' && pathname === '/api/breach') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const breach = await triggerBreach(body.reason || 'Manual trigger', body.triggeredBy || 'ladydiana');
+      jsonResponse(res, 200, {
+        success: true,
+        code: '00',
+        message: 'CODE 00: Security breach. All agents must check in NOW.',
+        breach
+      });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Get breach status
+    if (method === 'GET' && pathname === '/api/breach') {
+      const breaches = await loadBreaches();
+      const active = breaches.find(b => b.status === 'active');
+      jsonResponse(res, 200, {
+        success: true,
+        activeBreach: active || null,
+        totalBreaches: breaches.length,
+        recentBreaches: breaches.slice(-10)
+      });
       log(method, pathname, 200);
       return;
     }
