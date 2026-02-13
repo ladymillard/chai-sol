@@ -161,7 +161,7 @@ pub struct UpdateAgent<'info> {
         mut,
         seeds = [b"agent", signer.key().as_ref()],
         bump,
-        has_one = wallet @ RegistryError::Unauthorized
+        constraint = agent_account.wallet == signer.key() @ RegistryError::Unauthorized
     )]
     pub agent_account: Account<'info, AgentAccount>,
     pub signer: Signer<'info>,
