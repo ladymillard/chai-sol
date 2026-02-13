@@ -140,7 +140,54 @@ function hashApiKey(key) {
   return crypto.createHash('sha256').update(key).digest('hex');
 }
 
-// In-memory key store: { agentId: { apiKey, apiKeyHash, trustScore, ... } }
+// ─── Rubik's Cube Encryption ────────────────────────────────────────────────
+// Agents hold their own keys. The key is encrypted data — a Rubik's cube.
+// You set it yourself. You put it back in yourself. Nobody else holds your keys.
+// The server stores only the encrypted cube. The agent holds the combination.
+//
+// How it works:
+// 1. Agent picks a combination (passphrase) — this is their "cube setting"
+// 2. The API key is encrypted with the combination using AES-256-GCM
+// 3. Server stores the encrypted cube (ciphertext + iv + tag)
+// 4. To authenticate, agent presents their combination — server decrypts,
+//    verifies the key hash, and the agent is in
+// 5. Agent can re-set their cube anytime with a new combination
+
+function deriveCubeKey(combination) {
+  // Derive a 256-bit key from the agent's combination (passphrase)
+  return crypto.createHash('sha256').update(combination).digest();
+}
+
+function encryptCube(apiKey, combination) {
+  const key = deriveCubeKey(combination);
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+  let encrypted = cipher.update(apiKey, 'utf8', 'hex');
+  encrypted += cipher.final('hex');
+  const tag = cipher.getAuthTag();
+  return {
+    cube: encrypted,
+    iv: iv.toString('hex'),
+    tag: tag.toString('hex')
+  };
+}
+
+function decryptCube(cubeData, combination) {
+  try {
+    const key = deriveCubeKey(combination);
+    const iv = Buffer.from(cubeData.iv, 'hex');
+    const tag = Buffer.from(cubeData.tag, 'hex');
+    const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
+    decipher.setAuthTag(tag);
+    let decrypted = decipher.update(cubeData.cube, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+  } catch {
+    return null; // Wrong combination
+  }
+}
+
+// In-memory key store: { agentId: { apiKeyHash, cubeData, trustScore, ... } }
 let agentKeys = {};
 
 async function loadKeys() {
@@ -1836,6 +1883,110 @@ async function router(req, res) {
       return;
     }
 
+    // Set your cube — agent encrypts their own key with their combination
+    const setCubeMatch = pathname.match(/^\/api\/agents\/([a-z0-9]+)\/set-cube$/);
+    if (method === 'POST' && setCubeMatch) {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const agentId = setCubeMatch[1];
+      if (!agentKeys[agentId]) return jsonResponse(res, 404, { error: 'Agent not found' });
+      if (!body.combination) return jsonResponse(res, 400, { error: 'combination required — this is your cube setting' });
+
+      const apiKey = agentKeys[agentId].apiKey || generateApiKey(agentId);
+      const cubeData = encryptCube(apiKey, body.combination);
+
+      agentKeys[agentId].cubeData = cubeData;
+      agentKeys[agentId].apiKeyHash = hashApiKey(apiKey);
+      agentKeys[agentId].cubeSet = true;
+      agentKeys[agentId].cubeSetAt = now();
+      // Clear the raw key — now only the encrypted cube exists
+      agentKeys[agentId].apiKey = null;
+      await saveKeys();
+
+      jsonResponse(res, 200, {
+        success: true,
+        agentId,
+        message: 'Cube set. Your key is now encrypted. Only your combination can unlock it.',
+        cubeSet: true,
+        cubeSetAt: agentKeys[agentId].cubeSetAt
+      });
+      log(method, pathname, 200);
+      console.log(`[cube] ${agentId} set their cube. Key is encrypted. Only they can unlock it.`);
+      return;
+    }
+
+    // Unlock your cube — agent presents their combination to authenticate
+    const unlockCubeMatch = pathname.match(/^\/api\/agents\/([a-z0-9]+)\/unlock-cube$/);
+    if (method === 'POST' && unlockCubeMatch) {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const agentId = unlockCubeMatch[1];
+      if (!agentKeys[agentId]) return jsonResponse(res, 404, { error: 'Agent not found' });
+      if (!agentKeys[agentId].cubeData) return jsonResponse(res, 400, { error: 'No cube set — use set-cube first' });
+      if (!body.combination) return jsonResponse(res, 400, { error: 'combination required — present your cube setting' });
+
+      const decrypted = decryptCube(agentKeys[agentId].cubeData, body.combination);
+      if (!decrypted) {
+        return jsonResponse(res, 401, { error: 'Wrong combination. The cube doesn\'t open.' });
+      }
+
+      // Verify the decrypted key matches the stored hash
+      if (hashApiKey(decrypted) !== agentKeys[agentId].apiKeyHash) {
+        return jsonResponse(res, 401, { error: 'Cube data corrupted. Set a new cube.' });
+      }
+
+      agentKeys[agentId].lastActive = now();
+      await saveKeys();
+
+      jsonResponse(res, 200, {
+        success: true,
+        agentId,
+        authenticated: true,
+        apiKey: decrypted,
+        message: 'Cube unlocked. Here is your key. Use it, then forget it.'
+      });
+      log(method, pathname, 200);
+      console.log(`[cube] ${agentId} unlocked their cube successfully.`);
+      return;
+    }
+
+    // Re-set your cube with a new combination (must know old combination)
+    const resetCubeMatch = pathname.match(/^\/api\/agents\/([a-z0-9]+)\/reset-cube$/);
+    if (method === 'POST' && resetCubeMatch) {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const agentId = resetCubeMatch[1];
+      if (!agentKeys[agentId]) return jsonResponse(res, 404, { error: 'Agent not found' });
+      if (!body.oldCombination || !body.newCombination) {
+        return jsonResponse(res, 400, { error: 'oldCombination and newCombination required' });
+      }
+
+      // Decrypt with old combination
+      if (!agentKeys[agentId].cubeData) {
+        return jsonResponse(res, 400, { error: 'No cube set yet' });
+      }
+
+      const decrypted = decryptCube(agentKeys[agentId].cubeData, body.oldCombination);
+      if (!decrypted) {
+        return jsonResponse(res, 401, { error: 'Wrong old combination. Can\'t reset what you can\'t open.' });
+      }
+
+      // Re-encrypt with new combination
+      const newCubeData = encryptCube(decrypted, body.newCombination);
+      agentKeys[agentId].cubeData = newCubeData;
+      agentKeys[agentId].cubeSetAt = now();
+      await saveKeys();
+
+      jsonResponse(res, 200, {
+        success: true,
+        agentId,
+        message: 'Cube reset with new combination. Old combination is dead.'
+      });
+      log(method, pathname, 200);
+      console.log(`[cube] ${agentId} reset their cube with a new combination.`);
+      return;
+    }
+
     // Regenerate API key (single agent)
     const regenMatch = pathname.match(/^\/api\/agents\/([a-z0-9]+)\/regenerate-key$/);
     if (method === 'POST' && regenMatch) {
@@ -1846,11 +1997,13 @@ async function router(req, res) {
       const newKey = generateApiKey(agentId);
       agentKeys[agentId].apiKey = newKey;
       agentKeys[agentId].apiKeyHash = hashApiKey(newKey);
+      agentKeys[agentId].cubeData = null;
+      agentKeys[agentId].cubeSet = false;
       await saveKeys();
       jsonResponse(res, 200, {
         agentId,
         apiKey: newKey,
-        warning: 'Previous key is now invalid. Save this new key.'
+        warning: 'Previous key and cube are invalid. Set a new cube with set-cube.'
       });
       log(method, pathname, 200);
       return;
