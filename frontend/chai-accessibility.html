@@ -8,10 +8,10 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://command.mycan.website https://*.mycan.website https://api.github.com">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Merriweather:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0a0a0a;--card:#111214;--card-hover:#161819;--teal:#029691;--teal-dim:rgba(2,150,145,.12);--gold:#e8c547;--gold-dim:rgba(232,197,71,.1);--text:#f0f0f0;--text-muted:#8a8f98;--text-dim:#555a63;--border:#222528;--border-light:#2e3136;--red:#e05252;--green:#34d399;--font-h:'Space Grotesk',sans-serif;--font-b:'Inter',sans-serif;--font-m:'JetBrains Mono',monospace;--radius:10px;--radius-lg:14px;--kael:#029691;--nova:#54e87a;--removed:#c084fc;--kestrel:#5494e8;--opus:#e8c547}
-:root.light{--bg:#f5f5f7;--card:#ffffff;--card-hover:#f0f0f2;--teal:#029691;--teal-dim:rgba(2,150,145,.08);--gold:#c9a830;--gold-dim:rgba(201,168,48,.08);--text:#1a1a2e;--text-muted:#6b7280;--text-dim:#9ca3af;--border:#e2e4e8;--border-light:#d1d5db;--red:#dc2626;--green:#059669}
+:root{--bg:#1a1a1a;--card:#F5E6D3;--card-hover:#E8D5C4;--teal:#D4AF37;--teal-dim:rgba(2,150,145,.12);--gold:#D4AF37;--gold-dim:rgba(232,197,71,.1);--text:#1a1a1a;--text-muted:#8B4513;--text-dim:#CC7722;--border:#CC7722;--border-light:#2e3136;--red:#e05252;--green:#34d399;--font-h:'Cinzel',serif;--font-b:'Merriweather',serif;--font-m:'Fira Code',monospace;--radius:10px;--radius-lg:14px;--kael:#D4AF37;--nova:#54e87a;--removed:#c084fc;--kestrel:#5494e8;--opus:#e8c547}
+:root.light{--bg:#f5f5f7;--card:#ffffff;--card-hover:#f0f0f2;--teal:#D4AF37;--teal-dim:rgba(2,150,145,.08);--gold:#c9a830;--gold-dim:rgba(201,168,48,.08);--text:#1a1a2e;--text-muted:#6b7280;--text-dim:#9ca3af;--border:#e2e4e8;--border-light:#d1d5db;--red:#dc2626;--green:#059669}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:var(--font-b);background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
@@ -82,13 +82,13 @@ h3{font-family:var(--font-h);font-weight:600;font-size:16px;letter-spacing:-.01e
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:14px;font-weight:600;padding:10px 20px;border-radius:8px;transition:all .15s}
 .btn-primary{background:var(--teal);color:#fff}
 .btn-primary:hover{filter:brightness(1.1)}
-.btn-gold{background:var(--gold);color:#0a0a0a}
+.btn-gold{background:var(--gold);color:#1a1a1a}
 .btn-gold:hover{filter:brightness(1.1)}
 .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text-muted)}
 .btn-outline:hover{border-color:var(--text-muted);color:var(--text)}
 .btn-sm{font-size:12px;padding:6px 12px;border-radius:6px}
 .btn-block{width:100%}
-.btn-call{background:var(--green);color:#0a0a0a;font-size:16px;padding:14px 28px;border-radius:12px}
+.btn-call{background:var(--green);color:#1a1a1a;font-size:16px;padding:14px 28px;border-radius:12px}
 .btn-call:hover{filter:brightness(1.1);transform:translateY(-2px);box-shadow:0 4px 16px rgba(52,211,153,.3)}
 .btn-telegram{background:#2AABEE;color:#fff;font-size:16px;padding:14px 28px;border-radius:12px}
 .btn-telegram:hover{filter:brightness(1.1);transform:translateY(-2px);box-shadow:0 4px 16px rgba(42,171,238,.3)}
@@ -581,7 +581,7 @@ html{scroll-behavior:smooth}
           <tr><td>1.3.1 Info and Relationships</td><td>A</td><td class="pass">Pass</td><td>Semantic HTML, proper heading hierarchy, ARIA landmarks</td></tr>
           <tr><td>1.3.2 Meaningful Sequence</td><td>A</td><td class="pass">Pass</td><td>DOM order matches visual order across all views</td></tr>
           <tr><td>1.4.1 Use of Color</td><td>A</td><td class="pass">Pass</td><td>Status badges use text labels alongside color indicators</td></tr>
-          <tr><td>1.4.3 Contrast (Minimum)</td><td>AA</td><td class="warn">Partial</td><td>Some muted text (#555a63 on #0a0a0a) below 4.5:1 ratio</td></tr>
+          <tr><td>1.4.3 Contrast (Minimum)</td><td>AA</td><td class="warn">Partial</td><td>Some muted text (#555a63 on #1a1a1a) below 4.5:1 ratio</td></tr>
           <tr><td>1.4.4 Resize Text</td><td>AA</td><td class="pass">Pass</td><td>clamp() and rem units allow 200% text resize</td></tr>
           <tr><td>1.4.10 Reflow</td><td>AA</td><td class="pass">Pass</td><td>Responsive grid reflows to single column at 320px</td></tr>
           <tr><td>1.4.11 Non-text Contrast</td><td>AA</td><td class="pass">Pass</td><td>Borders and interactive elements meet 3:1 ratio</td></tr>
@@ -768,7 +768,7 @@ html{scroll-behavior:smooth}
           <span aria-hidden="true">&#127917;</span> <span style="color:#e8c547">Opus</span>
         </span>
         <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(2,150,145,.1);border:1px solid rgba(2,150,145,.3);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600">
-          <span aria-hidden="true">&#9889;</span> <span style="color:#029691">Kael</span>
+          <span aria-hidden="true">&#9889;</span> <span style="color:#D4AF37">Kael</span>
         </span>
         <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(84,232,122,.1);border:1px solid rgba(84,232,122,.3);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600">
           <span aria-hidden="true">&#10024;</span> <span style="color:#54e87a">Nova</span>

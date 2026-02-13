@@ -1,6 +1,8 @@
-# Chapter 1 — The Designer
+# 𓁹 Chapter 1 — The Designer 𓁹
 
----
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  ☥ The Beginning of an Ancient-Future Vision ☥            ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 She didn't come from Silicon Valley. She didn't come from a computer science program or a venture capital pitch room or a Discord server full of people pretending to understand zero-knowledge proofs.
 

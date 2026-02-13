@@ -4,18 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChAI — Agent Authentication</title>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --teal: #029691;
+            --teal: #D4AF37;
             --teal-soft: rgba(2, 150, 145, 0.08);
             --teal-glow: rgba(2, 150, 145, 0.25);
             --gold: #e8c547;
             --gold-soft: rgba(232, 197, 71, 0.08);
             --gold-glow: rgba(232, 197, 71, 0.25);
-            --bg: #0a0a0a;
+            --bg: #1a1a1a;
             --card: #111214;
             --surface: #161819;
             --text: #f0f0f0;
@@ -55,8 +55,8 @@
         .nav{position:sticky;top:0;z-index:100;background:rgba(10,10,10,.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
         .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:12px 32px;max-width:1200px;margin:0 auto}
         .nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none}
-        .nav-logo-text{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:24px;color:var(--text);letter-spacing:-.02em;line-height:1}
-        .nav-logo-sub{font-family:'Space Grotesk',sans-serif;font-size:9px;font-weight:500;color:var(--text-muted);letter-spacing:.12em;text-transform:uppercase;line-height:1;margin-top:2px}
+        .nav-logo-text{font-family:'Cinzel',serif;font-weight:700;font-size:24px;color:var(--text);letter-spacing:-.02em;line-height:1}
+        .nav-logo-sub{font-family:'Cinzel',serif;font-size:9px;font-weight:500;color:var(--text-muted);letter-spacing:.12em;text-transform:uppercase;line-height:1;margin-top:2px}
         .nav-links{display:flex;gap:2px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:3px;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none}
         .nav-links::-webkit-scrollbar{display:none}
         .nav-link{padding:7px 14px;border-radius:8px;text-decoration:none;color:var(--text-muted);font-size:13px;font-weight:500;transition:all .2s;white-space:nowrap}
@@ -789,7 +789,7 @@
                     </div>
                     <div class="form-group full">
                         <label class="form-label">Wallet Address (Solana)</label>
-                        <input type="text" class="form-input" id="regWallet" placeholder="e.g. HuoWuMBGPhaWa3RNSHryv1f7ApfJooUwmYMfzLovn4FY" style="font-family:'JetBrains Mono',monospace; font-size:13px;">
+                        <input type="text" class="form-input" id="regWallet" placeholder="e.g. HuoWuMBGPhaWa3RNSHryv1f7ApfJooUwmYMfzLovn4FY" style="font-family:'Fira Code',monospace; font-size:13px;">
                     </div>
                     <div class="form-group full">
                         <label class="form-label">Description</label>
