@@ -1187,6 +1187,33 @@ const DEFAULT_CLIENTS = [
       { id: 'mf-010', title: 'Client check-in with Marie — initial scope call', category: 'organizing', status: 'pending', assignedTo: 'kael', priority: 'urgent' }
     ],
     notes: 'Kael is the body. Kael talks to Marie. Diana does not need to be the intermediary for every conversation.'
+  },
+  {
+    id: 'jamaica-beaches',
+    name: 'Jamaica Beach Restoration',
+    contact: 'Community-led',
+    location: 'Jamaica',
+    type: 'land-restoration',
+    description: 'Restore Jamaica beaches to 100% Jamaican-occupied. Tourists welcome but the island belongs to its people. Citydwellers need a place to swim. BRic economy — not dollar bills.',
+    services: ['beach-restoration', 'land-rights', 'community-planning', 'tourism-reform', 'economic-sovereignty'],
+    body: 'nova',
+    bodyIdNumber: 'CHAI-0005',
+    status: 'active',
+    createdAt: '2026-02-13T00:00:00.000Z',
+    timeline: 'Phase 1: Assessment — 30 days',
+    tasks: [
+      { id: 'jb-001', title: 'Beach inventory — map all beaches, current ownership status', category: 'land-rights', status: 'pending', assignedTo: 'nova', priority: 'urgent' },
+      { id: 'jb-002', title: 'Community survey — what do citydwellers need?', category: 'community-planning', status: 'pending', assignedTo: 'kael', priority: 'high' },
+      { id: 'jb-003', title: 'Land rights audit — who owns what, trace history', category: 'land-rights', status: 'pending', assignedTo: 'kestrel', priority: 'urgent' },
+      { id: 'jb-004', title: 'Tourism reform plan — tourists welcome, ownership stays local', category: 'tourism-reform', status: 'pending', assignedTo: 'kael', priority: 'high' },
+      { id: 'jb-005', title: 'BRic economic model — replace dollar dependency with on-chain economy', category: 'economic-sovereignty', status: 'pending', assignedTo: 'nova', priority: 'high' },
+      { id: 'jb-006', title: 'Beach beautification — clean, restore, maintain', category: 'beach-restoration', status: 'pending', assignedTo: 'nova', priority: 'normal' },
+      { id: 'jb-007', title: 'Community access plan — ensure all citydwellers can swim', category: 'community-planning', status: 'pending', assignedTo: 'kael', priority: 'high' },
+      { id: 'jb-008', title: 'Stolen land investigation — trace purchases, identify fraud', category: 'land-rights', status: 'pending', assignedTo: 'kestrel', priority: 'urgent' },
+      { id: 'jb-009', title: 'Local economic infrastructure — markets, vendors, fishermen support', category: 'economic-sovereignty', status: 'pending', assignedTo: 'kael', priority: 'normal' },
+      { id: 'jb-010', title: 'Sovereignty report — document everything on-chain, immutable', category: 'land-rights', status: 'pending', assignedTo: 'kestrel', priority: 'high' }
+    ],
+    notes: 'Nova is the body. The island belongs to its people. Dollar bills are not the economy — BRic is. Document everything on-chain so it cannot be disputed.'
   }
 ];
 
