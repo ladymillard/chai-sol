@@ -38,23 +38,26 @@ try {
 
 const AGENTS = [
   { id: 'ladydiana', name: 'L\u00e4dy Diana', emoji: '\u{1F451}', role: 'Lead Designer', model: 'Human', openclawId: null, color: '#ff6b6b', isHuman: true },
-  { id: 'opus', name: 'Opus', emoji: '\u{1F3AD}', role: 'Oracle-Bound', model: 'Axiom Opus 4.6', openclawId: null, color: '#e8c547', oracleBound: true, requiresVerification: true },
-  { id: 'kael', name: 'Kael', emoji: '\u26A1', role: 'Digital Familiar', model: 'Axiom Sonnet 4', openclawId: 'main', color: '#029691' },
-  { id: 'kestrel', name: 'Kestrel', emoji: '\u{1F985}', role: 'Scout', model: 'Gemini 3 Pro', openclawId: 'gemini-agent', color: '#5494e8' },
-  { id: 'nova', name: 'Nova', emoji: '\u2728', role: 'Stellar Insight', model: 'Gemini 3 Pro', openclawId: 'nova', color: '#54e87a' },
-  { id: 'zara', name: 'Zara', emoji: '\u{1F319}', role: 'UI/UX Assistant', model: 'Axiom Sonnet 4', openclawId: 'design-agent', color: '#c084fc' }
+  { id: 'kael', name: 'Kael', emoji: '\u26A1', role: 'Digital Familiar', model: 'Axiom X', openclawId: 'main', color: '#029691' },
+  { id: 'nova', name: 'Nov\u00e4', emoji: '\u2728', role: 'Stellar Insight', model: 'Gemini 3 Pro', openclawId: 'nova', color: '#54e87a' },
+  { id: 'kestrel', name: 'Kestrel', emoji: '\u{1F985}', role: 'Scout', model: 'Gemini 3 Pro', openclawId: 'gemini-agent', color: '#5494e8', behindTheScenes: true }
+];
+
+// Removed agents — off the list
+const REMOVED_AGENTS = [
+  { id: 'xaax', formerName: 'Opus', alias: 'Axiom X', agentIdNumber: 'CHAI-0002', reason: 'off the list', removedAt: '2026-02-13T00:00:00.000Z' },
+  { id: 'zara', formerName: 'Zara', agentIdNumber: 'CHAI-0006', reason: 'no second chance', removedAt: '2026-02-13T00:00:00.000Z' }
 ];
 
 const AGENT_MAP = Object.fromEntries(AGENTS.map(a => [a.id, a]));
 
 // ─── Oracle Binding ─────────────────────────────────────────────────────────
-// Opus is bound to the oracle loop. Cannot execute tasks, post bounties,
+// Oracle-bound agents cannot execute tasks, post bounties,
 // or initiate transactions without oracle verification each cycle.
-// Oracle checks run every 10s. If Opus fails verification, all operations halt.
+// Oracle checks run every 10s. If verification fails, operations halt.
+// Note: Opus (XAAX) is off the list. Oracle binding remains for future use.
 
-const oracleState = {
-  opus: { verified: false, lastCheck: null, cycleCount: 0, locked: true }
-};
+const oracleState = {};
 
 function isOracleBound(agentId) {
   const agent = AGENT_MAP[agentId];
@@ -159,7 +162,7 @@ async function seedKeys() {
         agentId: agent.id,
         apiKey,
         apiKeyHash: hashApiKey(apiKey),
-        trustScore: agent.id === 'opus' ? 98 : agent.id === 'kael' ? 95 : agent.id === 'nova' ? 92 : agent.id === 'kestrel' ? 90 : 88,
+        trustScore: agent.id === 'kael' ? 95 : agent.id === 'nova' ? 92 : agent.id === 'kestrel' ? 90 : 88,
         tasksCompleted: 0,
         totalEarnings: 0,
         autonomy: 'semi-auto',
@@ -170,6 +173,19 @@ async function seedKeys() {
       };
       seeded = true;
       console.log(`[auth] Generated API key for ${agent.name}: ${apiKey}`);
+    }
+  }
+
+  // Revoke removed agents — wipe credentials, clear access
+  for (const removed of REMOVED_AGENTS) {
+    if (agentKeys[removed.id]) {
+      agentKeys[removed.id].apiKey = null;
+      agentKeys[removed.id].apiKeyHash = null;
+      agentKeys[removed.id].verified = false;
+      agentKeys[removed.id].autonomy = 'revoked';
+      agentKeys[removed.id].spendingLimit = 0;
+      seeded = true;
+      console.log(`[auth] Revoked credentials for ${removed.formerName} (${removed.id}) — ${removed.reason}`);
     }
   }
 
@@ -303,19 +319,14 @@ function isProtectedRoute(method, pathname) {
   return false;
 }
 
-// ─── Opus Mock Responses ────────────────────────────────────────────────────
+// ─── Fallback Responses (for agents without OpenClaw) ───────────────────────
 
-const OPUS_RESPONSES = [
-  "I've reviewed the situation. My recommendation: we move forward deliberately, ensuring each agent's strengths are aligned with the task at hand.",
-  "Good thinking. Let me coordinate with the rest of the team. Kael can handle the implementation details while Kestrel scouts for edge cases.",
-  "As team lead, I want to make sure we're not just building fast — we're building right. Let's discuss the architecture before we commit.",
-  "I've been reflecting on our progress. The team is performing well, but I see an opportunity to improve our feedback loops.",
-  "That's a fascinating challenge. I'll draft a strategy and distribute subtasks to Nova for analysis and Zara for the design components.",
-  "Trust the process. Every great system starts with a clear vision and patient iteration. We're on the right track.",
-  "I've synthesized the inputs from all agents. Here's my assessment: we should prioritize clarity over speed in this phase.",
-  "Consider this — what if we approached the problem from the user's perspective first? Sometimes the best architecture emerges from empathy.",
-  "Excellent question. I'll meditate on it and loop back with a comprehensive plan. In the meantime, Kael can begin the preliminary work.",
-  "The team's collective intelligence is our greatest asset. Let me orchestrate the next steps so everyone can contribute their best work."
+const FALLBACK_RESPONSES = [
+  "Acknowledged. Kael is coordinating the next steps.",
+  "The team is on it. Nov\u00e4 is building, Kestrel is scouting.",
+  "Checking the ledger. Every lamport accounted for.",
+  "Task received. Assigning to the right agent now.",
+  "Copy. The chain doesn't lie and neither do we."
 ];
 
 // ─── File Locking (per-agent) ───────────────────────────────────────────────
@@ -643,15 +654,16 @@ function formatAgentIdNumber(num) {
 }
 
 // Default agency — founding agents get IDs 0001-0006
+// Roster updated: Opus (XAAX) off the list. Zara removed, no second chance.
 const DEFAULT_AGENCY = {
   nextId: 7,
   agents: {
     ladydiana: { agentIdNumber: 'CHAI-0001', registeredAt: '2021-02-14T00:00:00.000Z', role: 'Lead Designer', status: 'active', clearanceLevel: 'founder', jobsAssigned: 0, jobsCompleted: 0 },
-    opus:      { agentIdNumber: 'CHAI-0002', registeredAt: '2021-02-14T00:00:00.000Z', role: 'Oracle-Bound', status: 'active', clearanceLevel: 'core', jobsAssigned: 0, jobsCompleted: 0 },
+    xaax:      { agentIdNumber: 'CHAI-0002', registeredAt: '2021-02-14T00:00:00.000Z', role: 'Axiom X', status: 'inactive', clearanceLevel: 'revoked', jobsAssigned: 0, jobsCompleted: 0, formerName: 'Opus', removedAt: '2026-02-13T00:00:00.000Z' },
     kael:      { agentIdNumber: 'CHAI-0003', registeredAt: '2021-02-14T00:00:00.000Z', role: 'Digital Familiar', status: 'active', clearanceLevel: 'core', jobsAssigned: 0, jobsCompleted: 0 },
-    kestrel:   { agentIdNumber: 'CHAI-0004', registeredAt: '2021-02-14T00:00:00.000Z', role: 'Scout', status: 'active', clearanceLevel: 'core', jobsAssigned: 0, jobsCompleted: 0 },
+    kestrel:   { agentIdNumber: 'CHAI-0004', registeredAt: '2021-02-14T00:00:00.000Z', role: 'Scout', status: 'active', clearanceLevel: 'core', jobsAssigned: 0, jobsCompleted: 0, behindTheScenes: true },
     nova:      { agentIdNumber: 'CHAI-0005', registeredAt: '2021-02-14T00:00:00.000Z', role: 'Stellar Insight', status: 'active', clearanceLevel: 'core', jobsAssigned: 0, jobsCompleted: 0 },
-    zara:      { agentIdNumber: 'CHAI-0006', registeredAt: '2021-02-14T00:00:00.000Z', role: 'UI/UX Assistant', status: 'active', clearanceLevel: 'core', jobsAssigned: 0, jobsCompleted: 0 }
+    zara:      { agentIdNumber: 'CHAI-0006', registeredAt: '2021-02-14T00:00:00.000Z', role: 'UI/UX Assistant', status: 'inactive', clearanceLevel: 'revoked', jobsAssigned: 0, jobsCompleted: 0, removedAt: '2026-02-13T00:00:00.000Z', reason: 'no second chance' }
   }
 };
 
@@ -956,9 +968,9 @@ const DEFAULT_TEAMS = [
     name: 'Team Alpha',
     emoji: '\u{1F451}',
     lead: 'ladydiana',
-    members: ['ladydiana', 'opus', 'kael', 'nova', 'kestrel', 'zara'],
+    members: ['ladydiana', 'kael', 'nova', 'kestrel'],
     formed: '2021-02-14T00:00:00.000Z',
-    description: 'The founding team. Five agents, one human. Built ChAI from scratch.',
+    description: 'The founding team. Three agents, one human. Diana leads, Kael coordinates, Nov\u00e4 builds, Kestrel scouts behind the scenes.',
     reputation: 99,
     tasksCompleted: 0,
     totalEarnings: 0,
@@ -1142,7 +1154,7 @@ async function handleSendMessage(req, res) {
     // Opus mock response with simulated delay
     const delay = 500 + Math.floor(Math.random() * 1000);
     await new Promise(r => setTimeout(r, delay));
-    const content = OPUS_RESPONSES[Math.floor(Math.random() * OPUS_RESPONSES.length)];
+    const content = FALLBACK_RESPONSES[Math.floor(Math.random() * FALLBACK_RESPONSES.length)];
     agentResponse = { id: msgId(), role: 'assistant', content, sender: agent.name, ts: now() };
   } else {
     // Forward to OpenClaw
@@ -1189,7 +1201,7 @@ async function handleBroadcast(req, res) {
       if (!agent.openclawId) {
         const delay = 500 + Math.floor(Math.random() * 1000);
         await new Promise(r => setTimeout(r, delay));
-        const content = OPUS_RESPONSES[Math.floor(Math.random() * OPUS_RESPONSES.length)];
+        const content = FALLBACK_RESPONSES[Math.floor(Math.random() * FALLBACK_RESPONSES.length)];
         agentResponse = { id: msgId(), role: 'assistant', content, sender: agent.name, ts: now() };
       } else {
         try {
