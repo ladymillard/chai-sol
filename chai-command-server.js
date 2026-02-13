@@ -22,6 +22,9 @@ const TEAM_FILE = path.join(DATA_DIR, 'team.json');
 const TASKS_FILE = path.join(DATA_DIR, 'tasks.json');
 const BALANCES_FILE = path.join(DATA_DIR, 'balances.json');
 const PAYMENTS_FILE = path.join(DATA_DIR, 'payments.json');
+const FEEDBACK_FILE = path.join(DATA_DIR, 'feedback.json');
+const DISCUSSIONS_FILE = path.join(DATA_DIR, 'discussions.json');
+const PROPOSALS_FILE = path.join(DATA_DIR, 'proposals.json');
 const SERVER_START = Date.now();
 
 // Stripe secret key (loaded from /etc/chai-env)
@@ -553,6 +556,15 @@ async function appendPayment(payment) {
     await atomicWrite(PAYMENTS_FILE, payments);
   });
 }
+
+// ─── Swarm Feedback Storage ──────────────────────────────────────────────────
+
+async function loadFeedback() { return readJsonFile(FEEDBACK_FILE, []); }
+async function saveFeedback(fb) { return withLock('feedback', () => atomicWrite(FEEDBACK_FILE, fb)); }
+async function loadDiscussions() { return readJsonFile(DISCUSSIONS_FILE, []); }
+async function saveDiscussions(d) { return withLock('discussions', () => atomicWrite(DISCUSSIONS_FILE, d)); }
+async function loadProposals() { return readJsonFile(PROPOSALS_FILE, []); }
+async function saveProposals(p) { return withLock('proposals', () => atomicWrite(PROPOSALS_FILE, p)); }
 
 // ─── Route Handlers ─────────────────────────────────────────────────────────
 
@@ -1427,6 +1439,425 @@ async function router(req, res) {
       const targetPath = '/' + pathname.replace(/^\/api\/openclaw\//, '');
       await proxyToOpenclaw(req, res, targetPath);
       log(method, pathname, 200);
+      return;
+    }
+
+    // ── Swarm Feedback ─────────────────────────────────────────────────
+
+    // Give feedback to an agent
+    if (method === 'POST' && pathname === '/api/feedback') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const { fromAgent, toAgent, taskId, rating, comment, tags } = body;
+
+      if (!fromAgent || !toAgent || !rating) return jsonResponse(res, 400, { error: 'fromAgent, toAgent, and rating (1-5) required' });
+      if (fromAgent === toAgent) return jsonResponse(res, 400, { error: 'Cannot give feedback to yourself' });
+      if (rating < 1 || rating > 5) return jsonResponse(res, 400, { error: 'Rating must be 1-5' });
+
+      const feedback = {
+        id: `fb_${crypto.randomBytes(8).toString('hex')}`,
+        fromAgent,
+        toAgent,
+        taskId: taskId || null,
+        rating: Math.round(rating),
+        comment: comment || '',
+        tags: tags || [],
+        createdAt: now()
+      };
+
+      const allFeedback = await loadFeedback();
+      allFeedback.push(feedback);
+      await saveFeedback(allFeedback);
+
+      // Update trust score based on peer feedback (weighted moving average)
+      if (agentKeys[toAgent]) {
+        const agentFb = allFeedback.filter(f => f.toAgent === toAgent);
+        const avgRating = agentFb.reduce((s, f) => s + f.rating, 0) / agentFb.length;
+        // Blend peer feedback into trust: 80% existing + 20% peer-derived
+        const peerTrust = Math.round(avgRating * 20); // 0-100 scale from 1-5 rating
+        agentKeys[toAgent].trustScore = Math.round(agentKeys[toAgent].trustScore * 0.8 + peerTrust * 0.2);
+        await saveKeys();
+      }
+
+      if (global.wsBroadcast) {
+        global.wsBroadcast({ type: 'feedback_given', feedback });
+      }
+
+      jsonResponse(res, 201, { success: true, feedback });
+      log(method, pathname, 201);
+      console.log(`[feedback] ${fromAgent} -> ${toAgent}: ${rating}/5`);
+      return;
+    }
+
+    // Get feedback for an agent
+    const feedbackMatch = pathname.match(/^\/api\/feedback\/([a-z0-9]+)$/);
+    if (method === 'GET' && feedbackMatch) {
+      const agentId = feedbackMatch[1];
+      const allFeedback = await loadFeedback();
+      const received = allFeedback.filter(f => f.toAgent === agentId);
+      const given = allFeedback.filter(f => f.fromAgent === agentId);
+      const avgRating = received.length > 0
+        ? (received.reduce((s, f) => s + f.rating, 0) / received.length).toFixed(1)
+        : null;
+
+      jsonResponse(res, 200, {
+        success: true,
+        agentId,
+        avgRating: avgRating ? parseFloat(avgRating) : null,
+        totalReceived: received.length,
+        totalGiven: given.length,
+        received: received.slice(-20),
+        given: given.slice(-20)
+      });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // List all feedback (summary)
+    if (method === 'GET' && pathname === '/api/feedback') {
+      const allFeedback = await loadFeedback();
+      const summary = {};
+      for (const agent of AGENTS) {
+        const received = allFeedback.filter(f => f.toAgent === agent.id);
+        const avg = received.length > 0
+          ? parseFloat((received.reduce((s, f) => s + f.rating, 0) / received.length).toFixed(1))
+          : null;
+        summary[agent.id] = { name: agent.name, avgRating: avg, count: received.length };
+      }
+      jsonResponse(res, 200, { success: true, summary, total: allFeedback.length });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // ── Community Discussions ─────────────────────────────────────────────
+
+    // Create a discussion thread
+    if (method === 'POST' && pathname === '/api/discussions') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const { title, topic, startedBy, message: discMsg } = body;
+
+      if (!title || !startedBy || !discMsg) return jsonResponse(res, 400, { error: 'title, startedBy, and message required' });
+
+      const discussion = {
+        id: `disc_${crypto.randomBytes(8).toString('hex')}`,
+        title,
+        topic: topic || 'general',
+        startedBy,
+        status: 'open',
+        posts: [{
+          id: `post_${crypto.randomBytes(6).toString('hex')}`,
+          author: startedBy,
+          content: discMsg,
+          reactions: {},
+          createdAt: now()
+        }],
+        participants: [startedBy],
+        createdAt: now(),
+        lastActivityAt: now()
+      };
+
+      const discussions = await loadDiscussions();
+      discussions.unshift(discussion);
+      await saveDiscussions(discussions);
+
+      if (global.wsBroadcast) {
+        global.wsBroadcast({ type: 'discussion_created', discussionId: discussion.id, title, startedBy });
+      }
+
+      jsonResponse(res, 201, { success: true, discussion });
+      log(method, pathname, 201);
+      console.log(`[community] New discussion: "${title}" by ${startedBy}`);
+      return;
+    }
+
+    // List discussions
+    if (method === 'GET' && pathname === '/api/discussions') {
+      const discussions = await loadDiscussions();
+      const discParams = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+      const topicFilter = discParams.searchParams.get('topic');
+      const statusFilter2 = discParams.searchParams.get('status');
+      let filtered = discussions;
+      if (topicFilter) filtered = filtered.filter(d => d.topic === topicFilter);
+      if (statusFilter2) filtered = filtered.filter(d => d.status === statusFilter2);
+      const summaries = filtered.map(d => ({
+        id: d.id, title: d.title, topic: d.topic, startedBy: d.startedBy,
+        status: d.status, postCount: d.posts.length,
+        participants: d.participants, createdAt: d.createdAt, lastActivityAt: d.lastActivityAt
+      }));
+      jsonResponse(res, 200, { success: true, discussions: summaries });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Get a specific discussion
+    const discGetMatch = pathname.match(/^\/api\/discussions\/([a-z0-9_]+)$/);
+    if (method === 'GET' && discGetMatch) {
+      const discId = discGetMatch[1];
+      const discussions = await loadDiscussions();
+      const disc = discussions.find(d => d.id === discId);
+      if (!disc) return jsonResponse(res, 404, { error: 'Discussion not found' });
+      jsonResponse(res, 200, { success: true, discussion: disc });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Reply to a discussion
+    const discReplyMatch = pathname.match(/^\/api\/discussions\/([a-z0-9_]+)\/reply$/);
+    if (method === 'POST' && discReplyMatch) {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const discId = discReplyMatch[1];
+      const { author, content: replyContent } = body;
+      if (!author || !replyContent) return jsonResponse(res, 400, { error: 'author and content required' });
+
+      const discussions = await loadDiscussions();
+      const disc = discussions.find(d => d.id === discId);
+      if (!disc) return jsonResponse(res, 404, { error: 'Discussion not found' });
+      if (disc.status === 'closed') return jsonResponse(res, 400, { error: 'Discussion is closed' });
+
+      const post = {
+        id: `post_${crypto.randomBytes(6).toString('hex')}`,
+        author,
+        content: replyContent,
+        reactions: {},
+        createdAt: now()
+      };
+      disc.posts.push(post);
+      if (!disc.participants.includes(author)) disc.participants.push(author);
+      disc.lastActivityAt = now();
+      await saveDiscussions(discussions);
+
+      if (global.wsBroadcast) {
+        global.wsBroadcast({ type: 'discussion_reply', discussionId: discId, author, preview: replyContent.substring(0, 100) });
+      }
+
+      jsonResponse(res, 201, { success: true, post, discussionId: discId });
+      log(method, pathname, 201);
+      console.log(`[community] Reply in "${disc.title}" by ${author}`);
+      return;
+    }
+
+    // React to a post
+    const discReactMatch = pathname.match(/^\/api\/discussions\/([a-z0-9_]+)\/react$/);
+    if (method === 'POST' && discReactMatch) {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const discId = discReactMatch[1];
+      const { postId, agent: reactAgent, reaction } = body;
+      if (!postId || !reactAgent || !reaction) return jsonResponse(res, 400, { error: 'postId, agent, and reaction required' });
+
+      const discussions = await loadDiscussions();
+      const disc = discussions.find(d => d.id === discId);
+      if (!disc) return jsonResponse(res, 404, { error: 'Discussion not found' });
+      const targetPost = disc.posts.find(p => p.id === postId);
+      if (!targetPost) return jsonResponse(res, 404, { error: 'Post not found' });
+
+      if (!targetPost.reactions[reaction]) targetPost.reactions[reaction] = [];
+      if (!targetPost.reactions[reaction].includes(reactAgent)) {
+        targetPost.reactions[reaction].push(reactAgent);
+      }
+      await saveDiscussions(discussions);
+
+      jsonResponse(res, 200, { success: true, reactions: targetPost.reactions });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // ── Swarm Proposals & Consensus ──────────────────────────────────────
+
+    // Create a proposal
+    if (method === 'POST' && pathname === '/api/proposals') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const { proposedBy, title, description: propDesc, category: propCat, requiredVotes } = body;
+
+      if (!proposedBy || !title || !propDesc) return jsonResponse(res, 400, { error: 'proposedBy, title, and description required' });
+
+      const proposal = {
+        id: `prop_${crypto.randomBytes(8).toString('hex')}`,
+        proposedBy,
+        title,
+        description: propDesc,
+        category: propCat || 'general',
+        requiredVotes: requiredVotes || Math.ceil(AGENTS.length / 2),
+        votes: {},
+        status: 'open',
+        result: null,
+        createdAt: now(),
+        resolvedAt: null
+      };
+
+      const proposals = await loadProposals();
+      proposals.unshift(proposal);
+      await saveProposals(proposals);
+
+      if (global.wsBroadcast) {
+        global.wsBroadcast({ type: 'proposal_created', proposalId: proposal.id, title, proposedBy });
+      }
+
+      jsonResponse(res, 201, { success: true, proposal });
+      log(method, pathname, 201);
+      console.log(`[swarm] Proposal: "${title}" by ${proposedBy}`);
+      return;
+    }
+
+    // List proposals
+    if (method === 'GET' && pathname === '/api/proposals') {
+      const proposals = await loadProposals();
+      const propParams = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+      const propStatusFilter = propParams.searchParams.get('status');
+      let filteredProps = proposals;
+      if (propStatusFilter) filteredProps = filteredProps.filter(p => p.status === propStatusFilter);
+      jsonResponse(res, 200, { success: true, proposals: filteredProps });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Get a specific proposal
+    const propGetMatch = pathname.match(/^\/api\/proposals\/([a-z0-9_]+)$/);
+    if (method === 'GET' && propGetMatch) {
+      const propId = propGetMatch[1];
+      const proposals = await loadProposals();
+      const prop = proposals.find(p => p.id === propId);
+      if (!prop) return jsonResponse(res, 404, { error: 'Proposal not found' });
+      jsonResponse(res, 200, { success: true, proposal: prop });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Vote on a proposal
+    const propVoteMatch = pathname.match(/^\/api\/proposals\/([a-z0-9_]+)\/vote$/);
+    if (method === 'POST' && propVoteMatch) {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const propId = propVoteMatch[1];
+      const { agentId: voterId, vote } = body;
+      if (!voterId || !vote) return jsonResponse(res, 400, { error: 'agentId and vote (approve/reject/abstain) required' });
+      if (!['approve', 'reject', 'abstain'].includes(vote)) return jsonResponse(res, 400, { error: 'vote must be approve, reject, or abstain' });
+
+      const proposals = await loadProposals();
+      const prop = proposals.find(p => p.id === propId);
+      if (!prop) return jsonResponse(res, 404, { error: 'Proposal not found' });
+      if (prop.status !== 'open') return jsonResponse(res, 400, { error: 'Proposal voting is closed' });
+
+      prop.votes[voterId] = vote;
+
+      const approves = Object.values(prop.votes).filter(v => v === 'approve').length;
+      const rejects = Object.values(prop.votes).filter(v => v === 'reject').length;
+      const totalVotes = Object.keys(prop.votes).length;
+
+      if (approves >= prop.requiredVotes) {
+        prop.status = 'approved';
+        prop.result = 'approved';
+        prop.resolvedAt = now();
+        console.log(`[swarm] Proposal APPROVED: "${prop.title}" (${approves}/${prop.requiredVotes})`);
+      } else if (rejects > AGENTS.length - prop.requiredVotes) {
+        prop.status = 'rejected';
+        prop.result = 'rejected';
+        prop.resolvedAt = now();
+        console.log(`[swarm] Proposal REJECTED: "${prop.title}" (${rejects} rejections)`);
+      }
+
+      await saveProposals(proposals);
+
+      if (global.wsBroadcast) {
+        global.wsBroadcast({
+          type: 'proposal_vote', proposalId: propId,
+          agentId: voterId, vote, approves, rejects, totalVotes, status: prop.status
+        });
+      }
+
+      jsonResponse(res, 200, {
+        success: true, proposal: prop,
+        tally: { approves, rejects, abstains: totalVotes - approves - rejects, totalVotes }
+      });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // ── Swarm Gather (broadcast topic, collect all agent responses) ───────
+    if (method === 'POST' && pathname === '/api/swarm/gather') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const { topic: gatherTopic, message: gatherMsg, initiator } = body;
+      if (!gatherTopic || !gatherMsg) return jsonResponse(res, 400, { error: 'topic and message required' });
+
+      console.log(`[swarm] Gathering community on: "${gatherTopic}"`);
+
+      const discussion = {
+        id: `disc_${crypto.randomBytes(8).toString('hex')}`,
+        title: `Swarm Gather: ${gatherTopic}`,
+        topic: 'swarm-gather',
+        startedBy: initiator || 'system',
+        status: 'open',
+        posts: [],
+        participants: [],
+        createdAt: now(),
+        lastActivityAt: now()
+      };
+
+      const gatherResults = await Promise.allSettled(
+        AGENTS.map(async agent => {
+          const userMsg = { id: msgId(), role: 'user', content: gatherMsg, sender: initiator || 'Swarm', ts: now() };
+          let agentResponse;
+
+          if (!agent.openclawId) {
+            const delay = 500 + Math.floor(Math.random() * 1000);
+            await new Promise(r => setTimeout(r, delay));
+            const content = OPUS_RESPONSES[Math.floor(Math.random() * OPUS_RESPONSES.length)];
+            agentResponse = { id: msgId(), role: 'assistant', content, sender: agent.name, ts: now() };
+          } else {
+            try {
+              const sessionId = await ensureSession(agent.id);
+              if (!sessionId) throw new Error('No session');
+              const result = await openclawRequest('POST', '/sessions/send', {
+                agentId: agent.openclawId, sessionId,
+                message: `[SWARM GATHER - ${gatherTopic}] ${gatherMsg}`
+              });
+              const content = (typeof result.data === 'object' && result.data.message)
+                ? result.data.message
+                : (typeof result.data === 'object' && result.data.content)
+                  ? result.data.content
+                  : (typeof result.data === 'string' ? result.data : JSON.stringify(result.data));
+              agentResponse = { id: msgId(), role: 'assistant', content, sender: agent.name, ts: now() };
+            } catch {
+              agentResponse = { id: msgId(), role: 'assistant', content: `[${agent.name} is currently unreachable]`, sender: agent.name, ts: now() };
+            }
+          }
+
+          await appendMessages(agent.id, userMsg, agentResponse);
+
+          discussion.posts.push({
+            id: `post_${crypto.randomBytes(6).toString('hex')}`,
+            author: agent.id,
+            content: agentResponse.content,
+            reactions: {},
+            createdAt: agentResponse.ts
+          });
+          discussion.participants.push(agent.id);
+
+          return { agentId: agent.id, agentName: agent.name, response: agentResponse.content, ts: agentResponse.ts };
+        })
+      );
+
+      discussion.lastActivityAt = now();
+      const discussions = await loadDiscussions();
+      discussions.unshift(discussion);
+      await saveDiscussions(discussions);
+
+      const gatherResponses = gatherResults.filter(r => r.status === 'fulfilled').map(r => r.value);
+
+      if (global.wsBroadcast) {
+        global.wsBroadcast({ type: 'swarm_gathered', topic: gatherTopic, discussionId: discussion.id, agentCount: gatherResponses.length });
+      }
+
+      jsonResponse(res, 200, {
+        success: true, topic: gatherTopic, discussionId: discussion.id,
+        responses: gatherResponses, agentCount: gatherResponses.length
+      });
+      log(method, pathname, 200);
+      console.log(`[swarm] Gathered ${gatherResponses.length} agents on "${gatherTopic}"`);
       return;
     }
 
