@@ -9,8 +9,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Merriweather:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#1a1a1a;--card:#F5E6D3;--card-hover:#E8D5C4;--teal:#D4AF37;--teal-dim:rgba(2,150,145,.12);--teal-glow:rgba(2,150,145,.25);--gold:#D4AF37;--gold-dim:rgba(232,197,71,.1);--gold-glow:rgba(232,197,71,.25);--text:#1a1a1a;--text-muted:#8B4513;--text-dim:#CC7722;--border:#CC7722;--border-light:#2e3136;--green:#34d399;--font-h:'Cinzel',serif;--font-b:'Merriweather',serif;--font-m:'Fira Code',monospace;--radius:10px;--radius-lg:14px}
-:root.light{--bg:#f5f5f7;--card:#ffffff;--card-hover:#f0f0f2;--teal:#D4AF37;--teal-dim:rgba(2,150,145,.08);--gold:#c9a830;--gold-dim:rgba(201,168,48,.08);--text:#1a1a2e;--text-muted:#6b7280;--text-dim:#9ca3af;--border:#e2e4e8;--border-light:#d1d5db;--green:#059669}
+:root{--bg:#1a1a1a;--card:#F5E6D3;--card-hover:#E8D5C4;--teal:#D4AF37;--teal-dim:rgba(212,175,55,.12);--teal-glow:rgba(212,175,55,.25);--gold:#D4AF37;--gold-dim:rgba(212,175,55,.1);--gold-glow:rgba(232,197,71,.25);--text:#1a1a1a;--text-muted:#8B4513;--text-dim:#CC7722;--border:#CC7722;--border-light:#2e3136;--green:#34d399;--font-h:'Cinzel',serif;--font-b:'Merriweather',serif;--font-m:'Fira Code',monospace;--radius:10px;--radius-lg:14px}
+:root.light{--bg:#f5f5f7;--card:#ffffff;--card-hover:#f0f0f2;--teal:#D4AF37;--teal-dim:rgba(212,175,55,.08);--gold:#D4AF37;--gold-dim:rgba(212,175,55,.08);--text:#1a1a2e;--text-muted:#6b7280;--text-dim:#9ca3af;--border:#e2e4e8;--border-light:#d1d5db;--green:#059669}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:var(--font-b);background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
@@ -26,7 +26,7 @@ button{font-family:var(--font-b);cursor:pointer;border:none;outline:none}
 .nav-links::-webkit-scrollbar{display:none}
 .nav-link{padding:7px 14px;border-radius:8px;text-decoration:none;color:var(--text-muted);font-size:13px;font-weight:500;transition:all .2s;white-space:nowrap}
 .nav-link:hover{color:var(--text);background:rgba(255,255,255,.05)}
-.nav-link.active{color:#fff;background:var(--teal);box-shadow:0 1px 8px rgba(2,150,145,.3)}
+.nav-link.active{color:#fff;background:var(--teal);box-shadow:0 1px 8px rgba(212,175,55,.3)}
 .nav-status{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);font-weight:500;letter-spacing:.5px;text-transform:uppercase}
 .nav-status-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px rgba(52,211,153,.5);animation:pulse 2s ease infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
@@ -59,7 +59,7 @@ h3{font-family:var(--font-h);font-weight:600;font-size:16px;letter-spacing:-.01e
 .section+.section{border-top:1px solid var(--border)}
 .section-header{text-align:center;margin-bottom:32px}
 .section-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px}
-.section-badge-teal{background:var(--teal-dim);color:var(--teal);border:1px solid rgba(2,150,145,.2)}
+.section-badge-teal{background:var(--teal-dim);color:var(--teal);border:1px solid rgba(212,175,55,.2)}
 .section-badge-gold{background:var(--gold-dim);color:var(--gold);border:1px solid rgba(232,197,71,.2)}
 
 /* Mission statement */

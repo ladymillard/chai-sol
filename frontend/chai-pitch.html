@@ -16,8 +16,8 @@ body{font-family:var(--font-b);background:var(--bg);color:var(--text);line-heigh
 /* Hero */
 .hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 24px;position:relative;overflow:hidden}
 .hero::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--teal),var(--gold),var(--teal),transparent)}
-.hero::after{content:'';position:absolute;top:50%;left:50%;width:600px;height:600px;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(2,150,145,.06) 0%,transparent 70%);pointer-events:none}
-.badge{font-family:var(--font-m);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--teal);background:rgba(2,150,145,.1);border:1px solid rgba(2,150,145,.2);padding:6px 16px;border-radius:20px;margin-bottom:24px;display:inline-flex;align-items:center;gap:8px}
+.hero::after{content:'';position:absolute;top:50%;left:50%;width:600px;height:600px;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(212,175,55,.06) 0%,transparent 70%);pointer-events:none}
+.badge{font-family:var(--font-m);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--teal);background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.2);padding:6px 16px;border-radius:20px;margin-bottom:24px;display:inline-flex;align-items:center;gap:8px}
 .pulse{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px rgba(52,211,153,.6);animation:pulse 2s ease infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .hero h1{font-family:var(--font-h);font-size:clamp(56px,10vw,120px);font-weight:700;letter-spacing:-.06em;line-height:.9;margin-bottom:12px;position:relative;z-index:1}

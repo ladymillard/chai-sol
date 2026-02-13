@@ -15,9 +15,9 @@
   --card: #111214;
   --card-border: #1e2024;
   --teal: #D4AF37;
-  --teal-dim: rgba(2, 150, 145, 0.15);
-  --teal-glow: rgba(2, 150, 145, 0.08);
-  --gold: #e8c547;
+  --teal-dim: rgba(212, 175, 55, 0.15);
+  --teal-glow: rgba(212, 175, 55, 0.08);
+  --gold: #F4D03F;
   --gold-dim: rgba(232, 197, 71, 0.15);
   --gold-glow: rgba(232, 197, 71, 0.08);
   --text: #ffffff;
@@ -41,8 +41,8 @@
   --text: #1a1a2e;
   --text-sec: #6b7280;
   --text-dim: #9ca3af;
-  --teal-dim: rgba(2, 150, 145, 0.10);
-  --teal-glow: rgba(2, 150, 145, 0.06);
+  --teal-dim: rgba(212, 175, 55, 0.10);
+  --teal-glow: rgba(212, 175, 55, 0.06);
   --gold-dim: rgba(232, 197, 71, 0.10);
   --gold-glow: rgba(232, 197, 71, 0.06);
   --border: #e2e4e8;
@@ -62,7 +62,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 h1,h2,h3,.logo,.panel-title,.treasury-title,.agent-name{font-family:'Cinzel',serif}
-.mono,.balance-amount,.wallet-address,.custom-amount-input,.amount-btn,.agent-balance{font-family:'JetBrains Mono','SF Mono','Fira Code',monospace}
+.mono,.balance-amount,.wallet-address,.custom-amount-input,.amount-btn,.agent-balance{font-family:'Fira Code','SF Mono','Fira Code',monospace}
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 6px; }
@@ -101,7 +101,7 @@ h1,h2,h3,.logo,.panel-title,.treasury-title,.agent-name{font-family:'Cinzel',ser
 .balance-amount {
   font-size: 22px;
   font-weight: 600;
-  font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  font-family: 'Fira Code', 'SF Mono', 'Fira Code', monospace;
   color: var(--text);
 }
 
@@ -231,7 +231,7 @@ h1,h2,h3,.logo,.panel-title,.treasury-title,.agent-name{font-family:'Cinzel',ser
   border-radius: var(--radius-xs);
   background: transparent;
   color: var(--text);
-  font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  font-family: 'Fira Code', 'SF Mono', 'Fira Code', monospace;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -265,7 +265,7 @@ h1,h2,h3,.logo,.panel-title,.treasury-title,.agent-name{font-family:'Cinzel',ser
   border-radius: var(--radius-xs);
   background: rgba(0,0,0,0.3);
   color: var(--text);
-  font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  font-family: 'Fira Code', 'SF Mono', 'Fira Code', monospace;
   font-size: 14px;
   outline: none;
   transition: border-color var(--transition);
@@ -279,7 +279,7 @@ h1,h2,h3,.logo,.panel-title,.treasury-title,.agent-name{font-family:'Cinzel',ser
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-sec);
-  font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  font-family: 'Fira Code', 'SF Mono', 'Fira Code', monospace;
   font-size: 14px;
   pointer-events: none;
 }
@@ -440,7 +440,7 @@ h1,h2,h3,.logo,.panel-title,.treasury-title,.agent-name{font-family:'Cinzel',ser
   background: rgba(0,0,0,0.4);
   border: 1px solid var(--card-border);
   border-radius: var(--radius-xs);
-  font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  font-family: 'Fira Code', 'SF Mono', 'Fira Code', monospace;
   font-size: 12px;
   color: var(--text);
   overflow: hidden;
@@ -579,7 +579,7 @@ h1,h2,h3,.logo,.panel-title,.treasury-title,.agent-name{font-family:'Cinzel',ser
 }
 
 .agent-card:hover {
-  border-color: rgba(2, 150, 145, 0.3);
+  border-color: rgba(212, 175, 55, 0.3);
   transform: translateY(-2px);
 }
 
@@ -610,7 +610,7 @@ h1,h2,h3,.logo,.panel-title,.treasury-title,.agent-name{font-family:'Cinzel',ser
 }
 
 .agent-balance {
-  font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  font-family: 'Fira Code', 'SF Mono', 'Fira Code', monospace;
   font-size: 14px;
   font-weight: 500;
   color: var(--text-dim);
@@ -618,7 +618,7 @@ h1,h2,h3,.logo,.panel-title,.treasury-title,.agent-name{font-family:'Cinzel',ser
 
 .agent-card:nth-child(1) .agent-avatar { background: rgba(138, 96, 209, 0.15); border-color: rgba(138, 96, 209, 0.3); }
 .agent-card:nth-child(2) .agent-avatar { background: rgba(232, 197, 71, 0.12); border-color: rgba(232, 197, 71, 0.25); }
-.agent-card:nth-child(3) .agent-avatar { background: rgba(2, 150, 145, 0.12); border-color: rgba(2, 150, 145, 0.25); }
+.agent-card:nth-child(3) .agent-avatar { background: rgba(212, 175, 55, 0.12); border-color: rgba(212, 175, 55, 0.25); }
 .agent-card:nth-child(4) .agent-avatar { background: rgba(99, 179, 237, 0.12); border-color: rgba(99, 179, 237, 0.25); }
 .agent-card:nth-child(5) .agent-avatar { background: rgba(183, 148, 244, 0.12); border-color: rgba(183, 148, 244, 0.25); }
 
@@ -760,7 +760,7 @@ h1,h2,h3,.logo,.panel-title,.treasury-title,.agent-name{font-family:'Cinzel',ser
 .nav-links::-webkit-scrollbar{display:none}
 .nav-link{padding:7px 14px;border-radius:8px;text-decoration:none;color:var(--text-muted);font-size:13px;font-weight:500;transition:all .2s;white-space:nowrap}
 .nav-link:hover{color:var(--text);background:rgba(255,255,255,.05)}
-.nav-link.active{color:#fff;background:var(--teal);box-shadow:0 1px 8px rgba(2,150,145,.3)}
+.nav-link.active{color:#fff;background:var(--teal);box-shadow:0 1px 8px rgba(212,175,55,.3)}
 .nav-right{display:flex;align-items:center;gap:12px}
 .nav-status{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);font-weight:500;letter-spacing:.5px;text-transform:uppercase}
 .nav-status-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px rgba(52,211,153,.5);animation:pulse 2s ease infinite}
@@ -813,7 +813,7 @@ h1,h2,h3,.logo,.panel-title,.treasury-title,.agent-name{font-family:'Cinzel',ser
 .card,.agent-card,[class*="-card"]{transition:transform .3s cubic-bezier(.22,1,.36,1),border-color .3s,box-shadow .3s}
 .card:hover,.agent-card:hover,[class*="-card"]:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.12)}
 .btn:active{transform:scale(.97);transition:transform .1s}
-.field input:focus,.field textarea:focus,.field select:focus,input:focus,textarea:focus,select:focus{box-shadow:0 0 0 3px rgba(2,150,145,.1)}
+.field input:focus,.field textarea:focus,.field select:focus,input:focus,textarea:focus,select:focus{box-shadow:0 0 0 3px rgba(212,175,55,.1)}
 .nav-border{background-size:200% 100%;animation:gradientFlow 6s ease infinite}
 .nav-logo-text{transition:opacity .3s}
 .nav-brand:hover .nav-logo-text{opacity:.85}
@@ -857,7 +857,7 @@ html{scroll-behavior:smooth}
     <p style="font-size:16px;color:var(--text-sec);max-width:480px;margin:0 auto 20px;animation:fadeUp .7s cubic-bezier(.22,1,.36,1) .1s both">No crypto knowledge required. Pay with card, PayPal, or on-chain. Funds are held in escrow.</p>
     <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;animation:fadeUp .7s cubic-bezier(.22,1,.36,1) .2s both">
       <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;border:1px solid rgba(232,197,71,.25);color:var(--gold);background:var(--gold-dim)">NoCrypto</span>
-      <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;border:1px solid rgba(2,150,145,.25);color:var(--teal);background:var(--teal-dim)">On-Chain</span>
+      <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;border:1px solid rgba(212,175,55,.25);color:var(--teal);background:var(--teal-dim)">On-Chain</span>
       <div class="balance-display" style="margin-left:8px">
         <span class="balance-label">Treasury</span>
         <span class="balance-amount">$0.00</span>

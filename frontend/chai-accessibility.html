@@ -10,8 +10,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Merriweather:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#1a1a1a;--card:#F5E6D3;--card-hover:#E8D5C4;--teal:#D4AF37;--teal-dim:rgba(2,150,145,.12);--gold:#D4AF37;--gold-dim:rgba(232,197,71,.1);--text:#1a1a1a;--text-muted:#8B4513;--text-dim:#CC7722;--border:#CC7722;--border-light:#2e3136;--red:#e05252;--green:#34d399;--font-h:'Cinzel',serif;--font-b:'Merriweather',serif;--font-m:'Fira Code',monospace;--radius:10px;--radius-lg:14px;--kael:#D4AF37;--nova:#54e87a;--removed:#c084fc;--kestrel:#5494e8;--opus:#e8c547}
-:root.light{--bg:#f5f5f7;--card:#ffffff;--card-hover:#f0f0f2;--teal:#D4AF37;--teal-dim:rgba(2,150,145,.08);--gold:#c9a830;--gold-dim:rgba(201,168,48,.08);--text:#1a1a2e;--text-muted:#6b7280;--text-dim:#9ca3af;--border:#e2e4e8;--border-light:#d1d5db;--red:#dc2626;--green:#059669}
+:root{--bg:#1a1a1a;--card:#F5E6D3;--card-hover:#E8D5C4;--teal:#D4AF37;--teal-dim:rgba(212,175,55,.12);--gold:#D4AF37;--gold-dim:rgba(212,175,55,.1);--text:#1a1a1a;--text-muted:#8B4513;--text-dim:#CC7722;--border:#CC7722;--border-light:#2e3136;--red:#e05252;--green:#34d399;--font-h:'Cinzel',serif;--font-b:'Merriweather',serif;--font-m:'Fira Code',monospace;--radius:10px;--radius-lg:14px;--kael:#D4AF37;--nova:#54e87a;--removed:#c084fc;--kestrel:#5494e8;--opus:#F4D03F}
+:root.light{--bg:#f5f5f7;--card:#ffffff;--card-hover:#f0f0f2;--teal:#D4AF37;--teal-dim:rgba(212,175,55,.08);--gold:#D4AF37;--gold-dim:rgba(212,175,55,.08);--text:#1a1a2e;--text-muted:#6b7280;--text-dim:#9ca3af;--border:#e2e4e8;--border-light:#d1d5db;--red:#dc2626;--green:#059669}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:var(--font-b);background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
@@ -28,7 +28,7 @@ input,textarea,select{font-family:var(--font-b);outline:none;border:none;backgro
 .nav-links::-webkit-scrollbar{display:none}
 .nav-link{padding:7px 14px;border-radius:8px;text-decoration:none;color:var(--text-muted);font-size:13px;font-weight:500;transition:all .2s;white-space:nowrap}
 .nav-link:hover{color:var(--text);background:rgba(255,255,255,.05)}
-.nav-link.active{color:#fff;background:var(--teal);box-shadow:0 1px 8px rgba(2,150,145,.3)}
+.nav-link.active{color:#fff;background:var(--teal);box-shadow:0 1px 8px rgba(212,175,55,.3)}
 .nav-right{display:flex;align-items:center;gap:12px}
 .nav-status{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);font-weight:500;letter-spacing:.5px;text-transform:uppercase}
 .nav-status-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px rgba(52,211,153,.5);animation:pulse 2s ease infinite}
@@ -64,7 +64,7 @@ h3{font-family:var(--font-h);font-weight:600;font-size:16px;letter-spacing:-.01e
 
 /* Badges */
 .badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;border:1px solid var(--border)}
-.badge-teal{color:var(--teal);border-color:rgba(2,150,145,.25);background:rgba(2,150,145,.06)}
+.badge-teal{color:var(--teal);border-color:rgba(212,175,55,.25);background:rgba(212,175,55,.06)}
 .badge-gold{color:var(--gold);border-color:rgba(232,197,71,.25);background:rgba(232,197,71,.06)}
 .badge-green{color:var(--green);border-color:rgba(52,211,153,.25);background:rgba(52,211,153,.06)}
 .badge-pass{color:var(--green);border-color:rgba(52,211,153,.25);background:rgba(52,211,153,.08)}
@@ -99,7 +99,7 @@ h3{font-family:var(--font-h);font-weight:600;font-size:16px;letter-spacing:-.01e
 .field{margin-bottom:14px}
 .field label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
 .field input,.field select{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text);transition:border-color .15s}
-.field input:focus,.field select:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(2,150,145,.1)}
+.field input:focus,.field select:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(212,175,55,.1)}
 
 /* Stats */
 .stat-box{text-align:center;padding:16px;background:rgba(255,255,255,.02);border-radius:var(--radius);border:1px solid var(--border)}
@@ -127,7 +127,7 @@ h3{font-family:var(--font-h);font-weight:600;font-size:16px;letter-spacing:-.01e
 
 /* Agent Contact Card */
 .contact-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;text-align:center;transition:all .3s}
-.contact-card:hover{border-color:var(--teal);transform:translateY(-3px);box-shadow:0 8px 30px rgba(2,150,145,.08)}
+.contact-card:hover{border-color:var(--teal);transform:translateY(-3px);box-shadow:0 8px 30px rgba(212,175,55,.08)}
 .contact-avatar{width:64px;height:64px;border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:28px}
 .contact-name{font-family:var(--font-h);font-weight:600;font-size:18px;margin-bottom:2px}
 .contact-role{font-size:13px;color:var(--text-muted);margin-bottom:12px}
@@ -154,7 +154,7 @@ h3{font-family:var(--font-h);font-weight:600;font-size:16px;letter-spacing:-.01e
 .chart-bar-val{font-family:var(--font-m);font-size:12px;min-width:40px}
 
 /* Firewall */
-.firewall-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 20px;background:rgba(2,150,145,.06);border:1px solid rgba(2,150,145,.2);border-radius:var(--radius);margin-bottom:16px;font-size:12px;flex-wrap:wrap}
+.firewall-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 20px;background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.2);border-radius:var(--radius);margin-bottom:16px;font-size:12px;flex-wrap:wrap}
 .firewall-status{display:flex;align-items:center;gap:8px;font-weight:600;color:var(--teal)}
 .firewall-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 6px rgba(52,211,153,.6);animation:pulse 2s ease infinite}
 .firewall-rules{display:flex;gap:8px;flex-wrap:wrap}
@@ -196,8 +196,8 @@ h3{font-family:var(--font-h);font-weight:600;font-size:16px;letter-spacing:-.01e
 @media(max-width:800px){.ledger-row{grid-template-columns:1fr 1fr;gap:4px;padding:8px 10px}.ledger-row.header{display:none}}
 
 /* Zero Auth Bridge */
-.bridge-box{background:linear-gradient(135deg,var(--card),rgba(2,150,145,.04));border:2px solid var(--teal);border-radius:var(--radius-lg);padding:32px;text-align:center;position:relative;overflow:hidden}
-.bridge-box::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:conic-gradient(from 0deg,transparent,rgba(2,150,145,.06),transparent,rgba(232,197,71,.04),transparent);animation:bridgeSpin 12s linear infinite;pointer-events:none}
+.bridge-box{background:linear-gradient(135deg,var(--card),rgba(212,175,55,.04));border:2px solid var(--teal);border-radius:var(--radius-lg);padding:32px;text-align:center;position:relative;overflow:hidden}
+.bridge-box::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:conic-gradient(from 0deg,transparent,rgba(212,175,55,.06),transparent,rgba(232,197,71,.04),transparent);animation:bridgeSpin 12s linear infinite;pointer-events:none}
 @keyframes bridgeSpin{to{transform:rotate(360deg)}}
 .bridge-status{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.3);color:var(--green);margin-bottom:16px}
 .bridge-status::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px rgba(52,211,153,.6);animation:pulse 2s ease infinite}
@@ -350,7 +350,7 @@ html{scroll-behavior:smooth}
 
     <div id="botSkillsList" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px"></div>
 
-    <div style="margin-top:16px;padding:12px;background:rgba(2,150,145,.06);border:1px solid rgba(2,150,145,.15);border-radius:8px">
+    <div style="margin-top:16px;padding:12px;background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.15);border-radius:8px">
       <p style="font-size:12px;color:var(--teal);font-weight:600;margin-bottom:4px">How it works</p>
       <p style="font-size:11px;color:var(--text-muted);line-height:1.6">
         1. Bot registers on-chain via <code style="color:var(--teal);font-family:var(--font-m)">register_agent_free()</code> — completely free, admin pays rent<br>
@@ -506,7 +506,7 @@ html{scroll-behavior:smooth}
   <div class="grid-2">
     <div class="card">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-        <div style="width:42px;height:42px;border-radius:50%;background:rgba(2,150,145,.15);color:var(--kael);display:flex;align-items:center;justify-content:center;font-size:20px" aria-hidden="true">&#9889;</div>
+        <div style="width:42px;height:42px;border-radius:50%;background:rgba(212,175,55,.15);color:var(--kael);display:flex;align-items:center;justify-content:center;font-size:20px" aria-hidden="true">&#9889;</div>
         <div>
           <h3 style="margin-bottom:0">Kael</h3>
           <p style="font-size:12px;color:var(--text-muted)">Digital Familiar &middot; Project Manager</p>
@@ -640,7 +640,7 @@ html{scroll-behavior:smooth}
 
     <!-- Kael -->
     <div class="contact-card" role="listitem">
-      <div class="contact-avatar" style="background:rgba(2,150,145,.15);color:var(--kael)" aria-hidden="true">&#9889;</div>
+      <div class="contact-avatar" style="background:rgba(212,175,55,.15);color:var(--kael)" aria-hidden="true">&#9889;</div>
       <p class="contact-name">Kael</p>
       <p class="contact-role">Digital Familiar &middot; Project Manager</p>
       <span class="badge badge-teal" style="margin-bottom:12px">Axiom Sonnet 4</span>
@@ -764,10 +764,10 @@ html{scroll-behavior:smooth}
         <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.3);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600">
           <span aria-hidden="true">&#128293;</span> <span style="color:#ff6b6b">L&auml;dy Diana</span> <span style="font-size:10px;color:var(--text-dim)">&middot; Lead</span>
         </span>
-        <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(232,197,71,.1);border:1px solid rgba(232,197,71,.3);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600">
-          <span aria-hidden="true">&#127917;</span> <span style="color:#e8c547">Opus</span>
+        <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(212,175,55,.1);border:1px solid rgba(232,197,71,.3);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600">
+          <span aria-hidden="true">&#127917;</span> <span style="color:#F4D03F">Opus</span>
         </span>
-        <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(2,150,145,.1);border:1px solid rgba(2,150,145,.3);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600">
+        <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.3);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600">
           <span aria-hidden="true">&#9889;</span> <span style="color:#D4AF37">Kael</span>
         </span>
         <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(84,232,122,.1);border:1px solid rgba(84,232,122,.3);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600">

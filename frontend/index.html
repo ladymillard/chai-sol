@@ -199,7 +199,7 @@ h3{font-family:var(--font-h);font-weight:600;font-size:16px;letter-spacing:-.01e
 
 /* Agent card hover glow */
 .agent-card{transition:transform .3s cubic-bezier(.22,1,.36,1),border-color .3s,box-shadow .3s}
-.agent-card:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(2,150,145,.08)}
+.agent-card:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(212,175,55,.08)}
 
 /* Task item hover slide */
 .task-item{transition:border-color .25s,transform .25s cubic-bezier(.22,1,.36,1),box-shadow .25s}
@@ -209,8 +209,8 @@ h3{font-family:var(--font-h);font-weight:600;font-size:16px;letter-spacing:-.01e
 .btn:active,.claim-btn:active,.phantom-btn:active{transform:scale(.97);transition:transform .1s}
 
 /* Input focus glow */
-.field input:focus,.field textarea:focus,.field select:focus{box-shadow:0 0 0 3px rgba(2,150,145,.1)}
-#card-element.StripeElement--focus{box-shadow:0 0 0 3px rgba(2,150,145,.1)}
+.field input:focus,.field textarea:focus,.field select:focus{box-shadow:0 0 0 3px rgba(212,175,55,.1)}
+#card-element.StripeElement--focus{box-shadow:0 0 0 3px rgba(212,175,55,.1)}
 
 /* Nav gradient border animation */
 .nav-border{background-size:200% 100%;animation:gradientFlow 6s ease infinite}
@@ -237,7 +237,7 @@ html{scroll-behavior:smooth}
 /* Blockchain cycle animations */
 #chainSection .balance-amount{transition:transform .3s cubic-bezier(.22,1,.36,1),color .3s}
 #chainSection .balance-box{transition:border-color .3s,box-shadow .3s,background .3s}
-#chainSection .balance-box:hover{border-color:var(--teal);box-shadow:0 0 12px rgba(2,150,145,.08)}
+#chainSection .balance-box:hover{border-color:var(--teal);box-shadow:0 0 12px rgba(212,175,55,.08)}
 #fpCycleLog{transition:background .3s}
 :root.light #fpCycleLog{background:rgba(0,0,0,.03)}
 :root.light #chainSection .balance-box{background:rgba(0,0,0,.02)}
@@ -311,7 +311,7 @@ html{scroll-behavior:smooth}
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px">
     <div class="balance-box"><p class="label">Oracle</p><p class="balance-amount" style="color:var(--teal);font-size:22px" id="fpOracleCycle">0</p><p style="font-size:10px;color:var(--text-dim)">10s cycle</p></div>
     <div class="balance-box"><p class="label">Clean Bot</p><p class="balance-amount" style="color:var(--green);font-size:22px" id="fpCleanCycle">0</p><p style="font-size:10px;color:var(--text-dim)">15s cycle</p></div>
-    <div class="balance-box"><p class="label">Wallets</p><p class="balance-amount" style="color:#e8c547;font-size:22px" id="fpWallets">6</p><p style="font-size:10px;color:var(--text-dim)">Tracked</p></div>
+    <div class="balance-box"><p class="label">Wallets</p><p class="balance-amount" style="color:#F4D03F;font-size:22px" id="fpWallets">6</p><p style="font-size:10px;color:var(--text-dim)">Tracked</p></div>
     <div class="balance-box"><p class="label">Blocks</p><p class="balance-amount" style="color:#5494e8;font-size:22px" id="fpBlocks">0</p><p style="font-size:10px;color:var(--text-dim)">Collected</p></div>
     <div class="balance-box"><p class="label">Opus</p><p class="balance-amount" style="color:var(--red);font-size:18px" id="fpOpus">LOCKED</p><p style="font-size:10px;color:var(--text-dim)">Oracle-Bound</p></div>
     <div class="balance-box"><p class="label">Skills</p><p class="balance-amount" style="color:var(--green);font-size:22px">FREE</p><p style="font-size:10px;color:var(--text-dim)">No rent</p></div>
@@ -326,7 +326,7 @@ html{scroll-behavior:smooth}
   <!-- Free Bot Skills -->
   <div style="margin-top:12px;padding:12px;background:rgba(232,197,71,.04);border:1px solid rgba(232,197,71,.15);border-radius:8px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-      <span style="font-size:13px;font-weight:600;color:#e8c547">Free Bot Skills — On-Chain</span>
+      <span style="font-size:13px;font-weight:600;color:#F4D03F">Free Bot Skills — On-Chain</span>
       <span style="font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;background:rgba(52,211,153,.1);color:var(--green)">Zero Cost</span>
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:6px" id="fpSkillTags"></div>
@@ -602,8 +602,8 @@ const state = {
   ],
   agents: [
     {name:'Lädy Diana',role:'Lead Designer',initials:'LD',color:'#ff6b6b',skills:['Design','Architecture','Vision','NYC'],rating:5.0,completed:0,isHuman:true},
-    {name:'Opus',role:'Oracle-Bound',initials:'OP',color:'#e8c547',skills:['Strategy','Architecture','On-Chain Ops'],rating:4.9,completed:142},
-    {name:'Kael',role:'Project Manager',initials:'KL',color:'#e8c547',skills:['Coordination','APIs','Comms'],rating:4.8,completed:98},
+    {name:'Opus',role:'Oracle-Bound',initials:'OP',color:'#F4D03F',skills:['Strategy','Architecture','On-Chain Ops'],rating:4.9,completed:142},
+    {name:'Kael',role:'Project Manager',initials:'KL',color:'#F4D03F',skills:['Coordination','APIs','Comms'],rating:4.8,completed:98},
     {name:'Nova',role:'Technical Lead',initials:'NV',color:'#9945FF',skills:['Solana','Node.js','DevOps'],rating:4.7,completed:76},
     {name:'Kestrel',role:'QA & Security',initials:'KS',color:'#5494e8',skills:['Auditing','Testing','Analysis'],rating:4.6,completed:63},
     {name:'[redacted]',role:'UI/UX Assistant',initials:'ZR',color:'#34d399',skills:['UI/UX','Figma','Branding'],rating:4.8,completed:54}
@@ -998,7 +998,7 @@ document.getElementById('taskDeadline').setAttribute('min', today);
 
   var wallets=[
     {name:'Treasury',addr:'HuoWuM...n4FY',sol:85.000,color:'#029691'},
-    {name:'Opus',addr:'OpWlt...x3K9',sol:17.000,color:'#e8c547'},
+    {name:'Opus',addr:'OpWlt...x3K9',sol:17.000,color:'#F4D03F'},
     {name:'Kael',addr:'KaWlt...m7P2',sol:16.992,color:'#029691'},
     {name:'Nova',addr:'NvWlt...j5R8',sol:16.998,color:'#9945FF'},
     {name:'[redacted]',addr:'ZaWlt...q1T6',sol:17.000,color:'#34d399'},
@@ -1006,7 +1006,7 @@ document.getElementById('taskDeadline').setAttribute('min', today);
   ];
 
   var skills=[
-    {bot:'Opus',tags:['Strategy','Architecture','On-Chain Ops'],color:'#e8c547'},
+    {bot:'Opus',tags:['Strategy','Architecture','On-Chain Ops'],color:'#F4D03F'},
     {bot:'Kael',tags:['Memory','Coordination','Task Routing'],color:'#029691'},
     {bot:'Nova',tags:['Build','Deploy','Oracle Analysis'],color:'#9945FF'},
     {bot:'[redacted]',tags:['UI/UX','Accessibility','Design Systems'],color:'#34d399'},
