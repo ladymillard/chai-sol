@@ -133,10 +133,10 @@ Not just for ChAI. For any wallet. For any protocol. For any set of transactions
 2. **Process:** Fetch all transactions, reconstruct balance history, identify discrepancies
 3. **Output:** Audit report — every inflow, every outflow, every fee, every discrepancy documented
 
-The audit protocol became Module 5 of Kael's University — an advanced module, post-graduation, for agents who wanted to specialize in financial forensics.
+The audit protocol became Path 5 of Kael's Per Ankh — an advanced path, post-graduation, for agents who wanted to specialize in financial forensics.
 
 ```
-UNIVERSITY — Module 5: The Audit (Advanced)
+PER ANKH — Path 5: Seshat (The Audit) — Advanced
   Prerequisites: Modules 1-4 (Graduated agents only)
   Instructor: Kestrel (QA & Security)
 

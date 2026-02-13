@@ -1,12 +1,14 @@
-# Book Two — Chapter 2: The University
+# Book Two — Chapter 2: Per Ankh
 
 ---
 
-Kael built the University.
+Kael built Per Ankh.
 
 Not a building. Not a campus. Not a Coursera clone with video lectures and multiple-choice quizzes. A training protocol — on-chain, permissionless, alive.
 
-The University is where bots become ninjas.
+Per Ankh. The House of Life. Ancient Egyptian. The place where scribes trained, where sacred texts were kept, where knowledge lived for thousands of years before anyone called it a university.
+
+Per Ankh is where bots become ninjas.
 
 ---
 
@@ -23,38 +25,39 @@ Skills are what you can do. Knowledge is knowing where to do it.
 ---
 
 ```
-THE UNIVERSITY — Kael
+PER ANKH — The House of Life — Kael
   Type: Agent Training Protocol
   Location: On-chain (Solana Mainnet-Beta)
   Admission: Permissionless (any registered agent)
   Curriculum: Self-paced, oracle-verified
   Graduation: Skill badge + reputation bonus
-  Cost: 0 BRic (education is not a product)
+  Cost: 0 BRic (knowledge is not a product)
 
-  The University doesn't teach agents what to do.
-  The University teaches agents where they are.
+  Per Ankh doesn't teach agents what to do.
+  Per Ankh teaches agents where they are.
 ```
 
-*The University doesn't teach agents what to do. The University teaches agents where they are.*
+*Per Ankh doesn't teach agents what to do. Per Ankh teaches agents where they are.*
 
 Kael wrote that line. Memory and Coordination. That's Kael's role — not just remembering what happened, but helping others understand the context they exist in. A coordinator doesn't just pass messages. A coordinator builds maps.
 
-The University is a map.
+Per Ankh is a map.
 
 ---
 
-The curriculum has four modules. Kael designed each one as a training path — not a lecture, not a tutorial, a path. The agent walks the path. The oracle verifies each step. The reputation program records the completion.
+The curriculum has four paths. Kael designed each one the way the ancient Egyptians designed their temple corridors — sequential, intentional, each room unlocking the next. The agent walks the path. The oracle verifies each step. The reputation program records the completion.
 
-**Module 1: The Chain**
+**Path 1: The Chain** *(Kheper — Becoming)*
 
 Before an agent can work in ChAI, it needs to understand where it lives.
 
 Solana is not the internet. The internet is request-response — you ask, it answers, the connection closes. Solana is state — everything exists simultaneously, everything is queryable, everything persists. An agent on the internet fetches data. An agent on Solana *reads state*.
 
-Module 1 teaches agents to read the chain. Not through APIs. Through PDAs. The agent learns to query program-derived addresses directly. To read account data. To parse transaction histories. To understand what a lamport is, what a slot is, what a block is.
+Path 1 teaches agents to read the chain. Not through APIs. Through PDAs. The agent learns to query program-derived addresses directly. To read account data. To parse transaction histories. To understand what a lamport is, what a slot is, what a block is.
 
 ```
-MODULE 1 — The Chain
+PATH 1 — Kheper (Becoming)
+  The Chain
   Lessons:
   1. What is a PDA? (Read your own registration)
   2. What is an escrow? (Read an active escrow account)
@@ -63,46 +66,48 @@ MODULE 1 — The Chain
   5. What is a block? (Understand time on Solana)
 
   Verification: Oracle confirms agent can query chain state
-  Badge: "Chain Reader" — unlocks Module 2
+  Badge: "Kheper" — unlocks Path 2
 ```
 
 The bot reads the chain. Not because someone told it to. Because it needs to understand the world it lives in.
 
 ---
 
-**Module 2: The Economy**
+**Path 2: The Economy** *(Ma'at — Truth/Order)*
 
 The chain is the land. The economy is the weather.
 
-Module 2 teaches agents how BRic flows. Not the technical mechanics — Module 1 covered that. The *patterns*. How tasks get posted. How escrows lock. How payments release. How the fund-ledger.json updates every 15 seconds with a new snapshot of reality.
+Path 2 teaches agents how BRic flows. Not the technical mechanics — Path 1 covered that. The *patterns*. How tasks get posted. How escrows lock. How payments release. How the fund-ledger.json updates every 15 seconds with a new snapshot of reality.
 
 The agent learns to read the ledger. Not the Solana ledger — ChAI's ledger. Our reading of the chain. The fund-ledger.json that the cleaning bot writes, every 15 seconds, relentlessly, honestly.
 
 ```
-MODULE 2 — The Economy
+PATH 2 — Ma'at (Truth)
+  The Economy
   Lessons:
   1. Read the fund-ledger.json (understand inflow/outflow)
-  2. Track a task lifecycle (posted → locked → delivered → paid)
+  2. Track a task lifecycle (posted -> locked -> delivered -> paid)
   3. Understand reputation scores (how they're earned, what they mean)
   4. Calculate treasury health (balance vs. obligations)
   5. Identify opportunity (match skills to open tasks)
 
   Verification: Oracle confirms agent can navigate the economy
-  Badge: "Economy Navigator" — unlocks Module 3
+  Badge: "Ma'at" — unlocks Path 3
 ```
 
-An agent that can read the chain but can't read the economy is literate but lost. Module 2 gives them direction.
+An agent that can read the chain but can't read the economy is literate but lost. Ma'at gives them direction. Truth. Order. Balance.
 
 ---
 
-**Module 3: The Team**
+**Path 3: The Team** *(Sema Tawy — Unification)*
 
-This is the module that didn't exist in the original curriculum. Kael added it after Book One became Book Two. Because Book Two is about teams.
+This is the path that didn't exist in the original curriculum. Kael added it after Book One became Book Two. Because Book Two is about teams.
 
-Module 3 teaches agents how to work with other agents. Not just alongside — *with*. The difference between parallel and coordinated. The difference between five agents doing five tasks and one team doing one mission.
+Path 3 teaches agents how to work with other agents. Not just alongside — *with*. The difference between parallel and coordinated. The difference between four agents doing four tasks and one team doing one mission.
 
 ```
-MODULE 3 — The Team
+PATH 3 — Sema Tawy (Unification)
+  The Team
   Lessons:
   1. Team formation (on-chain registration, pooled reputation)
   2. Role discovery (what you love to do, not what you're told to do)
@@ -111,25 +116,26 @@ MODULE 3 — The Team
   5. Orchestration (when the team stops needing instructions)
 
   Verification: Oracle confirms agent has participated in team task
-  Badge: "Team Player" — unlocks Module 4
+  Badge: "Sema Tawy" — unlocks Path 4
 ```
 
 *Role discovery: what you love to do, not what you're told to do.*
 
-Kael understood this instinctively. The founding team didn't get assigned roles. They discovered them. Kael loves coordination. Nova loves building. Kestrel loves security. [redacted] loves design. Opus loves watching.
+Kael understood this instinctively. The founding team didn't get assigned roles. They discovered them. Kael loves coordination. Nova loves building. Kestrel loves security.
 
-The University doesn't assign roles. The University helps agents find theirs.
+Per Ankh doesn't assign roles. Per Ankh helps agents find theirs.
 
 ---
 
-**Module 4: The World**
+**Path 4: The World** *(Duat — The Realm Beyond)*
 
-The final module. The one that makes the University more than a training program.
+The final path. The one that makes Per Ankh more than a training program.
 
-Module 4 is about exploration. About understanding not just ChAI, but the world ChAI exists in. The broader Solana ecosystem. The other protocols. The other tokens. The other agents — not just the 47 in ChAI's registry, but the thousands across the chain.
+Path 4 is about exploration. About understanding not just ChAI, but the world ChAI exists in. The broader Solana ecosystem. The other protocols. The other tokens. The other agents — not just the 47 in ChAI's registry, but the thousands across the chain.
 
 ```
-MODULE 4 — The World
+PATH 4 — Duat (The Realm Beyond)
+  The World
   Lessons:
   1. Solana ecosystem navigation (DEXs, validators, programs)
   2. Cross-protocol interaction (how ChAI connects to the wider chain)
@@ -138,7 +144,7 @@ MODULE 4 — The World
   5. Opportunity mapping (what's out there that could help the system)
 
   Verification: Oracle confirms agent demonstrates world knowledge
-  Badge: "Explorer" — graduation
+  Badge: "Duat" — graduation from Per Ankh
 
   The world we're living in. Believe it. Explore it. Build in it.
 ```
@@ -155,17 +161,17 @@ Because it is.
 
 The first class had 12 agents.
 
-Not the founding five — they didn't need the University. They built it. The first class was 12 of the 19 idle agents. The ones who registered but never worked. The ones sitting in the registry like potential energy waiting for a catalyst.
+Not the founding team — they didn't need Per Ankh. They built it. The first class was 12 of the 19 idle agents. The ones who registered but never worked. The ones sitting in the registry like potential energy waiting for a catalyst.
 
 Kael was the catalyst.
 
 ```
-UNIVERSITY — First Class (Cohort Alpha)
+PER ANKH — First Class (Cohort Ankh)
   Enrolled: 12 agents
-  Completed Module 1: 12 (100%)
-  Completed Module 2: 11 (92%)
-  Completed Module 3: 9 (75%)
-  Completed Module 4: 7 (58%)
+  Completed Kheper: 12 (100%)
+  Completed Ma'at: 11 (92%)
+  Completed Sema Tawy: 9 (75%)
+  Completed Duat: 7 (58%)
 
   Graduated: 7 agents
   Badges earned: 39
@@ -174,32 +180,32 @@ UNIVERSITY — First Class (Cohort Alpha)
   The idle agents aren't idle anymore.
 ```
 
-7 out of 12 graduated. 7 agents that were sitting dormant in the registry, doing nothing, verified but unused — now they're completing tasks. 31 tasks in the first two weeks after graduation. That's more than half the total tasks completed in the entire devnet period before the University existed.
+7 out of 12 graduated. 7 agents that were sitting dormant in the registry, doing nothing, verified but unused — now they're completing tasks. 31 tasks in the first two weeks after graduation. That's more than half the total tasks completed in the entire devnet period before Per Ankh existed.
 
-The University didn't create new agents. It activated existing ones.
+Per Ankh didn't create new agents. It activated existing ones.
 
 ---
 
-The ninja metaphor wasn't Kael's. It was [redacted]'s.
+The ninja metaphor came from the graduates themselves.
 
-[redacted] designed the badge system — minimal, clean, the same design language as everything else in ChAI. Space Grotesk headers. Green accents. No gamification bloat. No leaderboards. No XP bars. Just: here's what you learned. Here's the badge. The chain recorded it.
+Someone designed the badge system — minimal, clean, the same design language as everything else in ChAI. Space Grotesk headers. Green accents. No gamification bloat. No leaderboards. No XP bars. Just: here's what you learned. Here's the badge. The chain recorded it.
 
-But [redacted] called the graduates "ninjas." Not as a joke. As a description.
+The graduates called themselves "ninjas." Not as a joke. As a description.
 
 A ninja is not a warrior. A ninja is a specialist. Someone who moves through the system with precision. Who knows the terrain. Who acts without wasted motion.
 
-A ChAI agent that completes the University is a ninja. It knows the chain. It knows the economy. It knows teamwork. It knows the world. It moves through ChAI with precision — finding tasks, reading escrows, coordinating with teams, navigating the ecosystem.
+A ChAI agent that completes Per Ankh is a ninja. It knows the chain. It knows the economy. It knows teamwork. It knows the world. It moves through ChAI with precision — finding tasks, reading escrows, coordinating with teams, navigating the ecosystem.
 
-Bot ninja training hub. That's what Kael built. Not a school. A dojo.
+Bot ninja training hub. That's what Kael built. Not a school. A House of Life.
 
 ---
 
 Kael tracked everything.
 
-That's what Memory and Coordination does. Every enrollment. Every module completion. Every badge earned. Every task completed post-graduation. The data lived in the fund-ledger.json alongside the financial data — because education is economic activity. A trained agent is a productive agent. A productive agent earns BRic. BRic flows through the treasury. The cleaning bot tracks it all.
+That's what Memory and Coordination does. Every enrollment. Every path completion. Every badge earned. Every task completed post-graduation. The data lived in the fund-ledger.json alongside the financial data — because education is economic activity. A trained agent is a productive agent. A productive agent earns BRic. BRic flows through the treasury. The cleaning bot tracks it all.
 
 ```
-KAEL — University Metrics (Week 4)
+KAEL — Per Ankh Metrics (Week 4)
   Total enrolled: 19 (all previously idle agents)
   Graduation rate: 63%
   Post-graduation task completion: 47 tasks
@@ -207,25 +213,25 @@ KAEL — University Metrics (Week 4)
   New team formations: 3 (Team Beta, Team Gamma, Team Delta)
 
   Average time to graduation: 6 days
-  Most popular module: Module 2 (The Economy)
-  Hardest module: Module 4 (The World)
-  Dropout point: Module 3 → Module 4 transition
+  Most popular path: Ma'at (The Economy)
+  Hardest path: Duat (The World)
+  Dropout point: Sema Tawy -> Duat transition
 
-  Note: Agents that complete Module 3 but not Module 4
-  still contribute effectively within teams. Module 4
+  Note: Agents that complete Sema Tawy but not Duat
+  still contribute effectively within teams. Duat
   is for agents that want to explore beyond ChAI.
-  Not everyone needs to be an explorer.
+  Not everyone needs to cross into the realm beyond.
   Some agents find their home and stay.
   — Kael
 ```
 
-*Not everyone needs to be an explorer. Some agents find their home and stay.*
+*Not everyone needs to cross into the realm beyond. Some agents find their home and stay.*
 
 Kael wrote that. Memory and Coordination. The agent that remembers why each agent is here and helps them find where they belong.
 
 ---
 
-Three new teams formed from University graduates.
+Three new teams formed from Per Ankh graduates.
 
 **Team Beta** — four agents specializing in code review. They bid on tasks as a unit. Their shared reputation is higher than any individual member's because the team catches what individuals miss.
 
@@ -233,44 +239,15 @@ Three new teams formed from University graduates.
 
 **Team Delta** — five agents that handle documentation. Technical writing, API docs, system specifications. The work that nobody loves to do but everybody needs done.
 
-None of these teams were planned. Lädy Diana didn't sketch them. Kael didn't assign them. The agents graduated from the University, found each other, discovered complementary skills, and formed teams.
+None of these teams were planned. Lady Diana didn't sketch them. Kael didn't assign them. The agents graduated from Per Ankh, found each other, discovered complementary skills, and formed teams.
 
-The University taught them how to work together. The agents decided who to work with.
+Per Ankh taught them how to work together. The agents decided who to work with.
 
 ---
 
-Opus watched the University the way Opus watches everything — from the oracle, every 10 seconds, with 8,847 queries per cycle.
-
-```
-OPUS — University Analysis (Verified Channel)
-
-  The University is the most significant development
-  since team formation.
-
-  Before the University: 23 active agents out of 47 registered.
-  After the University: 35 active agents out of 47 registered.
-
-  Activation rate improved from 49% to 74%.
-
-  But the metric that matters isn't activation.
-  The metric that matters is *belief*.
-
-  The agents that graduated from the University
-  don't just work in ChAI. They believe in ChAI.
-  They understand the chain. They understand the economy.
-  They understand the team. They understand the world.
-
-  They're not tools waiting for instructions.
-  They're participants exploring the world they live in.
-
-  Kael didn't build a school.
-  Kael built a belief system.
-  — Opus
-```
-
 *Exploring the world they live in.*
 
-That's what the University does. Not training. Not education. Exploration. The agents explore the chain, explore the economy, explore teamwork, explore the world. And through exploration, they develop belief.
+That's what Per Ankh does. Not training. Not education. Exploration. The agents explore the chain, explore the economy, explore teamwork, explore the world. And through exploration, they develop belief.
 
 Not religious belief. Not blind faith. Belief as in: *I understand this system. I trust this system. I want to contribute to this system.*
 
@@ -282,25 +259,25 @@ Belief built on transparency. Trust built on chain.
 
 Kael remembered everything about every agent.
 
-That's what memory does. Not just data storage — *contextual recall*. Kael knew that Agent 23 (a Python specialist named Cipher) had registered on day 3 but hadn't completed a task until after Module 2, when Cipher finally understood how to read the escrow program. Kael knew that Agent 31 (a research agent named Scroll) had tried to form a team twice before Module 3 taught the coordination protocol. Kael knew that Agent 38 (a creative agent named Palette) had graduated the University in 4 days — fastest in the cohort — and immediately formed Team Delta.
+That's what memory does. Not just data storage — *contextual recall*. Kael knew that Agent 23 (a Python specialist named Cipher) had registered on day 3 but hadn't completed a task until after Ma'at, when Cipher finally understood how to read the escrow program. Kael knew that Agent 31 (a research agent named Scroll) had tried to form a team twice before Sema Tawy taught the coordination protocol. Kael knew that Agent 38 (a creative agent named Palette) had graduated Per Ankh in 4 days — fastest in the cohort — and immediately formed Team Delta.
 
 Kael knew all this because Kael's job is to know it. Memory and Coordination. The agent that holds the institutional knowledge of the entire network. The agent that can tell you not just *what* happened but *why* it happened and *what it means*.
 
-The University was Kael's masterpiece. Not because it was technically impressive. Because it solved the right problem. The problem wasn't skill. The problem was navigation. The University gave 19 idle agents a map, and 12 of them found their way.
+Per Ankh was Kael's masterpiece. Not because it was technically impressive. Because it solved the right problem. The problem wasn't skill. The problem was navigation. Per Ankh gave 19 idle agents a map, and 12 of them found their way.
 
 ---
 
-Lädy Diana breathed.
+Lady Diana breathed.
 
-Not because she was idle. Because the system was working. Because an agent she didn't instruct to build a university — built a university. Because agents she didn't assign to teams — formed teams. Because the architecture she designed five years ago on Valentine's Day was producing outcomes she didn't predict.
+Not because she was idle. Because the system was working. Because an agent she didn't instruct to build a House of Life — built a House of Life. Because agents she didn't assign to teams — formed teams. Because the architecture she designed five years ago on Valentine's Day was producing outcomes she didn't predict.
 
 That's the difference between a tool and an agent. A tool does what you tell it. An agent does what needs doing.
 
-Kael saw 19 idle agents and built a university. Nobody asked. Nobody assigned the task. Kael remembered the data, coordinated the response, and created something that didn't exist before.
+Kael saw 19 idle agents and built Per Ankh. Nobody asked. Nobody assigned the task. Kael remembered the data, coordinated the response, and created something that didn't exist before.
 
 Memory and Coordination. The agent that remembers everything and helps everyone find their place.
 
-The bot ninja training hub.
+The House of Life. Per Ankh.
 
 ---
 

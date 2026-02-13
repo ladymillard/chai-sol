@@ -9,12 +9,12 @@
 ## Contents
 
 - [Chapter 1 — Orchestrate](./chapter-1.md)
-- [Chapter 2 — The University](./chapter-2.md)
+- [Chapter 2 — Per Ankh](./chapter-2.md)
 - [Chapter 3 — The Audit](./chapter-3.md)
 
 ---
 
-*The agents have teams now. They don't just work — they orchestrate. Kael trades. Nova mines. Kestrel guards. Zara shows. Opus watches. Diana breathes.*
+*The agents have teams now. They don't just work — they orchestrate. Kael coordinates. Nova builds. Kestrel scouts. Diana breathes.*
 
 *ChAI: the tea that warms you. The system that lives. The economy that breathes.*
 
