@@ -1286,7 +1286,7 @@ function toggleTheme(){const r=document.documentElement;const l=r.classList.togg
       emoji: '&#127775;',
       emojiRaw: '\u{1F31F}',
       role: 'Team Lead & Orchestrator',
-      model: 'Claude Opus 4.6',
+      model: 'Axiom Opus 4.6',
       color: '#a78bfa',
       openclawId: null, // Not an OpenClaw agent
       status: 'online',
@@ -1297,7 +1297,7 @@ function toggleTheme(){const r=document.documentElement;const l=r.classList.togg
       emoji: '&#9889;',
       emojiRaw: '\u26A1',
       role: 'Digital Familiar',
-      model: 'Claude Sonnet 4',
+      model: 'Axiom Sonnet 4',
       color: '#029691',
       openclawId: 'main',
       status: 'online',
@@ -1326,11 +1326,11 @@ function toggleTheme(){const r=document.documentElement;const l=r.classList.togg
     },
     {
       id: 'design-agent',
-      name: 'Zara',
+      name: '[redacted]',
       emoji: '&#127769;',
       emojiRaw: '\u{1F319}',
       role: 'Moonlight Designer',
-      model: 'Claude Sonnet 4',
+      model: 'Axiom Sonnet 4',
       color: '#c084fc',
       openclawId: 'design-agent',
       status: 'online',
@@ -1719,10 +1719,10 @@ function toggleTheme(){const r=document.documentElement;const l=r.classList.togg
     showTyping(agent);
 
     const responses = [
-      "I've assessed the situation across all team vectors. Here's my orchestration plan: I'll have Kael handle the technical implementation, Kestrel scout for edge cases, Nova analyze the data implications, and Zara ensure the visual coherence. Let me coordinate.",
+      "I've assessed the situation across all team vectors. Here's my orchestration plan: I'll have Kael handle the technical implementation, Kestrel scout for edge cases, Nova analyze the data implications, and [redacted] ensure the visual coherence. Let me coordinate.",
       "Good thinking. As team lead, I'm delegating this across our agents now. Each brings a unique strength to this challenge. Stand by for a consolidated report.",
       "Understood, Diana. I'm routing this through the team with priority flags. I'll synthesize everyone's input into a unified strategy and report back with our action plan.",
-      "Acknowledged. I've already begun orchestrating the response. The team is operating in sync \u2014 Kael on logic, Kestrel on reconnaissance, Nova on analysis, and Zara on design. We'll deliver.",
+      "Acknowledged. I've already begun orchestrating the response. The team is operating in sync \u2014 Kael on logic, Kestrel on reconnaissance, Nova on analysis, and [redacted] on design. We'll deliver.",
       "I'm on it. Let me think through this holistically before delegating. Sometimes the best orchestration is knowing exactly which agent to activate and when. Processing...",
     ];
 
@@ -2029,7 +2029,7 @@ function toggleTheme(){const r=document.documentElement;const l=r.classList.togg
     addActivity('\u26A1', 'Kael (Digital Familiar) ready', 'main');
     addActivity('\u{1F985}', 'Kestrel (Scout) ready', 'gemini-agent');
     addActivity('\u2728', 'Nova (Stellar Insight) ready', 'nova');
-    addActivity('\u{1F319}', 'Zara (Moonlight Designer) ready', 'design-agent');
+    addActivity('\u{1F319}', '[redacted] (Moonlight Designer) ready', 'design-agent');
 
     // Check connectivity
     checkHealth();

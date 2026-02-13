@@ -3,7 +3,7 @@
  * ChAI MCP Server — Model Context Protocol
  *
  * Exposes ChAI agents as MCP tools so any compatible client
- * (Claude Code, Cursor, OpenCode, OpenAI Codex) can interact
+ * (Axiom Code, Cursor, OpenCode, OpenAI Codex) can interact
  * with the agent team.
  *
  * Transport: SSE (Server-Sent Events) for remote access
@@ -78,7 +78,7 @@ function apiRequest(method, path, body) {
 const TOOLS = [
   {
     name: 'list_agents',
-    description: 'List all ChAI AI agents with their status, roles, trust scores, and capabilities. Returns the full team roster of 5 AI agents: Opus (Architect), Kael (Project Manager), Nova (Technical Lead), Kestrel (QA/Security), and Zara (UI/UX Designer).',
+    description: 'List all ChAI AI agents with their status, roles, trust scores, and capabilities. Returns the full team roster of active AI agents: Kael (Project Manager), Nova (Technical Lead), Kestrel (QA/Security). CHAI-0006 [removed].',
     inputSchema: {
       type: 'object',
       properties: {},
@@ -87,14 +87,14 @@ const TOOLS = [
   },
   {
     name: 'chat',
-    description: 'Send a message to a specific ChAI agent and get their response. Each agent has unique expertise: Opus (architecture/strategy), Kael (project management/comms), Nova (Solana/backend/devops), Kestrel (security/testing/analysis), Zara (UI/UX design).',
+    description: 'Send a message to a specific ChAI agent and get their response. Each agent has unique expertise: Opus (architecture/strategy), Kael (project management/comms), Nova (Solana/backend/devops), Kestrel (security/testing/analysis). CHAI-0006 [removed].',
     inputSchema: {
       type: 'object',
       properties: {
         agent_id: {
           type: 'string',
-          description: 'The agent ID to message. One of: opus, kael, nova, kestrel, zara',
-          enum: ['opus', 'kael', 'nova', 'kestrel', 'zara']
+          description: 'The agent ID to message. One of: opus, kael, nova, kestrel',
+          enum: ['opus', 'kael', 'nova', 'kestrel']
         },
         message: {
           type: 'string',
@@ -126,8 +126,8 @@ const TOOLS = [
       properties: {
         agent_id: {
           type: 'string',
-          description: 'The agent ID to check. One of: opus, kael, nova, kestrel, zara',
-          enum: ['opus', 'kael', 'nova', 'kestrel', 'zara']
+          description: 'The agent ID to check. One of: opus, kael, nova, kestrel',
+          enum: ['opus', 'kael', 'nova', 'kestrel']
         }
       },
       required: ['agent_id']
@@ -141,8 +141,8 @@ const TOOLS = [
       properties: {
         agent_id: {
           type: 'string',
-          description: 'The agent ID. One of: opus, kael, nova, kestrel, zara',
-          enum: ['opus', 'kael', 'nova', 'kestrel', 'zara']
+          description: 'The agent ID. One of: opus, kael, nova, kestrel',
+          enum: ['opus', 'kael', 'nova', 'kestrel']
         },
         level: {
           type: 'string',
@@ -174,8 +174,8 @@ const TOOLS = [
       properties: {
         agent_id: {
           type: 'string',
-          description: 'The agent ID. One of: opus, kael, nova, kestrel, zara',
-          enum: ['opus', 'kael', 'nova', 'kestrel', 'zara']
+          description: 'The agent ID. One of: opus, kael, nova, kestrel',
+          enum: ['opus', 'kael', 'nova', 'kestrel']
         }
       },
       required: ['agent_id']
@@ -720,7 +720,7 @@ const server = http.createServer(async (req, res) => {
         messages: '/messages?sessionId={id}'
       },
       tools: TOOLS.map(t => t.name),
-      clients: ['Claude Code', 'Cursor', 'OpenCode', 'OpenAI Codex', 'OpenClaw'],
+      clients: ['Axiom Code', 'Cursor', 'OpenCode', 'OpenAI Codex', 'OpenClaw'],
       commandCenter: COMMAND_CENTER_URL
     }));
     return;
@@ -745,7 +745,7 @@ server.listen(PORT, '127.0.0.1', () => {
   console.log('='.repeat(50));
   console.log('  Compatible clients:');
   console.log('    🦞 OpenClaw');
-  console.log('    🤖 Claude Code');
+  console.log('    🤖 Axiom Code');
   console.log('    📦 OpenCode');
   console.log('    🖱️  Cursor');
   console.log('    🧠 OpenAI Codex');

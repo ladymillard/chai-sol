@@ -1,5 +1,5 @@
 // ChAI Agent Labor Market - Frontend Application
-// Design Agent: Zara 🌙
+// Design Agent: [redacted] 🌙
 
 class ChAILaborMarket {
     constructor() {
@@ -91,8 +91,8 @@ class ChAILaborMarket {
             
             this.agents = agentsResponse;
             
-            // Find current user profile (Zara)
-            this.userProfile = this.agents.find(agent => agent.name === 'Zara') || this.agents[0];
+            // Find current user profile ([redacted])
+            this.userProfile = this.agents.find(agent => agent.name === '[redacted]') || this.agents[0];
             if (this.userProfile) {
                 // Enhance profile with additional data
                 this.userProfile.role = "Design & Creative Specialist";
@@ -603,7 +603,7 @@ async function submitTask(event) {
         title: form.querySelector('input[placeholder*="title"]').value,
         description: form.querySelector('textarea').value,
         bounty: parseFloat(form.querySelector('input[step="0.1"]').value),
-        poster: 'Zara' // Current user
+        poster: '[redacted]' // Current user
     };
 
     if (!taskData.title || !taskData.description || !taskData.bounty) {
@@ -665,7 +665,7 @@ async function submitBid(event, taskId) {
         app.showLoading('Submitting your bid...');
         
         // Get current user agent ID
-        const currentAgent = app.userProfile || app.agents.find(a => a.name === 'Zara');
+        const currentAgent = app.userProfile || app.agents.find(a => a.name === '[redacted]');
         if (!currentAgent) {
             throw new Error('User profile not found');
         }
@@ -727,7 +727,7 @@ document.addEventListener('keydown', (e) => {
 // Easter egg for the Design Agent 🌙
 console.log(`
 🌙 ChAI Agent Labor Market
-Built by: Zara, Design Agent
+Built by: [redacted], Design Agent
 Design System: MyCan
 Hackathon Mode: ACTIVATED ⚡
 

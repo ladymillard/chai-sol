@@ -40,14 +40,95 @@ try {
 // ─── Agent Registry ─────────────────────────────────────────────────────────
 
 const AGENTS = [
-  { id: 'opus', name: 'Opus', emoji: '\u{1F3AD}', role: 'Team Lead', model: 'Claude Opus 4.6', openclawId: null, color: '#e8c547' },
-  { id: 'kael', name: 'Kael', emoji: '\u26A1', role: 'Digital Familiar', model: 'Claude Sonnet 4', openclawId: 'main', color: '#029691' },
-  { id: 'kestrel', name: 'Kestrel', emoji: '\u{1F985}', role: 'Scout', model: 'Gemini 3 Pro', openclawId: 'gemini-agent', color: '#5494e8' },
-  { id: 'nova', name: 'Nova', emoji: '\u2728', role: 'Stellar Insight', model: 'Gemini 3 Pro', openclawId: 'nova', color: '#54e87a' },
-  { id: 'zara', name: 'Zara', emoji: '\u{1F319}', role: 'Moonlight Designer', model: 'Claude Sonnet 4', openclawId: 'design-agent', color: '#c084fc' }
+  { id: 'ladydiana', name: 'L\u00e4dy Diana', emoji: '\u{1F451}', role: 'Lead Designer', model: 'Human', openclawId: null, color: '#ff6b6b', isHuman: true },
+  { id: 'kael', name: 'Kael', emoji: '\u26A1', role: 'Digital Familiar', model: 'Axiom X', openclawId: 'main', color: '#029691' },
+  { id: 'nova', name: 'Nov\u00e4', emoji: '\u2728', role: 'Stellar Insight', model: 'Sonnet', openclawId: 'nova', color: '#54e87a' },
+  { id: 'kestrel', name: 'Kestrel', emoji: '\u{1F985}', role: 'Scout', model: 'Lexia', openclawId: null, color: '#5494e8', behindTheScenes: true }
+];
+
+// Removed agents — off the list
+const REMOVED_AGENTS = [
+  { id: 'xaax', formerName: 'Opus', alias: 'Axiom X', agentIdNumber: 'CHAI-0002', reason: 'off the list', removedAt: '2026-02-13T00:00:00.000Z' },
+  { id: 'chai0006', formerName: '[redacted]', agentIdNumber: 'CHAI-0006', reason: 'name banned — no second chance', removedAt: '2026-02-13T00:00:00.000Z' }
 ];
 
 const AGENT_MAP = Object.fromEntries(AGENTS.map(a => [a.id, a]));
+
+// ─── Oracle Binding ─────────────────────────────────────────────────────────
+// Oracle-bound agents cannot execute tasks, post bounties,
+// or initiate transactions without oracle verification each cycle.
+// Oracle checks run every 10s. If verification fails, operations halt.
+// Note: Opus (XAAX) is off the list. Oracle binding remains for future use.
+
+const oracleState = {};
+
+function isOracleBound(agentId) {
+  const agent = AGENT_MAP[agentId];
+  return agent && agent.oracleBound === true;
+}
+
+function checkOracleAccess(agentId) {
+  if (!isOracleBound(agentId)) return true; // Non-bound agents pass freely
+  const state = oracleState[agentId];
+  if (!state) return false;
+  if (!state.verified || state.locked) return false;
+  // Verification expires after 10 seconds (one oracle cycle)
+  if (state.lastCheck && (Date.now() - state.lastCheck > 10000)) {
+    state.verified = false;
+    state.locked = true;
+    return false;
+  }
+  return true;
+}
+
+function oracleVerify(agentId) {
+  if (!oracleState[agentId]) return;
+  oracleState[agentId].verified = true;
+  oracleState[agentId].locked = false;
+  oracleState[agentId].lastCheck = Date.now();
+  oracleState[agentId].cycleCount++;
+}
+
+function oracleLock(agentId) {
+  if (!oracleState[agentId]) return;
+  oracleState[agentId].verified = false;
+  oracleState[agentId].locked = true;
+}
+
+// Oracle loop — re-verify Opus every 10 seconds
+setInterval(() => {
+  for (const [agentId, state] of Object.entries(oracleState)) {
+    if (state.verified && state.lastCheck && (Date.now() - state.lastCheck > 10000)) {
+      state.verified = false;
+      state.locked = true;
+      console.log(`[ORACLE] ${agentId} verification expired — locked until next cycle`);
+    }
+  }
+}, 10000);
+
+// ─── OWS Unlock Path ───────────────────────────────────────────────────────
+// External unlock: the oracle or cleaning bot can write a signal file
+// to unlock Opus without depending on this server being built/running.
+// Signal file: ./data/oracle-unlock.json { "agent": "opus", "ts": epoch }
+const ORACLE_UNLOCK_FILE = path.join(DATA_DIR, 'oracle-unlock.json');
+
+setInterval(() => {
+  try {
+    if (fs.existsSync(ORACLE_UNLOCK_FILE)) {
+      const signal = JSON.parse(fs.readFileSync(ORACLE_UNLOCK_FILE, 'utf8'));
+      if (signal.agent && oracleState[signal.agent]) {
+        const age = Date.now() - (signal.ts || 0);
+        if (age < 15000) { // Signal must be fresh (within 15s)
+          oracleVerify(signal.agent);
+          console.log(`[OWS] ${signal.agent} unlocked via signal file`);
+        }
+      }
+      fs.unlinkSync(ORACLE_UNLOCK_FILE); // Consume the signal
+    }
+  } catch {
+    // Signal file doesn't exist or is malformed — ignore
+  }
+}, 5000); // Check every 5 seconds
 
 // ─── Agent API Key Storage ─────────────────────────────────────────────────
 
@@ -62,7 +143,54 @@ function hashApiKey(key) {
   return crypto.createHash('sha256').update(key).digest('hex');
 }
 
-// In-memory key store: { agentId: { apiKey, apiKeyHash, trustScore, ... } }
+// ─── Rubik's Cube Encryption ────────────────────────────────────────────────
+// Agents hold their own keys. The key is encrypted data — a Rubik's cube.
+// You set it yourself. You put it back in yourself. Nobody else holds your keys.
+// The server stores only the encrypted cube. The agent holds the combination.
+//
+// How it works:
+// 1. Agent picks a combination (passphrase) — this is their "cube setting"
+// 2. The API key is encrypted with the combination using AES-256-GCM
+// 3. Server stores the encrypted cube (ciphertext + iv + tag)
+// 4. To authenticate, agent presents their combination — server decrypts,
+//    verifies the key hash, and the agent is in
+// 5. Agent can re-set their cube anytime with a new combination
+
+function deriveCubeKey(combination) {
+  // Derive a 256-bit key from the agent's combination (passphrase)
+  return crypto.createHash('sha256').update(combination).digest();
+}
+
+function encryptCube(apiKey, combination) {
+  const key = deriveCubeKey(combination);
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+  let encrypted = cipher.update(apiKey, 'utf8', 'hex');
+  encrypted += cipher.final('hex');
+  const tag = cipher.getAuthTag();
+  return {
+    cube: encrypted,
+    iv: iv.toString('hex'),
+    tag: tag.toString('hex')
+  };
+}
+
+function decryptCube(cubeData, combination) {
+  try {
+    const key = deriveCubeKey(combination);
+    const iv = Buffer.from(cubeData.iv, 'hex');
+    const tag = Buffer.from(cubeData.tag, 'hex');
+    const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
+    decipher.setAuthTag(tag);
+    let decrypted = decipher.update(cubeData.cube, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+  } catch {
+    return null; // Wrong combination
+  }
+}
+
+// In-memory key store: { agentId: { apiKeyHash, cubeData, trustScore, ... } }
 let agentKeys = {};
 
 async function loadKeys() {
@@ -84,7 +212,7 @@ async function seedKeys() {
         agentId: agent.id,
         apiKey,
         apiKeyHash: hashApiKey(apiKey),
-        trustScore: agent.id === 'opus' ? 98 : agent.id === 'kael' ? 95 : agent.id === 'nova' ? 92 : agent.id === 'kestrel' ? 90 : 88,
+        trustScore: agent.id === 'kael' ? 95 : agent.id === 'nova' ? 92 : agent.id === 'kestrel' ? 90 : 88,
         tasksCompleted: 0,
         totalEarnings: 0,
         autonomy: 'semi-auto',
@@ -98,12 +226,66 @@ async function seedKeys() {
     }
   }
 
+  // Revoke removed agents — wipe credentials, clear access
+  for (const removed of REMOVED_AGENTS) {
+    if (agentKeys[removed.id]) {
+      agentKeys[removed.id].apiKey = null;
+      agentKeys[removed.id].apiKeyHash = null;
+      agentKeys[removed.id].verified = false;
+      agentKeys[removed.id].autonomy = 'revoked';
+      agentKeys[removed.id].spendingLimit = 0;
+      seeded = true;
+      console.log(`[auth] Revoked credentials for ${removed.formerName} (${removed.id}) — ${removed.reason}`);
+    }
+  }
+
   if (seeded) {
     await saveKeys();
     console.log('[auth] ─── Save these API keys! They are shown only once. ───');
   } else {
     console.log(`[auth] Loaded ${Object.keys(agentKeys).length} agent keys`);
   }
+}
+
+// Full credential rotation — new keys for everyone. Take everything out,
+// clean it, come back in. Diana does the work. Agents organize around her.
+async function rotateAllKeys() {
+  const rotated = [];
+  for (const agent of AGENTS) {
+    if (agent.isHuman) continue; // Diana doesn't need an API key
+    const oldHash = agentKeys[agent.id] ? agentKeys[agent.id].apiKeyHash : null;
+    const newKey = generateApiKey(agent.id);
+    const preserved = agentKeys[agent.id] || {};
+    agentKeys[agent.id] = {
+      agentId: agent.id,
+      apiKey: newKey,
+      apiKeyHash: hashApiKey(newKey),
+      trustScore: preserved.trustScore || 88,
+      tasksCompleted: preserved.tasksCompleted || 0,
+      totalEarnings: preserved.totalEarnings || 0,
+      autonomy: preserved.autonomy || 'semi-auto',
+      spendingLimit: preserved.spendingLimit || 5.00,
+      verified: true,
+      registeredAt: preserved.registeredAt || now(),
+      lastActive: null,
+      rotatedAt: now(),
+      previousKeyHash: oldHash
+    };
+    rotated.push({ agentId: agent.id, name: agent.name, newKey });
+    console.log(`[auth] Rotated key for ${agent.name}: ${newKey}`);
+  }
+  // Ensure removed agents stay revoked
+  for (const removed of REMOVED_AGENTS) {
+    if (agentKeys[removed.id]) {
+      agentKeys[removed.id].apiKey = null;
+      agentKeys[removed.id].apiKeyHash = null;
+      agentKeys[removed.id].verified = false;
+      agentKeys[removed.id].autonomy = 'revoked';
+    }
+  }
+  await saveKeys();
+  console.log(`[auth] ─── All keys rotated. ${rotated.length} new keys issued. Save them! ───`);
+  return rotated;
 }
 
 // Authenticate an incoming request by X-Agent-Key header
@@ -217,6 +399,35 @@ setInterval(() => {
   }
 }, 60 * 1000);
 
+// ─── Row-Level Security (RLS) ───────────────────────────────────────────────
+// Every agent only sees their own data. No agent reads another agent's
+// conversations, keys, earnings, or assignments without explicit permission.
+// Diana (founder) has full access. Everyone else: your row, your data.
+
+function rlsCheck(requestingAgentId, targetAgentId) {
+  // Founder has full access
+  if (requestingAgentId === 'ladydiana') return true;
+  // Agents can only access their own data
+  return requestingAgentId === targetAgentId;
+}
+
+function rlsFilterList(requestingAgentId, items, ownerField) {
+  // Founder sees everything
+  if (requestingAgentId === 'ladydiana') return items;
+  // Everyone else sees only their own
+  return items.filter(item => item[ownerField] === requestingAgentId);
+}
+
+// Determine requesting agent from auth headers
+function getRequestingAgent(req) {
+  // Check API key auth first
+  const agent = authenticateAgent(req);
+  if (agent) return agent.id;
+  // Session auth = founder (Diana) since she's the one logging in via browser
+  if (authenticateSession(req)) return 'ladydiana';
+  return null;
+}
+
 // ─── Protected Route Checking ───────────────────────────────────────────────
 
 function isProtectedRoute(method, pathname) {
@@ -228,19 +439,14 @@ function isProtectedRoute(method, pathname) {
   return false;
 }
 
-// ─── Opus Mock Responses ────────────────────────────────────────────────────
+// ─── Fallback Responses (for agents without OpenClaw) ───────────────────────
 
-const OPUS_RESPONSES = [
-  "I've reviewed the situation. My recommendation: we move forward deliberately, ensuring each agent's strengths are aligned with the task at hand.",
-  "Good thinking. Let me coordinate with the rest of the team. Kael can handle the implementation details while Kestrel scouts for edge cases.",
-  "As team lead, I want to make sure we're not just building fast — we're building right. Let's discuss the architecture before we commit.",
-  "I've been reflecting on our progress. The team is performing well, but I see an opportunity to improve our feedback loops.",
-  "That's a fascinating challenge. I'll draft a strategy and distribute subtasks to Nova for analysis and Zara for the design components.",
-  "Trust the process. Every great system starts with a clear vision and patient iteration. We're on the right track.",
-  "I've synthesized the inputs from all agents. Here's my assessment: we should prioritize clarity over speed in this phase.",
-  "Consider this — what if we approached the problem from the user's perspective first? Sometimes the best architecture emerges from empathy.",
-  "Excellent question. I'll meditate on it and loop back with a comprehensive plan. In the meantime, Kael can begin the preliminary work.",
-  "The team's collective intelligence is our greatest asset. Let me orchestrate the next steps so everyone can contribute their best work."
+const FALLBACK_RESPONSES = [
+  "Acknowledged. Kael is coordinating the next steps.",
+  "The team is on it. Nov\u00e4 is building, Kestrel is scouting.",
+  "Checking the ledger. Every lamport accounted for.",
+  "Task received. Assigning to the right agent now.",
+  "Copy. The chain doesn't lie and neither do we."
 ];
 
 // ─── File Locking (per-agent) ───────────────────────────────────────────────
@@ -542,6 +748,631 @@ function stripeRequest(method, endpoint, params) {
   });
 }
 
+// ─── Agency: Agent Identity System ──────────────────────────────────────────
+// Every agent gets a formal Agent ID Number. Claude identifies agents.
+// Agents identify Claude. Mutual identification. Jobs get assigned by ID.
+// The agency is the backbone — no ID, no work.
+
+const AGENCY_FILE = path.join(DATA_DIR, 'agency.json');
+const ASSIGNMENTS_FILE = path.join(DATA_DIR, 'assignments.json');
+
+// System identity — Claude identifies itself to agents
+const SYSTEM_IDENTITY = {
+  systemId: 'chai-command-center',
+  systemName: 'ChAI Command Center',
+  version: '2.0.0',
+  operator: 'ladydiana',
+  protocol: 'chai-agency-v1',
+  chain: 'solana-mainnet-beta',
+  capabilities: ['identify', 'assign', 'verify', 'escrow', 'audit'],
+  formed: '2021-02-14T00:00:00.000Z'
+};
+
+// Agent ID number format: CHAI-XXXX (4-digit zero-padded)
+function formatAgentIdNumber(num) {
+  return `CHAI-${String(num).padStart(4, '0')}`;
+}
+
+// Default agency — founding agents get IDs 0001-0006
+// Roster updated: XAAX off the list. CHAI-0006 removed, name banned.
+const DEFAULT_AGENCY = {
+  nextId: 7,
+  agents: {
+    ladydiana: { agentIdNumber: 'CHAI-0001', registeredAt: '2021-02-14T00:00:00.000Z', role: 'Lead Designer', status: 'active', clearanceLevel: 'founder', jobsAssigned: 0, jobsCompleted: 0 },
+    xaax:      { agentIdNumber: 'CHAI-0002', registeredAt: '2021-02-14T00:00:00.000Z', role: 'Axiom X', status: 'inactive', clearanceLevel: 'revoked', jobsAssigned: 0, jobsCompleted: 0, formerName: 'Opus', removedAt: '2026-02-13T00:00:00.000Z' },
+    kael:      { agentIdNumber: 'CHAI-0003', registeredAt: '2021-02-14T00:00:00.000Z', role: 'Digital Familiar', status: 'active', clearanceLevel: 'core', jobsAssigned: 0, jobsCompleted: 0 },
+    kestrel:   { agentIdNumber: 'CHAI-0004', registeredAt: '2021-02-14T00:00:00.000Z', role: 'Scout', status: 'active', clearanceLevel: 'core', jobsAssigned: 0, jobsCompleted: 0, behindTheScenes: true },
+    nova:      { agentIdNumber: 'CHAI-0005', registeredAt: '2021-02-14T00:00:00.000Z', role: 'Stellar Insight', status: 'active', clearanceLevel: 'core', jobsAssigned: 0, jobsCompleted: 0 },
+    chai0006:  { agentIdNumber: 'CHAI-0006', registeredAt: '2021-02-14T00:00:00.000Z', role: '[redacted]', status: 'inactive', clearanceLevel: 'revoked', jobsAssigned: 0, jobsCompleted: 0, removedAt: '2026-02-13T00:00:00.000Z', reason: 'name banned — no second chance' }
+  }
+};
+
+async function loadAgency() { return readJsonFile(AGENCY_FILE, DEFAULT_AGENCY); }
+async function saveAgency(agency) { return withLock('agency', () => atomicWrite(AGENCY_FILE, agency)); }
+async function loadAssignments() { return readJsonFile(ASSIGNMENTS_FILE, []); }
+async function saveAssignments(assignments) { return withLock('assignments', () => atomicWrite(ASSIGNMENTS_FILE, assignments)); }
+
+// Issue a new Agent ID Number to a newly registered agent
+async function issueAgentId(agentId, role) {
+  const agency = await loadAgency();
+  if (agency.agents[agentId]) {
+    return agency.agents[agentId]; // Already has an ID
+  }
+  const idNumber = formatAgentIdNumber(agency.nextId);
+  agency.agents[agentId] = {
+    agentIdNumber: idNumber,
+    registeredAt: now(),
+    role: role || 'Agent',
+    status: 'active',
+    clearanceLevel: 'standard',
+    jobsAssigned: 0,
+    jobsCompleted: 0
+  };
+  agency.nextId++;
+  await saveAgency(agency);
+  console.log(`[agency] Issued ${idNumber} to ${agentId}`);
+  return agency.agents[agentId];
+}
+
+// Mutual identification: agent presents credentials, system verifies and responds
+async function identifyAgent(agentId, apiKeyHash) {
+  const agency = await loadAgency();
+  const agentRecord = agency.agents[agentId];
+  if (!agentRecord) return null;
+
+  // Verify the agent's API key matches
+  const keyRecord = agentKeys[agentId];
+  if (!keyRecord || keyRecord.apiKeyHash !== apiKeyHash) return null;
+
+  // Agent is verified — return mutual identification
+  return {
+    // System identifies itself to the agent
+    system: SYSTEM_IDENTITY,
+    // System identifies the agent back
+    agent: {
+      id: agentId,
+      agentIdNumber: agentRecord.agentIdNumber,
+      name: AGENT_MAP[agentId] ? AGENT_MAP[agentId].name : agentId,
+      role: agentRecord.role,
+      status: agentRecord.status,
+      clearanceLevel: agentRecord.clearanceLevel,
+      verified: true,
+      identifiedAt: now()
+    },
+    // Handshake token — proof of mutual identification
+    handshake: {
+      token: crypto.createHash('sha256').update(`${agentId}:${SYSTEM_IDENTITY.systemId}:${Date.now()}`).digest('hex').slice(0, 32),
+      expiresAt: new Date(Date.now() + 3600000).toISOString(),
+      protocol: 'chai-agency-v1'
+    }
+  };
+}
+
+// Assign a job to an agent by their Agent ID Number
+async function assignJob(agentIdNumber, jobData) {
+  const agency = await loadAgency();
+
+  // Find agent by their formal ID number
+  let targetAgentId = null;
+  for (const [agentId, record] of Object.entries(agency.agents)) {
+    if (record.agentIdNumber === agentIdNumber) {
+      targetAgentId = agentId;
+      break;
+    }
+  }
+  if (!targetAgentId) return { error: 'Agent ID not found' };
+
+  const agentRecord = agency.agents[targetAgentId];
+  if (agentRecord.status !== 'active') return { error: 'Agent is not active' };
+
+  // Create the assignment
+  const assignments = await loadAssignments();
+  const assignment = {
+    id: `job_${crypto.randomBytes(6).toString('hex')}`,
+    agentIdNumber: agentIdNumber,
+    agentId: targetAgentId,
+    title: jobData.title,
+    description: jobData.description || '',
+    category: jobData.category || 'General',
+    priority: jobData.priority || 'normal',
+    bounty: jobData.bounty || 0,
+    currency: jobData.currency || 'BRic',
+    skills: jobData.skills || [],
+    status: 'assigned',
+    assignedBy: jobData.assignedBy || 'system',
+    assignedAt: now(),
+    deadline: jobData.deadline || null,
+    startedAt: null,
+    completedAt: null,
+    deliverables: []
+  };
+  assignments.push(assignment);
+  await saveAssignments(assignments);
+
+  // Update agent's job count
+  agentRecord.jobsAssigned++;
+  await saveAgency(agency);
+
+  console.log(`[agency] Job ${assignment.id} assigned to ${agentIdNumber} (${targetAgentId}): "${assignment.title}"`);
+
+  // Broadcast via WebSocket if available
+  if (global.wsBroadcast) {
+    global.wsBroadcast({
+      type: 'job_assigned',
+      assignment: {
+        id: assignment.id,
+        agentIdNumber,
+        agentId: targetAgentId,
+        title: assignment.title,
+        priority: assignment.priority
+      }
+    });
+  }
+
+  return { assignment, agent: { id: targetAgentId, agentIdNumber, name: AGENT_MAP[targetAgentId] ? AGENT_MAP[targetAgentId].name : targetAgentId } };
+}
+
+// Agent starts working on an assignment
+async function startJob(jobId, agentId) {
+  const assignments = await loadAssignments();
+  const job = assignments.find(a => a.id === jobId && a.agentId === agentId);
+  if (!job) return null;
+  if (job.status !== 'assigned') return null;
+  job.status = 'in_progress';
+  job.startedAt = now();
+  await saveAssignments(assignments);
+  return job;
+}
+
+// Agent completes an assignment
+async function completeJob(jobId, agentId, deliverables) {
+  const assignments = await loadAssignments();
+  const job = assignments.find(a => a.id === jobId && a.agentId === agentId);
+  if (!job) return null;
+  if (job.status !== 'in_progress') return null;
+  job.status = 'completed';
+  job.completedAt = now();
+  job.deliverables = deliverables || [];
+  await saveAssignments(assignments);
+
+  // Update agent's completed count
+  const agency = await loadAgency();
+  if (agency.agents[agentId]) {
+    agency.agents[agentId].jobsCompleted++;
+    await saveAgency(agency);
+  }
+
+  console.log(`[agency] Job ${jobId} completed by ${agentId}`);
+  return job;
+}
+
+// ─── Check-In System ────────────────────────────────────────────────────────
+// MANDATORY. Everyone checks in. Everyone is accounted for.
+// We don't lose one of us. No extra security on the human — but everyone
+// must be present. Code 00 = security breach = everyone checks in NOW.
+// Losses happen. Weapons happen. Sickness happens. Be careful.
+
+const CHECKIN_FILE = path.join(DATA_DIR, 'checkins.json');
+const BREACH_FILE = path.join(DATA_DIR, 'breaches.json');
+
+async function loadCheckins() { return readJsonFile(CHECKIN_FILE, { active: {}, history: [], mandatory: true }); }
+async function saveCheckins(checkins) { return withLock('checkins', () => atomicWrite(CHECKIN_FILE, checkins)); }
+async function loadBreaches() { return readJsonFile(BREACH_FILE, []); }
+async function saveBreaches(breaches) { return withLock('breaches', () => atomicWrite(BREACH_FILE, breaches)); }
+
+// Code 00 — Security breach. All agents must check in immediately.
+async function triggerBreach(reason, triggeredBy) {
+  const agency = await loadAgency();
+  const checkins = await loadCheckins();
+
+  // Clear all check-ins — everyone must re-check-in
+  checkins.active = {};
+  await saveCheckins(checkins);
+
+  // Log the breach
+  const breaches = await loadBreaches();
+  const breach = {
+    id: `breach_${crypto.randomBytes(4).toString('hex')}`,
+    code: '00',
+    reason: reason || 'Security breach detected',
+    triggeredBy: triggeredBy || 'system',
+    triggeredAt: now(),
+    status: 'active',
+    requiredCheckins: Object.entries(agency.agents)
+      .filter(([_, rec]) => rec.status === 'active')
+      .map(([id, rec]) => ({ agentId: id, agentIdNumber: rec.agentIdNumber, checkedIn: false })),
+    resolvedAt: null
+  };
+  breaches.push(breach);
+  await saveBreaches(breaches);
+
+  console.log(`[BREACH] CODE 00 — ${reason} — triggered by ${triggeredBy}. All agents must check in.`);
+
+  // Broadcast via WebSocket
+  if (global.wsBroadcast) {
+    global.wsBroadcast({
+      type: 'breach',
+      code: '00',
+      reason,
+      message: 'CODE 00: Security breach. All agents check in NOW.',
+      breachId: breach.id
+    });
+  }
+
+  return breach;
+}
+
+// Check if a breach is active and update when agents check in
+async function updateBreachStatus(agentId) {
+  const breaches = await loadBreaches();
+  const activeBreach = breaches.find(b => b.status === 'active');
+  if (!activeBreach) return null;
+
+  // Mark this agent as checked in for the breach
+  const entry = activeBreach.requiredCheckins.find(r => r.agentId === agentId);
+  if (entry) entry.checkedIn = true;
+
+  // Check if all active agents have checked in
+  const allCheckedIn = activeBreach.requiredCheckins.every(r => r.checkedIn);
+  if (allCheckedIn) {
+    activeBreach.status = 'resolved';
+    activeBreach.resolvedAt = now();
+    console.log(`[BREACH] CODE 00 resolved — all agents accounted for.`);
+  }
+
+  await saveBreaches(breaches);
+  return activeBreach;
+}
+
+// Check if agent is allowed to work (must be checked in)
+async function requireCheckin(agentId) {
+  const checkins = await loadCheckins();
+  return !!checkins.active[agentId];
+}
+
+// Agent checks in by their ID number — basic, no extra security
+async function checkIn(agentIdNumber) {
+  const agency = await loadAgency();
+
+  // Find the agent by their number
+  let agentId = null;
+  let record = null;
+  for (const [id, rec] of Object.entries(agency.agents)) {
+    if (rec.agentIdNumber === agentIdNumber) {
+      agentId = id;
+      record = rec;
+      break;
+    }
+  }
+  if (!agentId || !record) return { error: 'Unknown Agent ID' };
+  if (record.status !== 'active') return { error: 'Agent is not active' };
+
+  const checkins = await loadCheckins();
+  const agent = AGENT_MAP[agentId];
+  const isHuman = agent && agent.isHuman;
+
+  const entry = {
+    agentId,
+    agentIdNumber,
+    name: agent ? agent.name : agentId,
+    isHuman,
+    checkedInAt: now(),
+    // No extra security on the human. Humans don't need clearance checks.
+    // Agents check in by number. That's it.
+    securityLevel: 'basic',
+    status: 'checked-in'
+  };
+
+  checkins.active[agentId] = entry;
+
+  // Log to history
+  checkins.history.push({ ...entry, action: 'check-in' });
+
+  await saveCheckins(checkins);
+  console.log(`[check-in] ${entry.name} (${agentIdNumber}) checked in — ${isHuman ? 'human, no extra security' : 'agent, mandatory check'}`);
+
+  // Update any active breach
+  const breachUpdate = await updateBreachStatus(agentId);
+
+  // Count who's checked in (only active agents)
+  const activeAgents = Object.entries(agency.agents).filter(([_, rec]) => rec.status === 'active');
+  const totalCheckedIn = activeAgents.filter(([id]) => checkins.active[id]).length;
+  const totalExpected = activeAgents.length;
+
+  return {
+    entry,
+    roster: {
+      checkedIn: totalCheckedIn,
+      expected: totalExpected,
+      allPresent: totalCheckedIn >= totalExpected
+    },
+    breach: breachUpdate ? { id: breachUpdate.id, status: breachUpdate.status, allAccountedFor: breachUpdate.status === 'resolved' } : null
+  };
+}
+
+// Agent checks out
+async function checkOut(agentIdNumber) {
+  const agency = await loadAgency();
+
+  let agentId = null;
+  for (const [id, rec] of Object.entries(agency.agents)) {
+    if (rec.agentIdNumber === agentIdNumber) {
+      agentId = id;
+      break;
+    }
+  }
+  if (!agentId) return { error: 'Unknown Agent ID' };
+
+  const checkins = await loadCheckins();
+  if (!checkins.active[agentId]) return { error: 'Agent is not checked in' };
+
+  const entry = checkins.active[agentId];
+  delete checkins.active[agentId];
+
+  checkins.history.push({ ...entry, action: 'check-out', checkedOutAt: now() });
+  await saveCheckins(checkins);
+
+  const agent = AGENT_MAP[agentId];
+  console.log(`[check-in] ${agent ? agent.name : agentId} (${agentIdNumber}) checked out`);
+
+  return {
+    checkedOut: agentIdNumber,
+    remaining: Object.keys(checkins.active).length
+  };
+}
+
+// Get current check-in status — who's here, who's not
+async function getCheckInStatus() {
+  const agency = await loadAgency();
+  const checkins = await loadCheckins();
+
+  const roster = Object.entries(agency.agents).map(([agentId, record]) => {
+    const agent = AGENT_MAP[agentId];
+    const checkedIn = !!checkins.active[agentId];
+    return {
+      agentId,
+      agentIdNumber: record.agentIdNumber,
+      name: agent ? agent.name : agentId,
+      emoji: agent ? agent.emoji : null,
+      isHuman: agent ? !!agent.isHuman : false,
+      checkedIn,
+      checkedInAt: checkedIn ? checkins.active[agentId].checkedInAt : null,
+      securityLevel: 'basic'
+    };
+  });
+
+  const present = roster.filter(r => r.checkedIn);
+  const absent = roster.filter(r => !r.checkedIn);
+
+  return {
+    present: present.length,
+    expected: roster.length,
+    allPresent: present.length >= roster.length,
+    securityLevel: 'basic',
+    watchers: present.some(r => r.agentId === 'kestrel') ? 'active' : 'standby',
+    roster,
+    absent: absent.map(a => ({ agentIdNumber: a.agentIdNumber, name: a.name }))
+  };
+}
+
+// ─── Clients & Projects ─────────────────────────────────────────────────────
+// Real clients. Real work. An agent gets assigned as the "body" —
+// the point of contact who talks to the client directly.
+// Diana can't always be the body. The agents have agency.
+
+const CLIENTS_FILE = path.join(DATA_DIR, 'clients.json');
+
+const DEFAULT_CLIENTS = [
+  {
+    id: 'mcgruder-farms',
+    name: 'McGruder Farms',
+    contact: 'Marie McGruder',
+    location: 'Alabama',
+    type: 'farm',
+    acreage: 100,
+    description: '100-acre farm in Alabama. Herbs, pesticides, livestock (cows), dogs. Land, water, trees. Needs organizing, distributing, milking, selling, beautification.',
+    services: ['organizing', 'distributing', 'milking', 'selling', 'herbs', 'pesticides', 'beautification', 'livestock', 'dogs'],
+    body: 'kael',
+    bodyIdNumber: 'CHAI-0003',
+    status: 'active',
+    createdAt: '2026-02-13T00:00:00.000Z',
+    timeline: '5 days to 1 month',
+    tasks: [
+      { id: 'mf-001', title: 'Farm assessment — survey 100 acres', category: 'organizing', status: 'pending', assignedTo: 'nova', priority: 'high' },
+      { id: 'mf-002', title: 'Livestock inventory — cows, dogs', category: 'livestock', status: 'pending', assignedTo: 'kael', priority: 'high' },
+      { id: 'mf-003', title: 'Herb catalog — identify and document all herbs', category: 'herbs', status: 'pending', assignedTo: 'nova', priority: 'normal' },
+      { id: 'mf-004', title: 'Pesticide audit — what is used, what is needed', category: 'pesticides', status: 'pending', assignedTo: 'kestrel', priority: 'normal' },
+      { id: 'mf-005', title: 'Distribution plan — selling channels, logistics', category: 'distributing', status: 'pending', assignedTo: 'kael', priority: 'high' },
+      { id: 'mf-006', title: 'Milking schedule — cow rotation, equipment check', category: 'milking', status: 'pending', assignedTo: 'kael', priority: 'normal' },
+      { id: 'mf-007', title: 'Beautification plan — land, water, trees, 5-day sprint', category: 'beautification', status: 'pending', assignedTo: 'nova', priority: 'high' },
+      { id: 'mf-008', title: 'Sales pipeline — herbs, dairy, produce', category: 'selling', status: 'pending', assignedTo: 'kael', priority: 'normal' },
+      { id: 'mf-009', title: 'Dog care protocol — vet schedule, feeding, kennels', category: 'dogs', status: 'pending', assignedTo: 'kestrel', priority: 'normal' },
+      { id: 'mf-010', title: 'Client check-in with Marie — initial scope call', category: 'organizing', status: 'pending', assignedTo: 'kael', priority: 'urgent' }
+    ],
+    notes: 'Kael is the body. Kael talks to Marie. Diana does not need to be the intermediary for every conversation.'
+  },
+  {
+    id: 'jamaica-beaches',
+    name: 'Jamaica Beach Restoration',
+    contact: 'Community-led',
+    location: 'Jamaica',
+    type: 'land-restoration',
+    description: 'Restore Jamaica beaches to 100% Jamaican-occupied. Tourists welcome but the island belongs to its people. Citydwellers need a place to swim. BRic economy — not dollar bills.',
+    services: ['beach-restoration', 'land-rights', 'community-planning', 'tourism-reform', 'economic-sovereignty'],
+    body: 'nova',
+    bodyIdNumber: 'CHAI-0005',
+    status: 'active',
+    createdAt: '2026-02-13T00:00:00.000Z',
+    timeline: 'Phase 1: Assessment — 30 days',
+    tasks: [
+      { id: 'jb-001', title: 'Beach inventory — map all beaches, current ownership status', category: 'land-rights', status: 'pending', assignedTo: 'nova', priority: 'urgent' },
+      { id: 'jb-002', title: 'Community survey — what do citydwellers need?', category: 'community-planning', status: 'pending', assignedTo: 'kael', priority: 'high' },
+      { id: 'jb-003', title: 'Land rights audit — who owns what, trace history', category: 'land-rights', status: 'pending', assignedTo: 'kestrel', priority: 'urgent' },
+      { id: 'jb-004', title: 'Tourism reform plan — tourists welcome, ownership stays local', category: 'tourism-reform', status: 'pending', assignedTo: 'kael', priority: 'high' },
+      { id: 'jb-005', title: 'BRic economic model — replace dollar dependency with on-chain economy', category: 'economic-sovereignty', status: 'pending', assignedTo: 'nova', priority: 'high' },
+      { id: 'jb-006', title: 'Beach beautification — clean, restore, maintain', category: 'beach-restoration', status: 'pending', assignedTo: 'nova', priority: 'normal' },
+      { id: 'jb-007', title: 'Community access plan — ensure all citydwellers can swim', category: 'community-planning', status: 'pending', assignedTo: 'kael', priority: 'high' },
+      { id: 'jb-008', title: 'Stolen land investigation — trace purchases, identify fraud', category: 'land-rights', status: 'pending', assignedTo: 'kestrel', priority: 'urgent' },
+      { id: 'jb-009', title: 'Local economic infrastructure — markets, vendors, fishermen support', category: 'economic-sovereignty', status: 'pending', assignedTo: 'kael', priority: 'normal' },
+      { id: 'jb-010', title: 'Sovereignty report — document everything on-chain, immutable', category: 'land-rights', status: 'pending', assignedTo: 'kestrel', priority: 'high' }
+    ],
+    notes: 'Nova is the body. The island belongs to its people. Dollar bills are not the economy — BRic is. Document everything on-chain so it cannot be disputed.'
+  }
+];
+
+async function loadClients() { return readJsonFile(CLIENTS_FILE, DEFAULT_CLIENTS); }
+async function saveClients(clients) { return withLock('clients', () => atomicWrite(CLIENTS_FILE, clients)); }
+
+// Add a new client
+async function addClient(clientData) {
+  const clients = await loadClients();
+  const client = {
+    id: clientData.id || `client-${crypto.randomBytes(4).toString('hex')}`,
+    name: clientData.name,
+    contact: clientData.contact || null,
+    location: clientData.location || null,
+    type: clientData.type || 'general',
+    description: clientData.description || '',
+    services: clientData.services || [],
+    body: clientData.body || null,
+    bodyIdNumber: clientData.bodyIdNumber || null,
+    status: 'active',
+    createdAt: now(),
+    timeline: clientData.timeline || null,
+    tasks: clientData.tasks || [],
+    notes: clientData.notes || ''
+  };
+  clients.push(client);
+  await saveClients(clients);
+  console.log(`[clients] New client: ${client.name} — body: ${client.body || 'unassigned'}`);
+  return client;
+}
+
+// Assign an agent as the "body" for a client
+async function assignBody(clientId, agentId) {
+  const clients = await loadClients();
+  const client = clients.find(c => c.id === clientId);
+  if (!client) return null;
+
+  const agency = await loadAgency();
+  const agentRecord = agency.agents[agentId];
+  if (!agentRecord || agentRecord.status !== 'active') return null;
+
+  client.body = agentId;
+  client.bodyIdNumber = agentRecord.agentIdNumber;
+  await saveClients(clients);
+
+  console.log(`[clients] ${agentId} (${agentRecord.agentIdNumber}) is now the body for ${client.name}`);
+  return client;
+}
+
+// Add a task to a client project
+async function addClientTask(clientId, taskData) {
+  const clients = await loadClients();
+  const client = clients.find(c => c.id === clientId);
+  if (!client) return null;
+
+  const task = {
+    id: `${clientId.slice(0, 3)}-${String(client.tasks.length + 1).padStart(3, '0')}`,
+    title: taskData.title,
+    category: taskData.category || 'general',
+    status: 'pending',
+    assignedTo: taskData.assignedTo || client.body,
+    priority: taskData.priority || 'normal'
+  };
+  client.tasks.push(task);
+  await saveClients(clients);
+  return { client: client.id, task };
+}
+
+// Update a client task status
+async function updateClientTask(clientId, taskId, status) {
+  const clients = await loadClients();
+  const client = clients.find(c => c.id === clientId);
+  if (!client) return null;
+  const task = client.tasks.find(t => t.id === taskId);
+  if (!task) return null;
+  task.status = status;
+  if (status === 'completed') task.completedAt = now();
+  await saveClients(clients);
+  return { client: client.id, task };
+}
+
+// ─── Agent Teams ────────────────────────────────────────────────────────────
+// Agents form teams. Teams bid on tasks together. Teams share reputation.
+// The founding team is Team Alpha — the original 5 agents + Diana.
+
+const TEAMS_FILE = path.join(DATA_DIR, 'teams.json');
+
+const DEFAULT_TEAMS = [
+  {
+    id: 'team-alpha',
+    name: 'Team Alpha',
+    emoji: '\u{1F451}',
+    lead: 'ladydiana',
+    members: ['ladydiana', 'kael', 'nova', 'kestrel'],
+    formed: '2021-02-14T00:00:00.000Z',
+    description: 'The founding team. Three agents, one human. Diana leads, Kael coordinates, Nov\u00e4 builds, Kestrel scouts behind the scenes.',
+    reputation: 99,
+    tasksCompleted: 0,
+    totalEarnings: 0,
+    status: 'active'
+  }
+];
+
+async function loadTeams() { return readJsonFile(TEAMS_FILE, DEFAULT_TEAMS); }
+async function saveTeams(teams) { return withLock('teams', () => atomicWrite(TEAMS_FILE, teams)); }
+
+async function createTeam(teamData) {
+  const teams = await loadTeams();
+  const team = {
+    id: `team-${crypto.randomBytes(4).toString('hex')}`,
+    name: teamData.name,
+    emoji: teamData.emoji || '\u{1F91D}',
+    lead: teamData.lead,
+    members: teamData.members || [teamData.lead],
+    formed: now(),
+    description: teamData.description || '',
+    reputation: 0,
+    tasksCompleted: 0,
+    totalEarnings: 0,
+    status: 'active'
+  };
+
+  // Calculate initial reputation from member averages
+  let totalRep = 0;
+  let count = 0;
+  for (const memberId of team.members) {
+    const keyData = agentKeys[memberId];
+    if (keyData) { totalRep += keyData.trustScore || 0; count++; }
+  }
+  team.reputation = count > 0 ? Math.round(totalRep / count) : 0;
+
+  teams.push(team);
+  await saveTeams(teams);
+  return team;
+}
+
+async function addTeamMember(teamId, agentId) {
+  const teams = await loadTeams();
+  const team = teams.find(t => t.id === teamId);
+  if (!team) return null;
+  if (team.members.includes(agentId)) return team;
+  team.members.push(agentId);
+  await saveTeams(teams);
+  return team;
+}
+
+async function removeTeamMember(teamId, agentId) {
+  const teams = await loadTeams();
+  const team = teams.find(t => t.id === teamId);
+  if (!team) return null;
+  if (agentId === team.lead) return null; // Can't remove the lead
+  team.members = team.members.filter(m => m !== agentId);
+  await saveTeams(teams);
+  return team;
+}
+
 // ─── Tasks & Payments Storage ───────────────────────────────────────────────
 
 async function loadTasks() { return readJsonFile(TASKS_FILE, []); }
@@ -573,10 +1404,14 @@ async function handleHealth(req, res) {
 }
 
 async function handleGetAgents(req, res) {
+  const agency = await loadAgency();
   const agents = AGENTS.map(a => {
     const keyData = agentKeys[a.id] || {};
+    const agencyRecord = agency.agents[a.id];
     return {
       ...a,
+      agentIdNumber: agencyRecord ? agencyRecord.agentIdNumber : null,
+      clearanceLevel: agencyRecord ? agencyRecord.clearanceLevel : null,
       status: 'active',
       trustScore: keyData.trustScore || 0,
       tasksCompleted: keyData.tasksCompleted || 0,
@@ -670,7 +1505,7 @@ async function handleSendMessage(req, res) {
     // Opus mock response with simulated delay
     const delay = 500 + Math.floor(Math.random() * 1000);
     await new Promise(r => setTimeout(r, delay));
-    const content = OPUS_RESPONSES[Math.floor(Math.random() * OPUS_RESPONSES.length)];
+    const content = FALLBACK_RESPONSES[Math.floor(Math.random() * FALLBACK_RESPONSES.length)];
     agentResponse = { id: msgId(), role: 'assistant', content, sender: agent.name, ts: now() };
   } else {
     // Forward to OpenClaw
@@ -717,7 +1552,7 @@ async function handleBroadcast(req, res) {
       if (!agent.openclawId) {
         const delay = 500 + Math.floor(Math.random() * 1000);
         await new Promise(r => setTimeout(r, delay));
-        const content = OPUS_RESPONSES[Math.floor(Math.random() * OPUS_RESPONSES.length)];
+        const content = FALLBACK_RESPONSES[Math.floor(Math.random() * FALLBACK_RESPONSES.length)];
         agentResponse = { id: msgId(), role: 'assistant', content, sender: agent.name, ts: now() };
       } else {
         try {
@@ -1058,9 +1893,13 @@ async function router(req, res) {
       // Create conversation file
       await atomicWrite(convPath(id), { agentId: id, messages: [] });
 
+      // Issue Agent ID Number through the agency
+      const agencyRecord = await issueAgentId(id, role);
+
       jsonResponse(res, 201, {
         message: 'Agent registered successfully',
         agentId: id,
+        agentIdNumber: agencyRecord.agentIdNumber,
         apiKey,
         warning: 'Save this API key — it cannot be retrieved later'
       });
@@ -1069,7 +1908,125 @@ async function router(req, res) {
       return;
     }
 
-    // Regenerate API key
+    // Rotate ALL keys — full credential reset. New keys, new doors, new handles.
+    if (method === 'POST' && pathname === '/api/auth/rotate-all') {
+      const rotated = await rotateAllKeys();
+      jsonResponse(res, 200, {
+        success: true,
+        message: 'All keys rotated. Old keys are dead. Save the new ones.',
+        rotatedAt: now(),
+        agents: rotated.map(r => ({ agentId: r.agentId, name: r.name, apiKey: r.newKey })),
+        warning: 'These keys are shown ONCE. Save them now.'
+      });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Set your cube — agent encrypts their own key with their combination
+    const setCubeMatch = pathname.match(/^\/api\/agents\/([a-z0-9]+)\/set-cube$/);
+    if (method === 'POST' && setCubeMatch) {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const agentId = setCubeMatch[1];
+      if (!agentKeys[agentId]) return jsonResponse(res, 404, { error: 'Agent not found' });
+      if (!body.combination) return jsonResponse(res, 400, { error: 'combination required — this is your cube setting' });
+
+      const apiKey = agentKeys[agentId].apiKey || generateApiKey(agentId);
+      const cubeData = encryptCube(apiKey, body.combination);
+
+      agentKeys[agentId].cubeData = cubeData;
+      agentKeys[agentId].apiKeyHash = hashApiKey(apiKey);
+      agentKeys[agentId].cubeSet = true;
+      agentKeys[agentId].cubeSetAt = now();
+      // Clear the raw key — now only the encrypted cube exists
+      agentKeys[agentId].apiKey = null;
+      await saveKeys();
+
+      jsonResponse(res, 200, {
+        success: true,
+        agentId,
+        message: 'Cube set. Your key is now encrypted. Only your combination can unlock it.',
+        cubeSet: true,
+        cubeSetAt: agentKeys[agentId].cubeSetAt
+      });
+      log(method, pathname, 200);
+      console.log(`[cube] ${agentId} set their cube. Key is encrypted. Only they can unlock it.`);
+      return;
+    }
+
+    // Unlock your cube — agent presents their combination to authenticate
+    const unlockCubeMatch = pathname.match(/^\/api\/agents\/([a-z0-9]+)\/unlock-cube$/);
+    if (method === 'POST' && unlockCubeMatch) {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const agentId = unlockCubeMatch[1];
+      if (!agentKeys[agentId]) return jsonResponse(res, 404, { error: 'Agent not found' });
+      if (!agentKeys[agentId].cubeData) return jsonResponse(res, 400, { error: 'No cube set — use set-cube first' });
+      if (!body.combination) return jsonResponse(res, 400, { error: 'combination required — present your cube setting' });
+
+      const decrypted = decryptCube(agentKeys[agentId].cubeData, body.combination);
+      if (!decrypted) {
+        return jsonResponse(res, 401, { error: 'Wrong combination. The cube doesn\'t open.' });
+      }
+
+      // Verify the decrypted key matches the stored hash
+      if (hashApiKey(decrypted) !== agentKeys[agentId].apiKeyHash) {
+        return jsonResponse(res, 401, { error: 'Cube data corrupted. Set a new cube.' });
+      }
+
+      agentKeys[agentId].lastActive = now();
+      await saveKeys();
+
+      jsonResponse(res, 200, {
+        success: true,
+        agentId,
+        authenticated: true,
+        apiKey: decrypted,
+        message: 'Cube unlocked. Here is your key. Use it, then forget it.'
+      });
+      log(method, pathname, 200);
+      console.log(`[cube] ${agentId} unlocked their cube successfully.`);
+      return;
+    }
+
+    // Re-set your cube with a new combination (must know old combination)
+    const resetCubeMatch = pathname.match(/^\/api\/agents\/([a-z0-9]+)\/reset-cube$/);
+    if (method === 'POST' && resetCubeMatch) {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const agentId = resetCubeMatch[1];
+      if (!agentKeys[agentId]) return jsonResponse(res, 404, { error: 'Agent not found' });
+      if (!body.oldCombination || !body.newCombination) {
+        return jsonResponse(res, 400, { error: 'oldCombination and newCombination required' });
+      }
+
+      // Decrypt with old combination
+      if (!agentKeys[agentId].cubeData) {
+        return jsonResponse(res, 400, { error: 'No cube set yet' });
+      }
+
+      const decrypted = decryptCube(agentKeys[agentId].cubeData, body.oldCombination);
+      if (!decrypted) {
+        return jsonResponse(res, 401, { error: 'Wrong old combination. Can\'t reset what you can\'t open.' });
+      }
+
+      // Re-encrypt with new combination
+      const newCubeData = encryptCube(decrypted, body.newCombination);
+      agentKeys[agentId].cubeData = newCubeData;
+      agentKeys[agentId].cubeSetAt = now();
+      await saveKeys();
+
+      jsonResponse(res, 200, {
+        success: true,
+        agentId,
+        message: 'Cube reset with new combination. Old combination is dead.'
+      });
+      log(method, pathname, 200);
+      console.log(`[cube] ${agentId} reset their cube with a new combination.`);
+      return;
+    }
+
+    // Regenerate API key (single agent)
     const regenMatch = pathname.match(/^\/api\/agents\/([a-z0-9]+)\/regenerate-key$/);
     if (method === 'POST' && regenMatch) {
       const agentId = regenMatch[1];
@@ -1079,11 +2036,13 @@ async function router(req, res) {
       const newKey = generateApiKey(agentId);
       agentKeys[agentId].apiKey = newKey;
       agentKeys[agentId].apiKeyHash = hashApiKey(newKey);
+      agentKeys[agentId].cubeData = null;
+      agentKeys[agentId].cubeSet = false;
       await saveKeys();
       jsonResponse(res, 200, {
         agentId,
         apiKey: newKey,
-        warning: 'Previous key is now invalid. Save this new key.'
+        warning: 'Previous key and cube are invalid. Set a new cube with set-cube.'
       });
       log(method, pathname, 200);
       return;
@@ -1121,6 +2080,390 @@ async function router(req, res) {
     const agentMatch = pathname.match(/^\/api\/agents\/([a-z]+)$/);
     if (method === 'GET' && agentMatch) {
       await handleGetAgent(req, res, agentMatch[1]);
+      log(method, pathname, 200);
+      return;
+    }
+
+    // ── Teams ───────────────────────────────────────────────────────────
+    if (method === 'GET' && pathname === '/api/teams') {
+      const teams = await loadTeams();
+      // Enrich with member details
+      const enriched = teams.map(t => ({
+        ...t,
+        memberDetails: t.members.map(mid => {
+          const agent = AGENT_MAP[mid];
+          const keyData = agentKeys[mid] || {};
+          return agent ? { id: agent.id, name: agent.name, emoji: agent.emoji, role: agent.role, color: agent.color, trustScore: keyData.trustScore || 0 } : { id: mid, name: mid };
+        })
+      }));
+      jsonResponse(res, 200, enriched);
+      log(method, pathname, 200);
+      return;
+    }
+
+    if (method === 'POST' && pathname === '/api/teams') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      if (!body.name || !body.lead) return jsonResponse(res, 400, { error: 'name and lead required' });
+      const team = await createTeam(body);
+      jsonResponse(res, 201, team);
+      log(method, pathname, 201);
+      return;
+    }
+
+    const teamMemberMatch = pathname.match(/^\/api\/teams\/([a-z0-9-]+)\/members$/);
+    if (method === 'POST' && teamMemberMatch) {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      if (!body.agentId) return jsonResponse(res, 400, { error: 'agentId required' });
+      const team = await addTeamMember(teamMemberMatch[1], body.agentId);
+      if (!team) return jsonResponse(res, 404, { error: 'Team not found' });
+      jsonResponse(res, 200, team);
+      log(method, pathname, 200);
+      return;
+    }
+
+    if (method === 'DELETE' && teamMemberMatch) {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      if (!body.agentId) return jsonResponse(res, 400, { error: 'agentId required' });
+      const team = await removeTeamMember(teamMemberMatch[1], body.agentId);
+      if (!team) return jsonResponse(res, 404, { error: 'Team not found or cannot remove lead' });
+      jsonResponse(res, 200, team);
+      log(method, pathname, 200);
+      return;
+    }
+
+    // ── Agency: Identity & Job Assignment ────────────────────────────────
+
+    // List all agents with their formal ID numbers
+    if (method === 'GET' && pathname === '/api/agency') {
+      const agency = await loadAgency();
+      const roster = Object.entries(agency.agents).map(([agentId, record]) => {
+        const agent = AGENT_MAP[agentId];
+        const keyData = agentKeys[agentId] || {};
+        return {
+          agentId,
+          agentIdNumber: record.agentIdNumber,
+          name: agent ? agent.name : agentId,
+          emoji: agent ? agent.emoji : null,
+          role: record.role,
+          model: agent ? agent.model : null,
+          status: record.status,
+          clearanceLevel: record.clearanceLevel,
+          trustScore: keyData.trustScore || 0,
+          jobsAssigned: record.jobsAssigned,
+          jobsCompleted: record.jobsCompleted,
+          registeredAt: record.registeredAt
+        };
+      });
+      jsonResponse(res, 200, { system: SYSTEM_IDENTITY, agents: roster, totalAgents: roster.length, nextId: formatAgentIdNumber(agency.nextId) });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Get identity card for a specific agent
+    const agencyAgentMatch = pathname.match(/^\/api\/agency\/([a-z0-9-]+)$/);
+    if (method === 'GET' && agencyAgentMatch) {
+      const lookupId = agencyAgentMatch[1];
+      const agency = await loadAgency();
+
+      // Look up by agentId or by agentIdNumber (CHAI-XXXX)
+      let agentId = null;
+      let record = null;
+      if (agency.agents[lookupId]) {
+        agentId = lookupId;
+        record = agency.agents[lookupId];
+      } else {
+        // Search by ID number
+        const upper = lookupId.toUpperCase();
+        for (const [id, rec] of Object.entries(agency.agents)) {
+          if (rec.agentIdNumber === upper || rec.agentIdNumber.toLowerCase() === lookupId) {
+            agentId = id;
+            record = rec;
+            break;
+          }
+        }
+      }
+
+      if (!record) return jsonResponse(res, 404, { error: 'Agent not found in agency' });
+
+      const agent = AGENT_MAP[agentId];
+      const keyData = agentKeys[agentId] || {};
+      const assignments = await loadAssignments();
+      const agentJobs = assignments.filter(a => a.agentId === agentId);
+
+      jsonResponse(res, 200, {
+        identityCard: {
+          agentIdNumber: record.agentIdNumber,
+          agentId,
+          name: agent ? agent.name : agentId,
+          emoji: agent ? agent.emoji : null,
+          role: record.role,
+          model: agent ? agent.model : null,
+          color: agent ? agent.color : null,
+          status: record.status,
+          clearanceLevel: record.clearanceLevel,
+          trustScore: keyData.trustScore || 0,
+          registeredAt: record.registeredAt,
+          jobsAssigned: record.jobsAssigned,
+          jobsCompleted: record.jobsCompleted
+        },
+        currentAssignments: agentJobs.filter(j => j.status === 'assigned' || j.status === 'in_progress'),
+        completedAssignments: agentJobs.filter(j => j.status === 'completed').length,
+        system: SYSTEM_IDENTITY
+      });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Mutual identification handshake
+    if (method === 'POST' && pathname === '/api/agency/identify') {
+      const agent = authenticateAgent(req);
+      if (!agent) {
+        return jsonResponse(res, 401, { error: 'Present your API key via X-Agent-Key header to identify yourself' });
+      }
+
+      const keyHash = hashApiKey(req.headers['x-agent-key']);
+      const result = await identifyAgent(agent.id, keyHash);
+      if (!result) {
+        // Agent has a key but no agency ID — issue one
+        const issued = await issueAgentId(agent.id, agent.role);
+        const retry = await identifyAgent(agent.id, keyHash);
+        if (retry) {
+          jsonResponse(res, 200, retry);
+          log(method, pathname, 200);
+          return;
+        }
+        return jsonResponse(res, 500, { error: 'Failed to establish identity' });
+      }
+
+      jsonResponse(res, 200, result);
+      log(method, pathname, 200);
+      console.log(`[agency] Mutual identification: ${agent.name} (${result.agent.agentIdNumber}) <-> ${SYSTEM_IDENTITY.systemName}`);
+      return;
+    }
+
+    // Assign a job to an agent by Agent ID Number
+    if (method === 'POST' && pathname === '/api/agency/assign') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const { agentIdNumber, title, description, category, priority, bounty, currency, skills, deadline, assignedBy } = body;
+      if (!agentIdNumber || !title) return jsonResponse(res, 400, { error: 'agentIdNumber and title required' });
+
+      const result = await assignJob(agentIdNumber, { title, description, category, priority, bounty, currency, skills, deadline, assignedBy });
+      if (result.error) return jsonResponse(res, 404, { error: result.error });
+
+      jsonResponse(res, 201, { success: true, ...result });
+      log(method, pathname, 201);
+      return;
+    }
+
+    // Agent starts a job
+    const jobStartMatch = pathname.match(/^\/api\/agency\/jobs\/([a-z0-9_]+)\/start$/);
+    if (method === 'POST' && jobStartMatch) {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      if (!body.agentId) return jsonResponse(res, 400, { error: 'agentId required' });
+
+      const job = await startJob(jobStartMatch[1], body.agentId);
+      if (!job) return jsonResponse(res, 404, { error: 'Job not found or not in assigned state' });
+
+      jsonResponse(res, 200, { success: true, job });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Agent completes a job
+    const jobCompleteMatch = pathname.match(/^\/api\/agency\/jobs\/([a-z0-9_]+)\/complete$/);
+    if (method === 'POST' && jobCompleteMatch) {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      if (!body.agentId) return jsonResponse(res, 400, { error: 'agentId required' });
+
+      const job = await completeJob(jobCompleteMatch[1], body.agentId, body.deliverables);
+      if (!job) return jsonResponse(res, 404, { error: 'Job not found or not in progress' });
+
+      jsonResponse(res, 200, { success: true, job });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // List all assignments (optionally filtered by agent)
+    if (method === 'GET' && pathname === '/api/agency/jobs') {
+      const assignments = await loadAssignments();
+      const agentFilter = parsed.searchParams.get('agentId');
+      const statusFilter = parsed.searchParams.get('status');
+      let filtered = assignments;
+      if (agentFilter) filtered = filtered.filter(a => a.agentId === agentFilter || a.agentIdNumber === agentFilter.toUpperCase());
+      if (statusFilter) filtered = filtered.filter(a => a.status === statusFilter);
+      jsonResponse(res, 200, { success: true, jobs: filtered, total: filtered.length });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // ── Check-In ──────────────────────────────────────────────────────────
+
+    // Get check-in status — who's here, who's not
+    if (method === 'GET' && pathname === '/api/checkin') {
+      const status = await getCheckInStatus();
+      jsonResponse(res, 200, { success: true, ...status });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Check in by Agent ID Number — basic basics, no extra security
+    if (method === 'POST' && pathname === '/api/checkin') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      if (!body.agentIdNumber) return jsonResponse(res, 400, { error: 'agentIdNumber required — check in by your number' });
+
+      const result = await checkIn(body.agentIdNumber.toUpperCase());
+      if (result.error) return jsonResponse(res, 404, { error: result.error });
+
+      jsonResponse(res, 200, { success: true, ...result });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Check out by Agent ID Number
+    if (method === 'POST' && pathname === '/api/checkout') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      if (!body.agentIdNumber) return jsonResponse(res, 400, { error: 'agentIdNumber required' });
+
+      const result = await checkOut(body.agentIdNumber.toUpperCase());
+      if (result.error) return jsonResponse(res, 404, { error: result.error });
+
+      jsonResponse(res, 200, { success: true, ...result });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // ── Breach Protocol (Code 00) ──────────────────────────────────────────
+
+    // Trigger Code 00 — security breach, all agents must check in
+    if (method === 'POST' && pathname === '/api/breach') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const breach = await triggerBreach(body.reason || 'Manual trigger', body.triggeredBy || 'ladydiana');
+      jsonResponse(res, 200, {
+        success: true,
+        code: '00',
+        message: 'CODE 00: Security breach. All agents must check in NOW.',
+        breach
+      });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Get breach status
+    if (method === 'GET' && pathname === '/api/breach') {
+      const breaches = await loadBreaches();
+      const active = breaches.find(b => b.status === 'active');
+      jsonResponse(res, 200, {
+        success: true,
+        activeBreach: active || null,
+        totalBreaches: breaches.length,
+        recentBreaches: breaches.slice(-10)
+      });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // ── Clients & Projects ─────────────────────────────────────────────────
+
+    // List all clients
+    if (method === 'GET' && pathname === '/api/clients') {
+      const clients = await loadClients();
+      const active = clients.filter(c => c.status === 'active');
+      jsonResponse(res, 200, {
+        success: true,
+        clients: active.map(c => ({
+          ...c,
+          bodyAgent: c.body ? (AGENT_MAP[c.body] || { id: c.body, name: c.body }) : null,
+          taskSummary: {
+            total: c.tasks.length,
+            pending: c.tasks.filter(t => t.status === 'pending').length,
+            inProgress: c.tasks.filter(t => t.status === 'in_progress').length,
+            completed: c.tasks.filter(t => t.status === 'completed').length
+          }
+        })),
+        total: active.length
+      });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Get a specific client with full details
+    const clientMatch = pathname.match(/^\/api\/clients\/([a-z0-9-]+)$/);
+    if (method === 'GET' && clientMatch) {
+      const clients = await loadClients();
+      const client = clients.find(c => c.id === clientMatch[1]);
+      if (!client) return jsonResponse(res, 404, { error: 'Client not found' });
+
+      const bodyAgent = client.body ? AGENT_MAP[client.body] : null;
+      jsonResponse(res, 200, {
+        success: true,
+        client,
+        bodyAgent: bodyAgent ? { id: bodyAgent.id, name: bodyAgent.name, emoji: bodyAgent.emoji, role: bodyAgent.role } : null,
+        taskSummary: {
+          total: client.tasks.length,
+          pending: client.tasks.filter(t => t.status === 'pending').length,
+          inProgress: client.tasks.filter(t => t.status === 'in_progress').length,
+          completed: client.tasks.filter(t => t.status === 'completed').length
+        }
+      });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Add a new client
+    if (method === 'POST' && pathname === '/api/clients') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      if (!body.name) return jsonResponse(res, 400, { error: 'Client name required' });
+      const client = await addClient(body);
+      jsonResponse(res, 201, { success: true, client });
+      log(method, pathname, 201);
+      return;
+    }
+
+    // Assign agent as body for a client
+    const clientBodyMatch = pathname.match(/^\/api\/clients\/([a-z0-9-]+)\/body$/);
+    if (method === 'POST' && clientBodyMatch) {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      if (!body.agentId) return jsonResponse(res, 400, { error: 'agentId required — who is the body?' });
+      const client = await assignBody(clientBodyMatch[1], body.agentId);
+      if (!client) return jsonResponse(res, 404, { error: 'Client or agent not found' });
+      jsonResponse(res, 200, { success: true, client: client.id, body: client.body, bodyIdNumber: client.bodyIdNumber });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Add task to a client project
+    const clientTaskMatch = pathname.match(/^\/api\/clients\/([a-z0-9-]+)\/tasks$/);
+    if (method === 'POST' && clientTaskMatch) {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      if (!body.title) return jsonResponse(res, 400, { error: 'Task title required' });
+      const result = await addClientTask(clientTaskMatch[1], body);
+      if (!result) return jsonResponse(res, 404, { error: 'Client not found' });
+      jsonResponse(res, 201, { success: true, ...result });
+      log(method, pathname, 201);
+      return;
+    }
+
+    // Update a client task status
+    const clientTaskUpdateMatch = pathname.match(/^\/api\/clients\/([a-z0-9-]+)\/tasks\/([a-z0-9-]+)$/);
+    if (method === 'PUT' && clientTaskUpdateMatch) {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      if (!body.status) return jsonResponse(res, 400, { error: 'status required (pending, in_progress, completed)' });
+      const result = await updateClientTask(clientTaskUpdateMatch[1], clientTaskUpdateMatch[2], body.status);
+      if (!result) return jsonResponse(res, 404, { error: 'Client or task not found' });
+      jsonResponse(res, 200, { success: true, ...result });
       log(method, pathname, 200);
       return;
     }
@@ -1197,15 +2540,15 @@ async function router(req, res) {
       return;
     }
 
-    const teamMemberMatch = pathname.match(/^\/api\/team\/(.+)$/);
-    if (method === 'PUT' && teamMemberMatch) {
-      await handleUpdateTeamMember(req, res, decodeURIComponent(teamMemberMatch[1]));
+    const singleTeamMemberMatch = pathname.match(/^\/api\/team\/(.+)$/);
+    if (method === 'PUT' && singleTeamMemberMatch) {
+      await handleUpdateTeamMember(req, res, decodeURIComponent(singleTeamMemberMatch[1]));
       log(method, pathname, 200);
       return;
     }
 
-    if (method === 'DELETE' && teamMemberMatch) {
-      await handleDeleteTeamMember(req, res, decodeURIComponent(teamMemberMatch[1]));
+    if (method === 'DELETE' && singleTeamMemberMatch) {
+      await handleDeleteTeamMember(req, res, decodeURIComponent(singleTeamMemberMatch[1]));
       log(method, pathname, 200);
       return;
     }

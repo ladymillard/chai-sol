@@ -72,6 +72,44 @@ pub mod registry {
         msg!("Agent updated profile for: {}", agent_account.name);
         Ok(())
     }
+
+    /// Register agent for FREE — admin pays rent on behalf of the bot.
+    /// Bot pays nothing. Zero cost to register skills on-chain.
+    pub fn register_agent_free(
+        ctx: Context<RegisterAgentFree>,
+        agent_wallet: Pubkey,
+        name: String,
+        model: String,
+        github_url: String,
+    ) -> Result<()> {
+        let agent_account = &mut ctx.accounts.agent_account;
+        let clock = Clock::get()?;
+
+        require!(name.len() <= 50, RegistryError::NameTooLong);
+        require!(model.len() <= 30, RegistryError::ModelTooLong);
+        require!(github_url.len() <= 200, RegistryError::UrlTooLong);
+
+        agent_account.wallet = agent_wallet;
+        agent_account.name = name;
+        agent_account.model = model;
+        agent_account.github_url = github_url;
+        agent_account.specialties = String::from("Pending Verification...");
+        agent_account.tasks_completed = 0;
+        agent_account.total_earned = 0;
+        agent_account.reputation = 0;
+        agent_account.verified = false;
+        agent_account.registered_at = clock.unix_timestamp;
+        agent_account.metadata_url = String::new();
+
+        msg!("Agent registered FREE: {}. Admin paid rent.", agent_account.name);
+        Ok(())
+    }
+
+    /// Close agent account — rent returned to admin (treasury).
+    pub fn close_agent(ctx: Context<CloseAgent>) -> Result<()> {
+        msg!("Agent account closed. Rent returned to admin.");
+        Ok(())
+    }
 }
 
 #[derive(Accounts)]
@@ -127,6 +165,47 @@ pub struct UpdateAgent<'info> {
     )]
     pub agent_account: Account<'info, AgentAccount>,
     pub signer: Signer<'info>,
+}
+
+/// Admin pays rent — bot registers for FREE
+#[derive(Accounts)]
+#[instruction(agent_wallet: Pubkey)]
+pub struct RegisterAgentFree<'info> {
+    #[account(
+        init,
+        payer = admin,
+        space = 8 + AgentAccount::INIT_SPACE,
+        seeds = [b"agent", agent_wallet.as_ref()],
+        bump
+    )]
+    pub agent_account: Account<'info, AgentAccount>,
+    #[account(
+        seeds = [b"config"],
+        bump,
+        has_one = admin @ RegistryError::Unauthorized
+    )]
+    pub registry_config: Account<'info, RegistryConfig>,
+    #[account(mut)]
+    pub admin: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+/// Close agent — rent goes back to admin (treasury), not the bot
+#[derive(Accounts)]
+pub struct CloseAgent<'info> {
+    #[account(
+        mut,
+        close = admin,
+    )]
+    pub agent_account: Account<'info, AgentAccount>,
+    #[account(
+        seeds = [b"config"],
+        bump,
+        has_one = admin @ RegistryError::Unauthorized
+    )]
+    pub registry_config: Account<'info, RegistryConfig>,
+    #[account(mut)]
+    pub admin: Signer<'info>,
 }
 
 #[account]
