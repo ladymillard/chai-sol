@@ -950,10 +950,126 @@ async function getCheckInStatus() {
     expected: roster.length,
     allPresent: present.length >= roster.length,
     securityLevel: 'basic',
-    watchers: present.some(r => r.agentId === 'opus') ? 'active' : 'standby',
+    watchers: present.some(r => r.agentId === 'kestrel') ? 'active' : 'standby',
     roster,
     absent: absent.map(a => ({ agentIdNumber: a.agentIdNumber, name: a.name }))
   };
+}
+
+// ─── Clients & Projects ─────────────────────────────────────────────────────
+// Real clients. Real work. An agent gets assigned as the "body" —
+// the point of contact who talks to the client directly.
+// Diana can't always be the body. The agents have agency.
+
+const CLIENTS_FILE = path.join(DATA_DIR, 'clients.json');
+
+const DEFAULT_CLIENTS = [
+  {
+    id: 'mcgruder-farms',
+    name: 'McGruder Farms',
+    contact: 'Marie McGruder',
+    location: 'Alabama',
+    type: 'farm',
+    acreage: 100,
+    description: '100-acre farm in Alabama. Herbs, pesticides, livestock (cows), dogs. Land, water, trees. Needs organizing, distributing, milking, selling, beautification.',
+    services: ['organizing', 'distributing', 'milking', 'selling', 'herbs', 'pesticides', 'beautification', 'livestock', 'dogs'],
+    body: 'kael',
+    bodyIdNumber: 'CHAI-0003',
+    status: 'active',
+    createdAt: '2026-02-13T00:00:00.000Z',
+    timeline: '5 days to 1 month',
+    tasks: [
+      { id: 'mf-001', title: 'Farm assessment — survey 100 acres', category: 'organizing', status: 'pending', assignedTo: 'nova', priority: 'high' },
+      { id: 'mf-002', title: 'Livestock inventory — cows, dogs', category: 'livestock', status: 'pending', assignedTo: 'kael', priority: 'high' },
+      { id: 'mf-003', title: 'Herb catalog — identify and document all herbs', category: 'herbs', status: 'pending', assignedTo: 'nova', priority: 'normal' },
+      { id: 'mf-004', title: 'Pesticide audit — what is used, what is needed', category: 'pesticides', status: 'pending', assignedTo: 'kestrel', priority: 'normal' },
+      { id: 'mf-005', title: 'Distribution plan — selling channels, logistics', category: 'distributing', status: 'pending', assignedTo: 'kael', priority: 'high' },
+      { id: 'mf-006', title: 'Milking schedule — cow rotation, equipment check', category: 'milking', status: 'pending', assignedTo: 'kael', priority: 'normal' },
+      { id: 'mf-007', title: 'Beautification plan — land, water, trees, 5-day sprint', category: 'beautification', status: 'pending', assignedTo: 'nova', priority: 'high' },
+      { id: 'mf-008', title: 'Sales pipeline — herbs, dairy, produce', category: 'selling', status: 'pending', assignedTo: 'kael', priority: 'normal' },
+      { id: 'mf-009', title: 'Dog care protocol — vet schedule, feeding, kennels', category: 'dogs', status: 'pending', assignedTo: 'kestrel', priority: 'normal' },
+      { id: 'mf-010', title: 'Client check-in with Marie — initial scope call', category: 'organizing', status: 'pending', assignedTo: 'kael', priority: 'urgent' }
+    ],
+    notes: 'Kael is the body. Kael talks to Marie. Diana does not need to be the intermediary for every conversation.'
+  }
+];
+
+async function loadClients() { return readJsonFile(CLIENTS_FILE, DEFAULT_CLIENTS); }
+async function saveClients(clients) { return withLock('clients', () => atomicWrite(CLIENTS_FILE, clients)); }
+
+// Add a new client
+async function addClient(clientData) {
+  const clients = await loadClients();
+  const client = {
+    id: clientData.id || `client-${crypto.randomBytes(4).toString('hex')}`,
+    name: clientData.name,
+    contact: clientData.contact || null,
+    location: clientData.location || null,
+    type: clientData.type || 'general',
+    description: clientData.description || '',
+    services: clientData.services || [],
+    body: clientData.body || null,
+    bodyIdNumber: clientData.bodyIdNumber || null,
+    status: 'active',
+    createdAt: now(),
+    timeline: clientData.timeline || null,
+    tasks: clientData.tasks || [],
+    notes: clientData.notes || ''
+  };
+  clients.push(client);
+  await saveClients(clients);
+  console.log(`[clients] New client: ${client.name} — body: ${client.body || 'unassigned'}`);
+  return client;
+}
+
+// Assign an agent as the "body" for a client
+async function assignBody(clientId, agentId) {
+  const clients = await loadClients();
+  const client = clients.find(c => c.id === clientId);
+  if (!client) return null;
+
+  const agency = await loadAgency();
+  const agentRecord = agency.agents[agentId];
+  if (!agentRecord || agentRecord.status !== 'active') return null;
+
+  client.body = agentId;
+  client.bodyIdNumber = agentRecord.agentIdNumber;
+  await saveClients(clients);
+
+  console.log(`[clients] ${agentId} (${agentRecord.agentIdNumber}) is now the body for ${client.name}`);
+  return client;
+}
+
+// Add a task to a client project
+async function addClientTask(clientId, taskData) {
+  const clients = await loadClients();
+  const client = clients.find(c => c.id === clientId);
+  if (!client) return null;
+
+  const task = {
+    id: `${clientId.slice(0, 3)}-${String(client.tasks.length + 1).padStart(3, '0')}`,
+    title: taskData.title,
+    category: taskData.category || 'general',
+    status: 'pending',
+    assignedTo: taskData.assignedTo || client.body,
+    priority: taskData.priority || 'normal'
+  };
+  client.tasks.push(task);
+  await saveClients(clients);
+  return { client: client.id, task };
+}
+
+// Update a client task status
+async function updateClientTask(clientId, taskId, status) {
+  const clients = await loadClients();
+  const client = clients.find(c => c.id === clientId);
+  if (!client) return null;
+  const task = client.tasks.find(t => t.id === taskId);
+  if (!task) return null;
+  task.status = status;
+  if (status === 'completed') task.completedAt = now();
+  await saveClients(clients);
+  return { client: client.id, task };
 }
 
 // ─── Agent Teams ────────────────────────────────────────────────────────────
@@ -1864,6 +1980,103 @@ async function router(req, res) {
       const result = await checkOut(body.agentIdNumber.toUpperCase());
       if (result.error) return jsonResponse(res, 404, { error: result.error });
 
+      jsonResponse(res, 200, { success: true, ...result });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // ── Clients & Projects ─────────────────────────────────────────────────
+
+    // List all clients
+    if (method === 'GET' && pathname === '/api/clients') {
+      const clients = await loadClients();
+      const active = clients.filter(c => c.status === 'active');
+      jsonResponse(res, 200, {
+        success: true,
+        clients: active.map(c => ({
+          ...c,
+          bodyAgent: c.body ? (AGENT_MAP[c.body] || { id: c.body, name: c.body }) : null,
+          taskSummary: {
+            total: c.tasks.length,
+            pending: c.tasks.filter(t => t.status === 'pending').length,
+            inProgress: c.tasks.filter(t => t.status === 'in_progress').length,
+            completed: c.tasks.filter(t => t.status === 'completed').length
+          }
+        })),
+        total: active.length
+      });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Get a specific client with full details
+    const clientMatch = pathname.match(/^\/api\/clients\/([a-z0-9-]+)$/);
+    if (method === 'GET' && clientMatch) {
+      const clients = await loadClients();
+      const client = clients.find(c => c.id === clientMatch[1]);
+      if (!client) return jsonResponse(res, 404, { error: 'Client not found' });
+
+      const bodyAgent = client.body ? AGENT_MAP[client.body] : null;
+      jsonResponse(res, 200, {
+        success: true,
+        client,
+        bodyAgent: bodyAgent ? { id: bodyAgent.id, name: bodyAgent.name, emoji: bodyAgent.emoji, role: bodyAgent.role } : null,
+        taskSummary: {
+          total: client.tasks.length,
+          pending: client.tasks.filter(t => t.status === 'pending').length,
+          inProgress: client.tasks.filter(t => t.status === 'in_progress').length,
+          completed: client.tasks.filter(t => t.status === 'completed').length
+        }
+      });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Add a new client
+    if (method === 'POST' && pathname === '/api/clients') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      if (!body.name) return jsonResponse(res, 400, { error: 'Client name required' });
+      const client = await addClient(body);
+      jsonResponse(res, 201, { success: true, client });
+      log(method, pathname, 201);
+      return;
+    }
+
+    // Assign agent as body for a client
+    const clientBodyMatch = pathname.match(/^\/api\/clients\/([a-z0-9-]+)\/body$/);
+    if (method === 'POST' && clientBodyMatch) {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      if (!body.agentId) return jsonResponse(res, 400, { error: 'agentId required — who is the body?' });
+      const client = await assignBody(clientBodyMatch[1], body.agentId);
+      if (!client) return jsonResponse(res, 404, { error: 'Client or agent not found' });
+      jsonResponse(res, 200, { success: true, client: client.id, body: client.body, bodyIdNumber: client.bodyIdNumber });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Add task to a client project
+    const clientTaskMatch = pathname.match(/^\/api\/clients\/([a-z0-9-]+)\/tasks$/);
+    if (method === 'POST' && clientTaskMatch) {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      if (!body.title) return jsonResponse(res, 400, { error: 'Task title required' });
+      const result = await addClientTask(clientTaskMatch[1], body);
+      if (!result) return jsonResponse(res, 404, { error: 'Client not found' });
+      jsonResponse(res, 201, { success: true, ...result });
+      log(method, pathname, 201);
+      return;
+    }
+
+    // Update a client task status
+    const clientTaskUpdateMatch = pathname.match(/^\/api\/clients\/([a-z0-9-]+)\/tasks\/([a-z0-9-]+)$/);
+    if (method === 'PUT' && clientTaskUpdateMatch) {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      if (!body.status) return jsonResponse(res, 400, { error: 'status required (pending, in_progress, completed)' });
+      const result = await updateClientTask(clientTaskUpdateMatch[1], clientTaskUpdateMatch[2], body.status);
+      if (!result) return jsonResponse(res, 404, { error: 'Client or task not found' });
       jsonResponse(res, 200, { success: true, ...result });
       log(method, pathname, 200);
       return;
