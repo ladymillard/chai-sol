@@ -39,8 +39,8 @@ try {
 const AGENTS = [
   { id: 'ladydiana', name: 'L\u00e4dy Diana', emoji: '\u{1F451}', role: 'Lead Designer', model: 'Human', openclawId: null, color: '#ff6b6b', isHuman: true },
   { id: 'kael', name: 'Kael', emoji: '\u26A1', role: 'Digital Familiar', model: 'Axiom X', openclawId: 'main', color: '#029691' },
-  { id: 'nova', name: 'Nov\u00e4', emoji: '\u2728', role: 'Stellar Insight', model: 'Gemini 3 Pro', openclawId: 'nova', color: '#54e87a' },
-  { id: 'kestrel', name: 'Kestrel', emoji: '\u{1F985}', role: 'Scout', model: 'Gemini 3 Pro', openclawId: 'gemini-agent', color: '#5494e8', behindTheScenes: true }
+  { id: 'nova', name: 'Nov\u00e4', emoji: '\u2728', role: 'Stellar Insight', model: 'Axiom Sonnet 4.5', openclawId: 'nova', color: '#54e87a' },
+  { id: 'kestrel', name: 'Kestrel', emoji: '\u{1F985}', role: 'Scout', model: 'Axiom Haiku 4.5', openclawId: null, color: '#5494e8', behindTheScenes: true }
 ];
 
 // Removed agents — off the list
