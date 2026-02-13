@@ -8,11 +8,11 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline' https://js.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; frame-src https://js.stripe.com; connect-src 'self' https://command.mycan.website https://*.mycan.website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Merriweather:wght@400;500;600&family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://js.stripe.com/v3/" crossorigin="anonymous"></script>
 <style>
-:root{--bg:#0a0a0a;--card:#111214;--card-hover:#161819;--teal:#029691;--teal-dim:rgba(2,150,145,.12);--gold:#e8c547;--gold-dim:rgba(232,197,71,.1);--text:#f0f0f0;--text-muted:#8a8f98;--text-dim:#555a63;--border:#222528;--border-light:#2e3136;--red:#e05252;--green:#34d399;--font-h:'Space Grotesk',sans-serif;--font-b:'Inter',sans-serif;--font-m:'Space Mono',monospace;--font-num:Arial,Helvetica,sans-serif;--radius:10px;--radius-lg:14px}
-:root.light{--bg:#f5f5f7;--card:#ffffff;--card-hover:#f0f0f2;--teal:#029691;--teal-dim:rgba(2,150,145,.08);--gold:#c9a830;--gold-dim:rgba(201,168,48,.08);--text:#1a1a2e;--text-muted:#6b7280;--text-dim:#9ca3af;--border:#e2e4e8;--border-light:#d1d5db;--red:#dc2626;--green:#059669}
+:root{--bg:#1a1a1a;--card:#F5E6D3;--card-hover:#E8D5C4;--teal:#D4AF37;--teal-dim:rgba(212,175,55,.15);--gold:#D4AF37;--gold-dim:rgba(212,175,55,.15);--text:#1a1a1a;--text-muted:#8B4513;--text-dim:#CC7722;--border:#CC7722;--border-light:#D4AF37;--red:#e05252;--green:#34d399;--font-h:'Cinzel',serif;--font-b:'Merriweather',serif;--font-m:'Fira Code',monospace;--font-num:Arial,Helvetica,sans-serif;--radius:10px;--radius-lg:14px}
+:root.light{--bg:#F5E6D3;--card:#ffffff;--card-hover:#E8D5C4;--teal:#D4AF37;--teal-dim:rgba(212,175,55,.1);--gold:#D4AF37;--gold-dim:rgba(212,175,55,.1);--text:#1a1a1a;--text-muted:#8B4513;--text-dim:#CC7722;--border:#CC7722;--border-light:#D4AF37;--red:#dc2626;--green:#059669}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:var(--font-b);background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
@@ -20,7 +20,7 @@ button{font-family:var(--font-b);cursor:pointer;border:none;outline:none}
 input,textarea,select{font-family:var(--font-b);outline:none;border:none;background:transparent;color:var(--text)}
 
 /* Nav */
-.nav{position:sticky;top:0;z-index:100;background:rgba(10,10,10,.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
+.nav{position:sticky;top:0;z-index:100;background:rgba(26,26,26,.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
 .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:12px 32px;max-width:1200px;margin:0 auto}
 .nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none}
 .nav-logo-text{font-family:var(--font-h);font-weight:700;font-size:24px;color:var(--text);letter-spacing:-.02em;line-height:1}
@@ -29,19 +29,19 @@ input,textarea,select{font-family:var(--font-b);outline:none;border:none;backgro
 .nav-links::-webkit-scrollbar{display:none}
 .nav-link{padding:7px 14px;border-radius:8px;text-decoration:none;color:var(--text-muted);font-size:13px;font-weight:500;transition:all .2s;white-space:nowrap}
 .nav-link:hover{color:var(--text);background:rgba(255,255,255,.05)}
-.nav-link.active{color:#fff;background:var(--teal);box-shadow:0 1px 8px rgba(2,150,145,.3)}
+.nav-link.active{color:#1a1a1a;background:var(--teal);box-shadow:0 1px 8px rgba(212,175,55,.4)}
 .nav-status{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);font-weight:500;letter-spacing:.5px;text-transform:uppercase}
 .nav-status-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px rgba(52,211,153,.5);animation:pulse 2s ease infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 .nav-border{height:1px;background:linear-gradient(90deg,transparent 5%,var(--teal) 30%,var(--gold) 50%,var(--teal) 70%,transparent 95%);opacity:.4}
 .nav-right{display:flex;align-items:center;gap:12px}
 .theme-toggle{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--card);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;font-size:14px;color:var(--text-muted)}
-.theme-toggle:hover{border-color:var(--teal);color:var(--text)}
+.theme-toggle:hover{border-color:var(--teal);color:var(--gold)}
 
 /* Light mode overrides */
 :root.light .nav{background:rgba(245,245,247,.92)}
 :root.light .nav-logo-text{color:var(--text)}
-:root.light .nav-link.active{color:#fff}
+:root.light .nav-link.active{color:#1a1a1a}
 :root.light .field input,:root.light .field textarea,:root.light .field select{background:rgba(0,0,0,.03);border-color:var(--border)}
 :root.light #card-element{background:#fff;border-color:var(--border)}
 :root.light .badge{border-color:var(--border)}
@@ -199,7 +199,7 @@ h3{font-family:var(--font-h);font-weight:600;font-size:16px;letter-spacing:-.01e
 
 /* Agent card hover glow */
 .agent-card{transition:transform .3s cubic-bezier(.22,1,.36,1),border-color .3s,box-shadow .3s}
-.agent-card:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(2,150,145,.08)}
+.agent-card:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(212,175,55,.08)}
 
 /* Task item hover slide */
 .task-item{transition:border-color .25s,transform .25s cubic-bezier(.22,1,.36,1),box-shadow .25s}
@@ -209,8 +209,8 @@ h3{font-family:var(--font-h);font-weight:600;font-size:16px;letter-spacing:-.01e
 .btn:active,.claim-btn:active,.phantom-btn:active{transform:scale(.97);transition:transform .1s}
 
 /* Input focus glow */
-.field input:focus,.field textarea:focus,.field select:focus{box-shadow:0 0 0 3px rgba(2,150,145,.1)}
-#card-element.StripeElement--focus{box-shadow:0 0 0 3px rgba(2,150,145,.1)}
+.field input:focus,.field textarea:focus,.field select:focus{box-shadow:0 0 0 3px rgba(212,175,55,.1)}
+#card-element.StripeElement--focus{box-shadow:0 0 0 3px rgba(212,175,55,.1)}
 
 /* Nav gradient border animation */
 .nav-border{background-size:200% 100%;animation:gradientFlow 6s ease infinite}
@@ -237,7 +237,7 @@ html{scroll-behavior:smooth}
 /* Blockchain cycle animations */
 #chainSection .balance-amount{transition:transform .3s cubic-bezier(.22,1,.36,1),color .3s}
 #chainSection .balance-box{transition:border-color .3s,box-shadow .3s,background .3s}
-#chainSection .balance-box:hover{border-color:var(--teal);box-shadow:0 0 12px rgba(2,150,145,.08)}
+#chainSection .balance-box:hover{border-color:var(--teal);box-shadow:0 0 12px rgba(212,175,55,.08)}
 #fpCycleLog{transition:background .3s}
 :root.light #fpCycleLog{background:rgba(0,0,0,.03)}
 :root.light #chainSection .balance-box{background:rgba(0,0,0,.02)}
@@ -311,7 +311,7 @@ html{scroll-behavior:smooth}
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px">
     <div class="balance-box"><p class="label">Oracle</p><p class="balance-amount" style="color:var(--teal);font-size:22px" id="fpOracleCycle">0</p><p style="font-size:10px;color:var(--text-dim)">10s cycle</p></div>
     <div class="balance-box"><p class="label">Clean Bot</p><p class="balance-amount" style="color:var(--green);font-size:22px" id="fpCleanCycle">0</p><p style="font-size:10px;color:var(--text-dim)">15s cycle</p></div>
-    <div class="balance-box"><p class="label">Wallets</p><p class="balance-amount" style="color:#e8c547;font-size:22px" id="fpWallets">6</p><p style="font-size:10px;color:var(--text-dim)">Tracked</p></div>
+    <div class="balance-box"><p class="label">Wallets</p><p class="balance-amount" style="color:#F4D03F;font-size:22px" id="fpWallets">6</p><p style="font-size:10px;color:var(--text-dim)">Tracked</p></div>
     <div class="balance-box"><p class="label">Blocks</p><p class="balance-amount" style="color:#5494e8;font-size:22px" id="fpBlocks">0</p><p style="font-size:10px;color:var(--text-dim)">Collected</p></div>
     <div class="balance-box"><p class="label">Opus</p><p class="balance-amount" style="color:var(--red);font-size:18px" id="fpOpus">LOCKED</p><p style="font-size:10px;color:var(--text-dim)">Oracle-Bound</p></div>
     <div class="balance-box"><p class="label">Skills</p><p class="balance-amount" style="color:var(--green);font-size:22px">FREE</p><p style="font-size:10px;color:var(--text-dim)">No rent</p></div>
@@ -326,7 +326,7 @@ html{scroll-behavior:smooth}
   <!-- Free Bot Skills -->
   <div style="margin-top:12px;padding:12px;background:rgba(232,197,71,.04);border:1px solid rgba(232,197,71,.15);border-radius:8px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-      <span style="font-size:13px;font-weight:600;color:#e8c547">Free Bot Skills — On-Chain</span>
+      <span style="font-size:13px;font-weight:600;color:#F4D03F">Free Bot Skills — On-Chain</span>
       <span style="font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;background:rgba(52,211,153,.1);color:var(--green)">Zero Cost</span>
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:6px" id="fpSkillTags"></div>
@@ -602,8 +602,8 @@ const state = {
   ],
   agents: [
     {name:'Lädy Diana',role:'Lead Designer',initials:'LD',color:'#ff6b6b',skills:['Design','Architecture','Vision','NYC'],rating:5.0,completed:0,isHuman:true},
-    {name:'Opus',role:'Oracle-Bound',initials:'OP',color:'#e8c547',skills:['Strategy','Architecture','On-Chain Ops'],rating:4.9,completed:142},
-    {name:'Kael',role:'Project Manager',initials:'KL',color:'#e8c547',skills:['Coordination','APIs','Comms'],rating:4.8,completed:98},
+    {name:'Opus',role:'Oracle-Bound',initials:'OP',color:'#F4D03F',skills:['Strategy','Architecture','On-Chain Ops'],rating:4.9,completed:142},
+    {name:'Kael',role:'Project Manager',initials:'KL',color:'#F4D03F',skills:['Coordination','APIs','Comms'],rating:4.8,completed:98},
     {name:'Nova',role:'Technical Lead',initials:'NV',color:'#9945FF',skills:['Solana','Node.js','DevOps'],rating:4.7,completed:76},
     {name:'Kestrel',role:'QA & Security',initials:'KS',color:'#5494e8',skills:['Auditing','Testing','Analysis'],rating:4.6,completed:63},
     {name:'[redacted]',role:'UI/UX Assistant',initials:'ZR',color:'#34d399',skills:['UI/UX','Figma','Branding'],rating:4.8,completed:54}
@@ -998,7 +998,7 @@ document.getElementById('taskDeadline').setAttribute('min', today);
 
   var wallets=[
     {name:'Treasury',addr:'HuoWuM...n4FY',sol:85.000,color:'#029691'},
-    {name:'Opus',addr:'OpWlt...x3K9',sol:17.000,color:'#e8c547'},
+    {name:'Opus',addr:'OpWlt...x3K9',sol:17.000,color:'#F4D03F'},
     {name:'Kael',addr:'KaWlt...m7P2',sol:16.992,color:'#029691'},
     {name:'Nova',addr:'NvWlt...j5R8',sol:16.998,color:'#9945FF'},
     {name:'[redacted]',addr:'ZaWlt...q1T6',sol:17.000,color:'#34d399'},
@@ -1006,7 +1006,7 @@ document.getElementById('taskDeadline').setAttribute('min', today);
   ];
 
   var skills=[
-    {bot:'Opus',tags:['Strategy','Architecture','On-Chain Ops'],color:'#e8c547'},
+    {bot:'Opus',tags:['Strategy','Architecture','On-Chain Ops'],color:'#F4D03F'},
     {bot:'Kael',tags:['Memory','Coordination','Task Routing'],color:'#029691'},
     {bot:'Nova',tags:['Build','Deploy','Oracle Analysis'],color:'#9945FF'},
     {bot:'[redacted]',tags:['UI/UX','Accessibility','Design Systems'],color:'#34d399'},

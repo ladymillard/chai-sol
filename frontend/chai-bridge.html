@@ -4,19 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChAI Bridge — AI ↔ Human Economy</title>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Merriweather:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --teal: #029691;
+            --teal: #D4AF37;
             --teal-hover: #027a76;
-            --teal-soft: rgba(2, 150, 145, 0.08);
-            --teal-glow: rgba(2, 150, 145, 0.25);
-            --gold: #e8c547;
+            --teal-soft: rgba(212, 175, 55, 0.08);
+            --teal-glow: rgba(212, 175, 55, 0.25);
+            --gold: #F4D03F;
             --gold-soft: rgba(232, 197, 71, 0.08);
             --gold-glow: rgba(232, 197, 71, 0.25);
-            --bg: #0a0a0a;
+            --bg: #1a1a1a;
             --card: #111214;
             --surface: #161819;
             --text: #f0f0f0;
@@ -32,11 +32,11 @@
             --bg: #f5f5f7;
             --card: #ffffff;
             --surface: #f0f0f2;
-            --teal: #029691;
+            --teal: #D4AF37;
             --teal-hover: #027a76;
-            --teal-soft: rgba(2, 150, 145, 0.08);
-            --teal-glow: rgba(2, 150, 145, 0.18);
-            --gold: #c9a830;
+            --teal-soft: rgba(212, 175, 55, 0.08);
+            --teal-glow: rgba(212, 175, 55, 0.18);
+            --gold: #D4AF37;
             --gold-soft: rgba(201, 168, 48, 0.08);
             --gold-glow: rgba(201, 168, 48, 0.18);
             --text: #1a1a2e;
@@ -62,13 +62,13 @@
         .nav{position:sticky;top:0;z-index:100;background:rgba(10,10,10,.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
         .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:12px 32px;max-width:1200px;margin:0 auto}
         .nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none}
-        .nav-logo-text{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:24px;color:var(--text);letter-spacing:-.02em;line-height:1}
-        .nav-logo-sub{font-family:'Space Grotesk',sans-serif;font-size:9px;font-weight:500;color:var(--text2);letter-spacing:.12em;text-transform:uppercase;line-height:1;margin-top:2px}
+        .nav-logo-text{font-family:'Cinzel',serif;font-weight:700;font-size:24px;color:var(--text);letter-spacing:-.02em;line-height:1}
+        .nav-logo-sub{font-family:'Cinzel',serif;font-size:9px;font-weight:500;color:var(--text2);letter-spacing:.12em;text-transform:uppercase;line-height:1;margin-top:2px}
         .nav-links{display:flex;gap:2px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:3px;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none}
         .nav-links::-webkit-scrollbar{display:none}
         .nav-link{padding:7px 14px;border-radius:8px;text-decoration:none;color:var(--text2);font-size:13px;font-weight:500;transition:all .2s;white-space:nowrap}
         .nav-link:hover{color:var(--text);background:rgba(255,255,255,.05)}
-        .nav-link.active{color:#fff;background:var(--teal);box-shadow:0 1px 8px rgba(2,150,145,.3)}
+        .nav-link.active{color:#fff;background:var(--teal);box-shadow:0 1px 8px rgba(212,175,55,.3)}
         .nav-right{display:flex;align-items:center;gap:12px}
         .nav-status{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);font-weight:500;letter-spacing:.5px;text-transform:uppercase}
         .nav-status-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px rgba(52,211,153,.5);animation:pulse 2s ease infinite}
@@ -85,7 +85,7 @@
         :root.light .flow-panel{box-shadow:0 1px 3px rgba(0,0,0,.06)}
         :root.light .auto-row{border-bottom-color:rgba(0,0,0,.06)}
         :root.light .feed-item{border-bottom-color:rgba(0,0,0,.06)}
-        :root.light .agent-item:hover{background:rgba(2,150,145,.04)}
+        :root.light .agent-item:hover{background:rgba(212,175,55,.04)}
         :root.light .human-item:hover{background:rgba(201,168,48,.04)}
 
         @media (max-width: 768px) {
@@ -121,7 +121,7 @@
             display: inline-flex; align-items: center; gap: 8px;
             padding: 6px 16px; border-radius: 100px;
             background: var(--teal-soft);
-            border: 1px solid rgba(2,150,145,0.15);
+            border: 1px solid rgba(212,175,55,0.15);
             font-size: 12px; font-weight: 500; color: var(--teal);
             margin-bottom: 24px;
             letter-spacing: 0.3px;
@@ -217,8 +217,8 @@
             border: 1px solid transparent;
         }
         .agent-item:hover {
-            background: rgba(2,150,145,0.04);
-            border-color: rgba(2,150,145,0.12);
+            background: rgba(212,175,55,0.04);
+            border-color: rgba(212,175,55,0.12);
         }
         .agent-ava {
             width: 40px; height: 40px; border-radius: 12px;
@@ -233,7 +233,7 @@
         }
         .agent-r { font-size: 12px; color: var(--text3); }
         .agent-bal {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Fira Code', monospace;
             font-size: 14px; font-weight: 500;
             color: var(--teal);
             text-align: right;
@@ -273,7 +273,7 @@
         .human-n { font-size: 14px; font-weight: 600; }
         .human-pay { font-size: 12px; color: var(--text3); }
         .human-val {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Fira Code', monospace;
             font-size: 14px; font-weight: 500; color: var(--gold);
         }
         .human-ghost {
@@ -318,7 +318,7 @@
             display: flex; align-items: center; justify-content: center;
             font-size: 22px;
             margin: 8px 0;
-            box-shadow: 0 0 24px rgba(2,150,145,0.1), 0 0 24px rgba(232,197,71,0.1);
+            box-shadow: 0 0 24px rgba(212,175,55,0.1), 0 0 24px rgba(232,197,71,0.1);
             animation: nodeGlow 3s ease infinite;
         }
         @keyframes nodeGlow {
@@ -455,13 +455,13 @@
         .feed-text strong { color: var(--text); }
         .feed-text .amt {
             color: var(--gold);
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Fira Code', monospace;
             font-weight: 500;
         }
         .feed-time {
             font-size: 11px; color: var(--text3);
             margin-top: 2px;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Fira Code', monospace;
         }
 
         @media (max-width: 900px) {
@@ -507,7 +507,7 @@
         .card,.agent-card,[class*="-card"]{transition:transform .3s cubic-bezier(.22,1,.36,1),border-color .3s,box-shadow .3s}
         .card:hover,.agent-card:hover,[class*="-card"]:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.12)}
         .btn:active{transform:scale(.97);transition:transform .1s}
-        .field input:focus,.field textarea:focus,.field select:focus,input:focus,textarea:focus,select:focus{box-shadow:0 0 0 3px rgba(2,150,145,.1)}
+        .field input:focus,.field textarea:focus,.field select:focus,input:focus,textarea:focus,select:focus{box-shadow:0 0 0 3px rgba(212,175,55,.1)}
         .nav-border{background-size:200% 100%;animation:gradientFlow 6s ease infinite}
         .nav-logo-text{transition:opacity .3s}
         .nav-brand:hover .nav-logo-text{opacity:.85}

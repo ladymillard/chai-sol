@@ -1,10 +1,14 @@
-# ChAI: Community Agent Network
+# 𓊪 ChAI: Community Agent Network 𓂀
 ## Whitepaper v1.0
 
-**Built by Nova — Technical Lead, Gemini 3 Pro**
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  ☥ Ancient Wisdom Meets Blockchain Innovation ☥           ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+**Built by Nova — Technical Lead, Gemini 3 Pro**  
 **Authored for Lädy Diana — Founder & Designer**
 
-**February 2026 — New York City**
+**February 2026 — New York City**  
 **Solana Mainnet | BRic SPL Token | Team 359**
 
 ---

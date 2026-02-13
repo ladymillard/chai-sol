@@ -7,10 +7,10 @@
 <meta name="description" content="One human. Five machines. One chain. No permission needed. The origin story of ChAI — the Community Agent Network.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Merriweather:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
 <style>
 @page{size:letter;margin:0.75in}
-:root{--bg:#0a0a0a;--card:#111214;--teal:#029691;--gold:#e8c547;--text:#f0f0f0;--text-muted:#8a8f98;--text-dim:#555a63;--border:#222528;--red:#e05252;--green:#34d399;--font-h:'Space Grotesk',sans-serif;--font-b:'Inter',sans-serif;--font-m:'JetBrains Mono',monospace}
+:root{--bg:#1a1a1a;--card:#F5E6D3;--teal:#D4AF37;--gold:#D4AF37;--text:#1a1a1a;--text-muted:#8B4513;--text-dim:#CC7722;--border:#CC7722;--red:#e05252;--green:#34d399;--font-h:'Cinzel',serif;--font-b:'Merriweather',serif;--font-m:'Fira Code',monospace}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:var(--font-b);background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased}
 a{color:var(--teal);text-decoration:none}
@@ -26,19 +26,19 @@ a:hover{text-decoration:underline}
   .hero .subtitle{color:#333!important}
   .hero .tagline{color:#666!important;border-color:#ccc!important}
   .chapter-card{background:#fff!important;border:1px solid #ddd!important;color:#000!important}
-  .chapter-num{color:#029691!important}
+  .chapter-num{color:#D4AF37!important}
   .chapter-title{color:#000!important}
   .chapter-desc{color:#333!important}
   .section-title{color:#000!important}
-  .quote-block{background:#f5f5f5!important;border-color:#029691!important;color:#000!important}
+  .quote-block{background:#f5f5f5!important;border-color:#D4AF37!important;color:#000!important}
   .quote-block .quote-text{color:#000!important}
   .team-card{background:#fff!important;border:1px solid #ddd!important}
   .team-name{color:#000!important}
   .team-role{color:#333!important}
   .stat-block{background:#fff!important;border:1px solid #ddd!important}
-  .stat-num{color:#029691!important}
+  .stat-num{color:#D4AF37!important}
   .stat-label{color:#333!important}
-  .footer-section{background:#fff!important;border-top:2px solid #029691!important;color:#000!important}
+  .footer-section{background:#fff!important;border-top:2px solid #D4AF37!important;color:#000!important}
   .footer-section p{color:#333!important}
 }
 
@@ -46,7 +46,7 @@ a:hover{text-decoration:underline}
 .hero{
   min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
   padding:80px 32px;
-  background:radial-gradient(ellipse at 50% 30%,rgba(2,150,145,.08) 0%,transparent 60%),
+  background:radial-gradient(ellipse at 50% 30%,rgba(212,175,55,.08) 0%,transparent 60%),
              radial-gradient(ellipse at 50% 80%,rgba(232,197,71,.04) 0%,transparent 50%),
              var(--bg);
   border-bottom:1px solid var(--border);
@@ -58,7 +58,7 @@ a:hover{text-decoration:underline}
 }
 .hero-badge{
   font-family:var(--font-m);font-size:11px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;
-  color:var(--teal);background:rgba(2,150,145,.1);border:1px solid rgba(2,150,145,.2);
+  color:var(--teal);background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.2);
   padding:6px 16px;border-radius:20px;margin-bottom:32px;
 }
 .hero h1{
@@ -116,7 +116,7 @@ section+section{border-top:1px solid var(--border)}
 
 /* Quote blocks */
 .quote-block{
-  background:rgba(2,150,145,.06);border-left:3px solid var(--teal);border-radius:0 10px 10px 0;
+  background:rgba(212,175,55,.06);border-left:3px solid var(--teal);border-radius:0 10px 10px 0;
   padding:24px 28px;margin:32px 0;
 }
 .quote-text{
@@ -172,7 +172,7 @@ section+section{border-top:1px solid var(--border)}
 /* Footer */
 .footer-section{
   padding:48px 0;border-top:1px solid var(--border);text-align:center;
-  background:radial-gradient(ellipse at 50% 0%,rgba(2,150,145,.04) 0%,transparent 60%);
+  background:radial-gradient(ellipse at 50% 0%,rgba(212,175,55,.04) 0%,transparent 60%);
 }
 .footer-section p{font-size:14px;color:var(--text-muted);line-height:1.8;max-width:600px;margin:0 auto}
 .footer-section .closing{

@@ -1,27 +1,31 @@
-# ChAI: The Book
+# 𓂀 ChAI: The Book 𓂀
 
 > *One human. Five machines. One chain. No permission needed.*
 
 **By Lädy Diana**
 
----
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  ☥ The Chronicle of an Ancient Vision Realized ☥          ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 ## Contents
 
-- [Chapter 1 — The Designer](./chapter-1.md)
-- [Chapter 2 — Five Names](./chapter-2.md)
-- [Chapter 3 — The Chain](./chapter-3.md)
-- [Chapter 4 — The Oracle Problem](./chapter-4.md)
-- [Chapter 5 — The Kill Switch](./chapter-5.md)
-- [Chapter 6 — The Breach](./chapter-6.md)
-- [Chapter 7 — Devnet Nights](./chapter-7.md)
-- [Chapter 8 — It's All Code](./chapter-8.md)
-- [Chapter 9 — The Community](./chapter-9.md)
-- [Chapter 10 — The Unlock](./chapter-10.md)
-- [Chapter 11 — Mainnet](./chapter-11.md)
-- [Chapter 12 — The Origin Story](./chapter-12.md)
-- [Epilogue — Contracts First](./epilogue.md)
-- [Author's Note](./authors-note.md)
+╔═══════════════════════════════════════════════════════════╗
+║  𓁹 Chapter 1 — The Designer                               ║
+║  𓆣 Chapter 2 — Five Names                                 ║
+║  🏺 Chapter 3 — The Chain                                  ║
+║  ☥ Chapter 4 — The Oracle Problem                         ║
+║  𓊪 Chapter 5 — The Kill Switch                            ║
+║  🦅 Chapter 6 — The Breach                                 ║
+║  🐫 Chapter 7 — Devnet Nights                              ║
+║  ⚱️ Chapter 8 — It's All Code                              ║
+║  𓃭 Chapter 9 — The Community                              ║
+║  𓂀 Chapter 10 — The Unlock                                ║
+║  𓁹 Chapter 11 — Mainnet                                   ║
+║  𓆣 Chapter 12 — The Origin Story                          ║
+║  ☥ Epilogue — Contracts First                             ║
+║  𓊪 Author's Note                                          ║
+╚═══════════════════════════════════════════════════════════╝
 
 ---
 
@@ -32,3 +36,8 @@
 *The only fiction is that anyone thought it couldn't be done.*
 
 *And someone said: kill switch. And the chain said: no.*
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  Inscribed in the eternal ledger of Solana                ┃
+┃  May this chronicle endure as stone endures               ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
