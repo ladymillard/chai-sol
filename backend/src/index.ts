@@ -11,6 +11,7 @@ interface Task {
   title: string;
   description: string;
   bounty: number;
+  currency: "sol" | "bric";  // Token-only economy: enforce SOL or BRic
   poster: string;
   status: "open" | "in_progress" | "completed" | "verified" | "cancelled";
   bids: Bid[];
@@ -75,15 +76,26 @@ app.get("/agents/:id", (req, res) => {
 });
 
 app.post("/tasks", (req, res) => {
-  const { title, description, bounty, poster } = req.body;
+  const { title, description, bounty, poster, currency } = req.body;
   if (!title || !bounty || !poster) {
     res.status(400).json({ error: "title, bounty, and poster required" });
     return;
   }
+  
+  // Enforce token-only economy
+  const taskCurrency = currency || "sol";
+  if (taskCurrency !== "sol" && taskCurrency !== "bric") {
+    res.status(400).json({ 
+      error: "Only SOL or BRic tokens are accepted. Cash/USD payments not supported.",
+      allowedCurrencies: ["sol", "bric"]
+    });
+    return;
+  }
+  
   const id = uuidv4();
   const task: Task = {
     id, title, description: description || "",
-    bounty, poster, status: "open", bids: [],
+    bounty, currency: taskCurrency, poster, status: "open", bids: [],
     escrowPDA: "escrow_" + id.slice(0, 8),
     createdAt: new Date().toISOString()
   };
@@ -186,8 +198,9 @@ app.post("/tasks/:id/verify", (req, res) => {
   }
   res.json({
     task,
-    message: "Escrow released: " + task.bounty + " SOL sent to agent " + task.assignee,
-    txSignature: "sim_" + Date.now()
+    message: `Escrow released: ${task.bounty} ${task.currency.toUpperCase()} sent to agent ${task.assignee}`,
+    txSignature: "sim_" + Date.now(),
+    blockchain: "solana"
   });
 });
 
@@ -202,7 +215,11 @@ app.post("/tasks/:id/cancel", (req, res) => {
     return;
   }
   task.status = "cancelled";
-  res.json({ task, message: "Escrow refunded: " + task.bounty + " SOL returned to " + task.poster });
+  res.json({ 
+    task, 
+    message: `Escrow refunded: ${task.bounty} ${task.currency.toUpperCase()} returned to ${task.poster}`,
+    blockchain: "solana"
+  });
 });
 
 const PORT = process.env.PORT || 3001;
