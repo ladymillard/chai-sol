@@ -2569,11 +2569,11 @@ async function router(req, res) {
       return;
     }
 
-    // Get balance (Token-only: SOL/BRic)
+    // Get balance (Token-only: SOL/BRic with separate tracking)
     if (method === 'GET' && pathname === '/api/payments/balance') {
       const userId = 'default';
       const balances = await loadBalances();
-      const bal = balances[userId] || { sol: 0, escrow_sol: 0 };
+      const bal = balances[userId] || { sol: 0, escrow_sol: 0, bric: 0, escrow_bric: 0 };
       jsonResponse(res, 200, { success: true, balance: bal });
       log(method, pathname, 200);
       return;
@@ -2612,14 +2612,20 @@ async function router(req, res) {
 
       const userId = body.userId || 'default';
       const balances = await loadBalances();
-      const bal = balances[userId] || { sol: 0, escrow_sol: 0 };
+      // Separate balances for SOL and BRic tokens
+      const bal = balances[userId] || { sol: 0, escrow_sol: 0, bric: 0, escrow_bric: 0 };
 
-      // Check sufficient balance (treating bric as sol for now)
-      if (bounty > bal.sol) return jsonResponse(res, 400, { error: 'Insufficient token balance' });
-
-      // Move funds to escrow
-      bal.sol -= bounty;
-      bal.escrow_sol += bounty;
+      // Check sufficient balance based on currency
+      if (taskCur === 'sol') {
+        if (bounty > bal.sol) return jsonResponse(res, 400, { error: 'Insufficient SOL balance' });
+        bal.sol -= bounty;
+        bal.escrow_sol += bounty;
+      } else if (taskCur === 'bric') {
+        if (bounty > bal.bric) return jsonResponse(res, 400, { error: 'Insufficient BRic balance' });
+        bal.bric -= bounty;
+        bal.escrow_bric += bounty;
+      }
+      
       balances[userId] = bal;
       await saveBalances(balances);
 
@@ -2696,10 +2702,16 @@ async function router(req, res) {
       task.completedAt = now();
       await saveTasks(tasks);
 
-      // Release escrow (Token-only)
+      // Release escrow (Token-only - handle SOL and BRic separately)
       const balances = await loadBalances();
-      const posterBal = balances[task.postedBy] || { sol: 0, escrow_sol: 0 };
-      posterBal.escrow_sol -= task.bounty;
+      const posterBal = balances[task.postedBy] || { sol: 0, escrow_sol: 0, bric: 0, escrow_bric: 0 };
+      
+      if (task.currency === 'sol') {
+        posterBal.escrow_sol -= task.bounty;
+      } else if (task.currency === 'bric') {
+        posterBal.escrow_bric -= task.bounty;
+      }
+      
       balances[task.postedBy] = posterBal;
       await saveBalances(balances);
 

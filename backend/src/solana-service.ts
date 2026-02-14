@@ -3,9 +3,12 @@ import { Connection, PublicKey, clusterApiUrl } from "@solana/web3.js";
 const DEVNET_URL = clusterApiUrl("devnet");
 
 // Token validation: Only SOL and BRic are allowed
+// BRic mint address should be loaded from environment variables
+const BRIC_MINT_ADDRESS = process.env.BRIC_MINT_ADDRESS || "";
+
 export const ALLOWED_TOKENS = {
   SOL: "native",
-  BRIC: "BRicTokenMintAddressPlaceholder111111111111111" // Replace with actual BRic mint address
+  BRIC: BRIC_MINT_ADDRESS
 } as const;
 
 export type AllowedCurrency = keyof typeof ALLOWED_TOKENS;
@@ -16,6 +19,11 @@ export class SolanaService {
   constructor() {
     this.connection = new Connection(DEVNET_URL, "confirmed");
     console.log("Solana devnet connection established - Token-only economy enforced");
+    
+    // Validate BRic configuration
+    if (!BRIC_MINT_ADDRESS) {
+      console.warn("WARNING: BRIC_MINT_ADDRESS not configured. BRic token validation will be limited.");
+    }
   }
 
   /**

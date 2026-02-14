@@ -82,8 +82,17 @@ app.post("/tasks", (req, res) => {
     return;
   }
   
+  // Require explicit currency field
+  if (!currency) {
+    res.status(400).json({ 
+      error: "Currency field is required. Allowed values: 'sol' or 'bric'",
+      allowedCurrencies: ["sol", "bric"]
+    });
+    return;
+  }
+  
   // Enforce token-only economy
-  const taskCurrency = currency || "sol";
+  const taskCurrency = currency.toLowerCase();
   if (taskCurrency !== "sol" && taskCurrency !== "bric") {
     res.status(400).json({ 
       error: "Only SOL or BRic tokens are accepted. Cash/USD payments not supported.",

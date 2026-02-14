@@ -383,7 +383,8 @@ html{scroll-behavior:smooth}
         <h2 style="margin-bottom:0">Add Funds (Token-Only)</h2>
         <div class="tabs" id="fundTabs">
           <button class="tab active" data-tab="sol" onclick="switchFundTab('sol')">SOL</button>
-          <button class="tab" data-tab="bric" onclick="switchFundTab('bric')">BRic</button>
+          <!-- BRic tab disabled until BRic panel is implemented -->
+          <!-- <button class="tab" data-tab="bric" onclick="switchFundTab('bric')">BRic</button> -->
         </div>
       </div>
 
@@ -612,15 +613,16 @@ console.log('Token-only economy: USD/Stripe payments disabled');
 /* ── Fund Tabs ── */
 function switchFundTab(tab) {
   document.querySelectorAll('#fundTabs .tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-  document.getElementById('fundUsd').classList.toggle('hidden', tab !== 'usd' && tab !== 'sol' && tab !== 'bric');
-  document.getElementById('fundSol').classList.toggle('hidden', tab !== 'sol');
-  // Note: BRic tab would need its own panel implementation
+  // USD panel is always hidden (disabled)
+  document.getElementById('fundUsd').classList.add('hidden');
+  // Show SOL panel for both sol and bric tabs (bric not yet implemented)
+  document.getElementById('fundSol').classList.toggle('hidden', tab !== 'sol' && tab !== 'bric');
 }
 
 /* ── USD Deposit - DISABLED ── */
 async function handleUsdDeposit() {
   toast('USD deposits not supported. ChAI uses a token-only economy (SOL/BRic).', 'error');
-  return;
+}
         method: 'POST',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({amount: amt, currency: 'usd', stripeToken: token.id})
