@@ -266,27 +266,27 @@ Implemented in meta tag:
 ### Updating Content
 
 #### Modify Hero Text
-Line 286-296: Update title, subtitle, or description
+Search for `<!-- Hero Section -->` in the HTML file to update title, subtitle, or description
 
 #### Add/Remove Features
-Line 310-358: Add or remove feature cards in the grid
+Search for `<!-- Features Section -->` to add or remove feature cards in the grid
 
 #### Update Setup Steps
-Line 369-460: Modify step content, add new steps, or reorder
+Search for `<!-- Setup Guide Section -->` to modify step content, add new steps, or reorder
 
 #### Change Links
-Line 595-620: Update footer links to match your site structure
+Search for `<!-- Footer -->` to update footer links to match your site structure
 
 ### Styling Changes
 
 #### Colors
-Line 13-15: Modify CSS variables in `:root` and `:root.light`
+Search for `:root{` and `:root.light{` in the `<style>` section to modify CSS variables
 
 #### Animations
-Line 785-792: Adjust animation timing and effects
+Search for `@keyframes` in the `<style>` section to adjust animation timing and effects
 
 #### Responsive Breakpoints
-Line 759, 799: Modify media queries for different screen sizes
+Search for `@media` in the `<style>` section to modify media queries for different screen sizes
 
 ### Adding New Sections
 
