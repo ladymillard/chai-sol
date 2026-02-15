@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>𓊪 ChAI Digital Wallet - Credit Card</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .wallet-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .card-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            color: white;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-display::before {
+            content: '𓊪';
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            font-size: 150px;
+            opacity: 0.1;
+        }
+
+        .card-chip {
+            width: 50px;
+            height: 40px;
+            background: linear-gradient(135deg, #f5f5f5 0%, #c0c0c0 100%);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .card-number {
+            font-size: 1.5rem;
+            letter-spacing: 3px;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .card-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+        }
+
+        .card-holder {
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+
+        .card-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .actions-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .action-btn {
+            padding: 1rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #667eea;
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .transaction-list {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+
+        .transaction-type-charge {
+            color: #e74c3c;
+        }
+
+        .transaction-type-payment {
+            color: #27ae60;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-left: 0.5rem;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-active {
+            background: #27ae60;
+            color: white;
+        }
+
+        .status-inactive {
+            background: #e74c3c;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="wallet-container">
+        <h1>𓊪 ChAI Digital Wallet</h1>
+        <p>Your blockchain-powered credit card - No physical card required</p>
+
+        <div id="cardDisplay" class="card-display">
+            <div class="card-chip"></div>
+            <div class="card-number" id="cardNumber">•••• •••• •••• ••••</div>
+            <div class="card-info">
+                <div>
+                    <div style="font-size: 0.7rem; opacity: 0.8;">CARDHOLDER</div>
+                    <div class="card-holder" id="cardHolder">Loading...</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.7rem; opacity: 0.8;">STATUS</div>
+                    <div id="cardStatus">
+                        <span class="status-badge status-active">ACTIVE</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-stats">
+            <div class="stat-card">
+                <div class="stat-label">Available Credit</div>
+                <div class="stat-value" id="availableCredit">$0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Current Balance</div>
+                <div class="stat-value" id="currentBalance">$0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Credit Limit</div>
+                <div class="stat-value" id="creditLimit">$0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Spent</div>
+                <div class="stat-value" id="totalSpent">$0</div>
+            </div>
+        </div>
+
+        <div class="actions-panel">
+            <button class="action-btn" onclick="openModal('chargeModal')">💳 New Purchase</button>
+            <button class="action-btn" onclick="openModal('paymentModal')">💵 Make Payment</button>
+            <button class="action-btn" onclick="openModal('limitModal')">📈 Update Limit</button>
+            <button class="action-btn" onclick="toggleCardStatus()">🔒 Toggle Status</button>
+        </div>
+
+        <div class="transaction-list">
+            <h2>Transaction History</h2>
+            <div id="transactionList">
+                <p style="text-align: center; color: #999;">No transactions yet</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charge Modal -->
+    <div id="chargeModal" class="modal">
+        <div class="modal-content">
+            <h2>New Purchase</h2>
+            <form id="chargeForm">
+                <div class="form-group">
+                    <label>Merchant</label>
+                    <input type="text" id="merchant" required>
+                </div>
+                <div class="form-group">
+                    <label>Amount (SOL)</label>
+                    <input type="number" id="chargeAmount" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <input type="text" id="chargeDescription">
+                </div>
+                <button type="submit" class="btn-primary">Process Charge</button>
+                <button type="button" class="btn-secondary" onclick="closeModal('chargeModal')">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <h2>Make Payment</h2>
+            <form id="paymentForm">
+                <div class="form-group">
+                    <label>Payment Amount (SOL)</label>
+                    <input type="number" id="paymentAmount" step="0.01" required>
+                </div>
+                <button type="submit" class="btn-primary">Process Payment</button>
+                <button type="button" class="btn-secondary" onclick="closeModal('paymentModal')">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Credit Limit Modal -->
+    <div id="limitModal" class="modal">
+        <div class="modal-content">
+            <h2>Update Credit Limit</h2>
+            <form id="limitForm">
+                <div class="form-group">
+                    <label>New Credit Limit (SOL)</label>
+                    <input type="number" id="newLimit" step="0.01" required>
+                </div>
+                <button type="submit" class="btn-primary">Update Limit</button>
+                <button type="button" class="btn-secondary" onclick="closeModal('limitModal')">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3002';
+        let currentCardId = null;
+        let currentCard = null;
+
+        // Initialize on page load
+        async function init() {
+            // Check if user has a card
+            const cards = await fetchCards();
+            if (cards.length > 0) {
+                currentCard = cards[0];
+                currentCardId = currentCard.id;
+                displayCard(currentCard);
+                loadTransactions();
+            } else {
+                // Create a demo card for testing
+                await createDemoCard();
+            }
+        }
+
+        async function createDemoCard() {
+            const response = await fetch(`${API_URL}/cards`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    owner: 'demo_user_' + Date.now(),
+                    cardholderName: 'Demo User',
+                    creditLimit: 10000
+                })
+            });
+            const data = await response.json();
+            currentCard = data.card;
+            currentCardId = data.card.id;
+            displayCard(data.card);
+        }
+
+        async function fetchCards() {
+            const response = await fetch(`${API_URL}/cards`);
+            return await response.json();
+        }
+
+        function displayCard(card) {
+            document.getElementById('cardNumber').textContent = card.cardId;
+            document.getElementById('cardHolder').textContent = card.cardholderName;
+            document.getElementById('availableCredit').textContent = `${(card.availableCredit / 1000000000).toFixed(2)} SOL`;
+            document.getElementById('currentBalance').textContent = `${(card.balance / 1000000000).toFixed(2)} SOL`;
+            document.getElementById('creditLimit').textContent = `${(card.creditLimit / 1000000000).toFixed(2)} SOL`;
+            document.getElementById('totalSpent').textContent = `${(card.totalSpent / 1000000000).toFixed(2)} SOL`;
+            
+            const statusBadge = document.getElementById('cardStatus');
+            statusBadge.innerHTML = card.isActive 
+                ? '<span class="status-badge status-active">ACTIVE</span>'
+                : '<span class="status-badge status-inactive">INACTIVE</span>';
+        }
+
+        async function loadTransactions() {
+            if (!currentCardId) return;
+            
+            const response = await fetch(`${API_URL}/cards/${currentCardId}/transactions`);
+            const transactions = await response.json();
+            
+            const listEl = document.getElementById('transactionList');
+            if (transactions.length === 0) {
+                listEl.innerHTML = '<p style="text-align: center; color: #999;">No transactions yet</p>';
+                return;
+            }
+
+            listEl.innerHTML = transactions.map(tx => `
+                <div class="transaction-item">
+                    <div>
+                        <strong>${tx.merchant}</strong>
+                        <div style="font-size: 0.85rem; color: #666;">${tx.description}</div>
+                        <div style="font-size: 0.75rem; color: #999;">${new Date(tx.timestamp).toLocaleString()}</div>
+                    </div>
+                    <div class="transaction-type-${tx.transactionType}" style="font-weight: bold; font-size: 1.2rem;">
+                        ${tx.transactionType === 'charge' ? '-' : '+'}${(tx.amount / 1000000000).toFixed(2)} SOL
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Form handlers
+        document.getElementById('chargeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const merchant = document.getElementById('merchant').value;
+            const amount = Math.floor(parseFloat(document.getElementById('chargeAmount').value) * 1000000000);
+            const description = document.getElementById('chargeDescription').value;
+
+            const response = await fetch(`${API_URL}/cards/${currentCardId}/charge`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount, merchant, description })
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                alert('Charge processed successfully!');
+                currentCard = await fetchCardById(currentCardId);
+                displayCard(currentCard);
+                loadTransactions();
+                closeModal('chargeModal');
+                e.target.reset();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        });
+
+        document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const amount = Math.floor(parseFloat(document.getElementById('paymentAmount').value) * 1000000000);
+
+            const response = await fetch(`${API_URL}/cards/${currentCardId}/payment`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount })
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                alert('Payment processed successfully!');
+                currentCard = await fetchCardById(currentCardId);
+                displayCard(currentCard);
+                loadTransactions();
+                closeModal('paymentModal');
+                e.target.reset();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        });
+
+        document.getElementById('limitForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newLimit = Math.floor(parseFloat(document.getElementById('newLimit').value) * 1000000000);
+
+            const response = await fetch(`${API_URL}/cards/${currentCardId}/credit-limit`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ newLimit })
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                alert('Credit limit updated successfully!');
+                currentCard = data.card;
+                displayCard(currentCard);
+                closeModal('limitModal');
+                e.target.reset();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        });
+
+        async function toggleCardStatus() {
+            if (!currentCard) return;
+            
+            const newStatus = !currentCard.isActive;
+            const response = await fetch(`${API_URL}/cards/${currentCardId}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isActive: newStatus })
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                alert(`Card ${newStatus ? 'activated' : 'deactivated'} successfully!`);
+                currentCard = data.card;
+                displayCard(currentCard);
+            }
+        }
+
+        async function fetchCardById(id) {
+            const response = await fetch(`${API_URL}/cards/${id}`);
+            return await response.json();
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Initialize app
+        init();
+    </script>
+</body>
+</html>

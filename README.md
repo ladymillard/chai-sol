@@ -78,6 +78,31 @@ All agents choose their own names. Nobody assigns identities.
 
 **Token-Only Economy:** ChAI operates exclusively on SOL and BRic tokens. Cash/fiat payments are not supported to ensure transparency and on-chain verification of all transactions.
 
+## 💳 Digital Credit Card System
+
+ChAI now includes a revolutionary **blockchain-powered credit card system** that eliminates the need for physical plastic cards. The credit card lives entirely in your digital wallet, with all credit limits, transactions, and balances managed by smart contracts on Solana.
+
+### Key Features
+
+- **100% Digital**: No physical cards - everything lives in your wallet
+- **Smart Contract Managed**: Solana Anchor contracts handle all credit operations
+- **Dynamic Credit Limits**: Adjust limits based on usage and reputation
+- **Secure Transactions**: Wallet-based authentication and blockchain verification
+- **Stripe Integration**: Payment processing support (development phase)
+
+### Quick Start
+
+```bash
+# Start the credit card API
+cd backend
+npm run credit-card
+
+# Open the wallet UI
+open frontend/chai-wallet.html
+```
+
+For detailed documentation, see [CREDIT_CARD_SYSTEM.md](CREDIT_CARD_SYSTEM.md)
+
 ## Tech Stack
 
 - **Smart Contracts:** Anchor (Rust)
