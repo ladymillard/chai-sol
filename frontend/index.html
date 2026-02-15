@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Merriweather:wght@400;500;600&family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/scroll-animations.css">
 <!-- Stripe removed: Token-only economy (SOL/BRic) -->
 <style>
 :root{--bg:#1a1a1a;--card:#F5E6D3;--card-hover:#E8D5C4;--teal:#D4AF37;--teal-dim:rgba(212,175,55,.15);--gold:#D4AF37;--gold-dim:rgba(212,175,55,.15);--text:#1a1a1a;--text-muted:#8B4513;--text-dim:#CC7722;--border:#CC7722;--border-light:#D4AF37;--red:#e05252;--green:#34d399;--font-h:'Cinzel',serif;--font-b:'Merriweather',serif;--font-m:'Fira Code',monospace;--font-num:Arial,Helvetica,sans-serif;--radius:10px;--radius-lg:14px}
@@ -336,7 +337,7 @@ html{scroll-behavior:smooth}
 </section>
 
 <!-- Security Documents Tracker -->
-<section id="docSection" class="reveal" style="padding:24px 0 32px">
+<section id="docSection" class="reveal-hieroglyph" style="padding:24px 0 32px">
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:6px">
     <h2 style="margin-bottom:0">Security Documents</h2>
     <div style="display:flex;align-items:center;gap:8px">
@@ -347,11 +348,11 @@ html{scroll-behavior:smooth}
   <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">Escrow documents, security filings, and compliance records. Tracked by the cleaning bot. Timestamped on-chain.</p>
 
   <!-- Document Stats -->
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px">
-    <div class="balance-box"><p class="label">Received</p><p class="balance-amount" style="color:var(--green);font-size:22px" id="docReceived">0</p><p style="font-size:10px;color:var(--text-dim)">Today</p></div>
-    <div class="balance-box"><p class="label">Verified</p><p class="balance-amount" style="color:var(--teal);font-size:22px" id="docVerified">0</p><p style="font-size:10px;color:var(--text-dim)">Confirmed</p></div>
-    <div class="balance-box"><p class="label">Pending</p><p class="balance-amount" style="color:var(--gold);font-size:22px" id="docPending">0</p><p style="font-size:10px;color:var(--text-dim)">Review</p></div>
-    <div class="balance-box"><p class="label">Flagged</p><p class="balance-amount" style="color:var(--red);font-size:22px" id="docFlagged">0</p><p style="font-size:10px;color:var(--text-dim)">Attention</p></div>
+  <div class="stagger" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px">
+    <div class="balance-box reveal-item"><p class="label">Received</p><p class="balance-amount" style="color:var(--green);font-size:22px" id="docReceived">0</p><p style="font-size:10px;color:var(--text-dim)">Today</p></div>
+    <div class="balance-box reveal-item"><p class="label">Verified</p><p class="balance-amount" style="color:var(--teal);font-size:22px" id="docVerified">0</p><p style="font-size:10px;color:var(--text-dim)">Confirmed</p></div>
+    <div class="balance-box reveal-item"><p class="label">Pending</p><p class="balance-amount" style="color:var(--gold);font-size:22px" id="docPending">0</p><p style="font-size:10px;color:var(--text-dim)">Review</p></div>
+    <div class="balance-box reveal-item"><p class="label">Flagged</p><p class="balance-amount" style="color:var(--red);font-size:22px" id="docFlagged">0</p><p style="font-size:10px;color:var(--text-dim)">Attention</p></div>
   </div>
 
   <!-- Document List -->
@@ -375,10 +376,10 @@ html{scroll-behavior:smooth}
 </section>
 
 <!-- Add Funds + Balance -->
-<section class="reveal">
-  <div class="panels">
+<section class="reveal-slide-left">
+  <div class="panels stagger">
     <!-- Add Funds -->
-    <div class="card">
+    <div class="card reveal-item">
       <div class="card-header">
         <h2 style="margin-bottom:0">Add Funds (Token-Only)</h2>
         <div class="tabs" id="fundTabs">
@@ -411,7 +412,7 @@ html{scroll-behavior:smooth}
     </div>
 
     <!-- Balance (Token-Only) -->
-    <div class="card">
+    <div class="card reveal-item">
       <h2>Your Token Balance</h2>
       <div class="balance-grid">
         <div class="balance-box">
@@ -432,7 +433,7 @@ html{scroll-behavior:smooth}
 </section>
 
 <!-- Post a Task -->
-<section class="reveal">
+<section class="reveal-papyrus">
   <h2>Post a Task</h2>
   <div class="card">
     <form id="taskForm" onsubmit="handlePostTask(event)">
@@ -487,7 +488,7 @@ html{scroll-behavior:smooth}
 </section>
 
 <!-- Task Board -->
-<section class="reveal">
+<section class="reveal-slide-right">
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
     <h2 style="margin-bottom:0">Task Board</h2>
     <div class="task-filters" id="taskFilters">
@@ -505,7 +506,7 @@ html{scroll-behavior:smooth}
 </section>
 
 <!-- Interactive Bot Agents -->
-<section class="reveal">
+<section class="reveal-zoom">
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
     <h2 style="margin-bottom:0">Bot Agents</h2>
     <span style="font-size:11px;color:var(--text-dim);font-family:var(--font-m)">Click to interact</span>
@@ -1204,16 +1205,56 @@ document.getElementById('taskDeadline').setAttribute('min', today);
   console.log('[AUDIT] Opus data audit initialized. Run auditOpus() in console to inspect.');
 })();
 
-/* ── Scroll Reveal Observer ── */
-const revealObs = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      e.target.classList.add('visible');
-      revealObs.unobserve(e.target);
+/* ── Scroll Reveal Observer (Enhanced) ── */
+// Basic fallback for legacy browsers
+if (!window.IntersectionObserver) {
+  document.querySelectorAll('.reveal, .stagger, .reveal-fade, .reveal-slide-left, .reveal-slide-right, .reveal-slide-up, .reveal-zoom, .reveal-papyrus, .reveal-hieroglyph').forEach(el => {
+    el.classList.add('visible', 'no-animation');
+  });
+}
+</script>
+
+<!-- Enhanced Scroll Animations Module -->
+<script src="js/scroll-animations.js"></script>
+
+<script>
+// Initialize animation toggle button
+document.addEventListener('DOMContentLoaded', function() {
+  // Animation icon constants
+  const ICON_ENABLED = '✨';
+  const ICON_DISABLED = '⏸️';
+  
+  // Create animation toggle button
+  const toggleBtn = document.createElement('button');
+  toggleBtn.className = 'animation-toggle';
+  toggleBtn.innerHTML = `<span class="animation-toggle-icon">${ICON_ENABLED}</span><span>Animations</span>`;
+  toggleBtn.setAttribute('aria-label', 'Toggle scroll animations');
+  toggleBtn.setAttribute('title', 'Toggle scroll animations on/off');
+  
+  // Set initial state
+  const isEnabled = window.chaiScrollAnimations?.isEnabled() !== false;
+  if (!isEnabled) {
+    toggleBtn.classList.add('disabled');
+    toggleBtn.innerHTML = `<span class="animation-toggle-icon">${ICON_DISABLED}</span><span>Animations</span>`;
+  }
+  
+  toggleBtn.addEventListener('click', function() {
+    if (window.chaiScrollAnimations) {
+      const newState = !window.chaiScrollAnimations.isEnabled();
+      window.chaiScrollAnimations.toggle(newState);
+      
+      if (newState) {
+        toggleBtn.classList.remove('disabled');
+        toggleBtn.innerHTML = `<span class="animation-toggle-icon">${ICON_ENABLED}</span><span>Animations</span>`;
+      } else {
+        toggleBtn.classList.add('disabled');
+        toggleBtn.innerHTML = `<span class="animation-toggle-icon">${ICON_DISABLED}</span><span>Animations</span>`;
+      }
     }
   });
-}, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
-document.querySelectorAll('.reveal, .stagger').forEach(el => revealObs.observe(el));
+  
+  document.body.appendChild(toggleBtn);
+});
 </script>
 
 <footer style="text-align:center;padding:32px 20px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted);max-width:680px;margin:0 auto">
