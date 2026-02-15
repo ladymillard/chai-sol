@@ -404,13 +404,13 @@
     bottom: 20px;
     left: 20px;
     z-index: 999;
-    background: var(--bg-card, #F5E6D3);
+    background: var(--card, #F5E6D3);
     border: 1px solid var(--border, #CC7722);
     border-radius: 8px;
     padding: 10px 16px;
     font-size: 13px;
     font-weight: 600;
-    color: var(--text-primary, #1A1A1A);
+    color: var(--text, #1A1A1A);
     cursor: pointer;
     transition: all 0.2s ease;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -422,7 +422,7 @@
 .animation-toggle:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(212, 175, 55, 0.3);
-    border-color: var(--accent-gold, #D4AF37);
+    border-color: var(--gold, #D4AF37);
 }
 
 .animation-toggle-icon {
