@@ -88,6 +88,7 @@ pub mod credit_card {
         card.balance -= amount;
         card.available_credit += amount;
         card.total_payments += amount;
+        card.transaction_count += 1;
         card.last_activity = Clock::get()?.unix_timestamp;
 
         // Create transaction record
@@ -116,8 +117,9 @@ pub mod credit_card {
         let difference = new_limit as i64 - old_limit as i64;
         
         card.credit_limit = new_limit;
-        // Adjust available credit proportionally
-        card.available_credit = (card.available_credit as i64 + difference) as u64;
+        // Adjust available credit proportionally, ensuring it doesn't go below zero
+        let new_available = card.available_credit as i64 + difference;
+        card.available_credit = if new_available < 0 { 0 } else { new_available as u64 };
         card.last_activity = Clock::get()?.unix_timestamp;
 
         msg!("Credit limit updated from {} to {} lamports", old_limit, new_limit);

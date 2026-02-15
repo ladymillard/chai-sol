@@ -290,7 +290,8 @@ app.put("/cards/:id/credit-limit", (req, res) => {
   const difference = newLimit - oldLimit;
 
   card.creditLimit = newLimit;
-  card.availableCredit += difference;
+  // Adjust available credit, ensuring it doesn't go below zero
+  card.availableCredit = Math.max(0, card.availableCredit + difference);
   card.lastActivity = new Date().toISOString();
 
   res.json({
