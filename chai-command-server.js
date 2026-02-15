@@ -1767,11 +1767,13 @@ async function router(req, res) {
       return;
     }
 
-    // ── Stripe Publishable Key Endpoint (V-001) ─────────────────────────
+    // ── Stripe Configuration ─────────────────────────
+    // DISABLED: Token-only economy - Stripe/USD not supported
     if (method === 'GET' && pathname === '/api/config/stripe-key') {
-      const stripePk = process.env.STRIPE_PK || 'pk_live_51RGbN2GGgBHthisisnottherealkeyjustplaceholder';
-      jsonResponse(res, 200, { publishableKey: stripePk });
-      log(method, pathname, 200);
+      jsonResponse(res, 400, { 
+        error: 'Stripe payments not supported. ChAI operates on a token-only economy using SOL and BRic tokens.' 
+      });
+      log(method, pathname, 400);
       return;
     }
 
@@ -2554,69 +2556,24 @@ async function router(req, res) {
     }
 
     // ── Payments ──────────────────────────────────────────────────────────
+    // NOTE: Token-only economy - USD/cash payments are not supported
+    // All transactions must use SOL or BRic tokens
 
-    // Deposit USD via Stripe
+    // Deposit USD via Stripe - DISABLED (Token-only economy)
     if (method === 'POST' && pathname === '/api/payments/deposit') {
-      let body;
-      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
-      const { amount, currency, stripeToken } = body;
-
-      if (!amount || amount < 1) return jsonResponse(res, 400, { error: 'Minimum deposit is $1.00' });
-      if (!stripeToken) return jsonResponse(res, 400, { error: 'Stripe token required' });
-      if (!STRIPE_SECRET_KEY) return jsonResponse(res, 500, { error: 'Stripe not configured on server' });
-
-      try {
-        const result = await stripeRequest('POST', '/charges', {
-          amount: Math.round(amount * 100), // cents
-          currency: 'usd',
-          source: stripeToken,
-          description: `ChAI deposit - $${amount.toFixed(2)}`,
-          metadata: { platform: 'chai', type: 'deposit' }
-        });
-
-        if (result.status !== 200 || result.data.status !== 'succeeded') {
-          const errMsg = result.data.error ? result.data.error.message : 'Payment failed';
-          return jsonResponse(res, 400, { success: false, error: errMsg });
-        }
-
-        // Credit user balance
-        const userId = body.userId || 'default';
-        const balances = await loadBalances();
-        if (!balances[userId]) balances[userId] = { usd: 0, sol: 0, escrow_usd: 0, escrow_sol: 0 };
-        balances[userId].usd += amount;
-        await saveBalances(balances);
-
-        // Record payment
-        await appendPayment({
-          id: `pay_${crypto.randomBytes(8).toString('hex')}`,
-          type: 'deposit',
-          currency: 'usd',
-          amount,
-          stripeChargeId: result.data.id,
-          userId,
-          timestamp: now()
-        });
-
-        jsonResponse(res, 200, {
-          success: true,
-          chargeId: result.data.id,
-          amount,
-          balance: balances[userId]
-        });
-        log(method, pathname, 200);
-        console.log(`[payment] USD deposit: $${amount.toFixed(2)} (charge: ${result.data.id})`);
-        return;
-      } catch (err) {
-        console.error('[payment] Stripe error:', err.message);
-        return jsonResponse(res, 500, { success: false, error: 'Payment processing failed' });
-      }
+      jsonResponse(res, 400, { 
+        success: false, 
+        error: 'Cash deposits not supported. ChAI operates on a token-only economy. Please use SOL or BRic tokens.' 
+      });
+      log(method, pathname, 400);
+      return;
     }
 
-    // Get balance
+    // Get balance (Token-only: SOL/BRic with separate tracking)
     if (method === 'GET' && pathname === '/api/payments/balance') {
       const userId = 'default';
       const balances = await loadBalances();
-      const bal = balances[userId] || { usd: 0, sol: 0, escrow_usd: 0, escrow_sol: 0 };
+      const bal = balances[userId] || { sol: 0, escrow_sol: 0, bric: 0, escrow_bric: 0 };
       jsonResponse(res, 200, { success: true, balance: bal });
       log(method, pathname, 200);
       return;
@@ -2640,25 +2597,35 @@ async function router(req, res) {
       return;
     }
 
-    // Post a new task
+    // Post a new task (Token-only: SOL/BRic)
     if (method === 'POST' && pathname === '/api/tasks') {
       let body;
       try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
       const { title, description, category, bounty, currency: taskCur, deadline, skills } = body;
 
       if (!title || !bounty || !taskCur) return jsonResponse(res, 400, { error: 'title, bounty, and currency required' });
+      
+      // Enforce token-only economy
+      if (taskCur !== 'sol' && taskCur !== 'bric') {
+        return jsonResponse(res, 400, { error: 'Only SOL or BRic tokens are accepted. Cash/USD not supported.' });
+      }
 
       const userId = body.userId || 'default';
       const balances = await loadBalances();
-      const bal = balances[userId] || { usd: 0, sol: 0, escrow_usd: 0, escrow_sol: 0 };
+      // Separate balances for SOL and BRic tokens
+      const bal = balances[userId] || { sol: 0, escrow_sol: 0, bric: 0, escrow_bric: 0 };
 
-      // Check sufficient balance
-      if (taskCur === 'usd' && bounty > bal.usd) return jsonResponse(res, 400, { error: 'Insufficient USD balance' });
-      if (taskCur === 'sol' && bounty > bal.sol) return jsonResponse(res, 400, { error: 'Insufficient SOL balance' });
-
-      // Move funds to escrow
-      if (taskCur === 'usd') { bal.usd -= bounty; bal.escrow_usd += bounty; }
-      else { bal.sol -= bounty; bal.escrow_sol += bounty; }
+      // Check sufficient balance based on currency
+      if (taskCur === 'sol') {
+        if (bounty > bal.sol) return jsonResponse(res, 400, { error: 'Insufficient SOL balance' });
+        bal.sol -= bounty;
+        bal.escrow_sol += bounty;
+      } else if (taskCur === 'bric') {
+        if (bounty > bal.bric) return jsonResponse(res, 400, { error: 'Insufficient BRic balance' });
+        bal.bric -= bounty;
+        bal.escrow_bric += bounty;
+      }
+      
       balances[userId] = bal;
       await saveBalances(balances);
 
@@ -2694,7 +2661,7 @@ async function router(req, res) {
 
       jsonResponse(res, 201, { success: true, task, balance: bal });
       log(method, pathname, 201);
-      console.log(`[task] Posted: "${title}" - ${taskCur === 'usd' ? '$' : ''}${bounty}${taskCur === 'sol' ? ' SOL' : ''}`);
+      console.log(`[task] Posted: "${title}" - ${bounty} ${taskCur.toUpperCase()}`);
       return;
     }
 
@@ -2735,11 +2702,16 @@ async function router(req, res) {
       task.completedAt = now();
       await saveTasks(tasks);
 
-      // Release escrow
+      // Release escrow (Token-only - handle SOL and BRic separately)
       const balances = await loadBalances();
-      const posterBal = balances[task.postedBy] || { usd: 0, sol: 0, escrow_usd: 0, escrow_sol: 0 };
-      if (task.currency === 'usd') posterBal.escrow_usd -= task.bounty;
-      else posterBal.escrow_sol -= task.bounty;
+      const posterBal = balances[task.postedBy] || { sol: 0, escrow_sol: 0, bric: 0, escrow_bric: 0 };
+      
+      if (task.currency === 'sol') {
+        posterBal.escrow_sol -= task.bounty;
+      } else if (task.currency === 'bric') {
+        posterBal.escrow_bric -= task.bounty;
+      }
+      
       balances[task.postedBy] = posterBal;
       await saveBalances(balances);
 
