@@ -1,0 +1,464 @@
+/**
+ * ChAI Scroll Animations - Egyptian-Themed Reveal Effects
+ * Custom CSS animations aligned with ChAI branding
+ */
+
+/* ═══════════════════════════════════════════════════════════════
+   Accessibility: Respect User Preferences
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .reveal,
+    .reveal-fade,
+    .reveal-slide-left,
+    .reveal-slide-right,
+    .reveal-slide-up,
+    .reveal-zoom,
+    .reveal-papyrus,
+    .reveal-hieroglyph,
+    .stagger {
+        opacity: 1 !important;
+        transform: none !important;
+    }
+}
+
+/* No animation class for accessibility override */
+.no-animation,
+.no-animation * {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Core Animation Keyframes
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Fade In - Classic reveal */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Fade In Up - Rise from below */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Fade In Down - Descend from above */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Slide In Left - Enter from left */
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Slide In Right - Enter from right */
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Zoom In - Scale up reveal */
+@keyframes zoomIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Egyptian-Themed Animations
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Papyrus Unroll - Scroll unfurls like ancient papyrus */
+@keyframes papyrusUnroll {
+    from {
+        opacity: 0;
+        transform: scaleY(0.3) rotateX(45deg);
+        transform-origin: top center;
+    }
+    to {
+        opacity: 1;
+        transform: scaleY(1) rotateX(0deg);
+        transform-origin: top center;
+    }
+}
+
+/* Hieroglyph Reveal - Characters appear with gold shimmer */
+@keyframes hieroglyphReveal {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.9);
+        filter: brightness(1);
+    }
+    50% {
+        filter: brightness(1.4) drop-shadow(0 0 10px rgba(212, 175, 55, 0.8));
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: brightness(1);
+    }
+}
+
+/* Gold Shimmer - Elegant gold shine effect */
+@keyframes goldShimmer {
+    0% {
+        background-position: -100% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+/* Ankh Glow - Pulsing golden aura */
+@keyframes ankhGlow {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(212, 175, 55, 0.6);
+    }
+}
+
+/* Cartouche Frame - Border drawing animation */
+@keyframes cartoucheFrame {
+    from {
+        stroke-dashoffset: 1000;
+    }
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Base Reveal Classes
+   ═══════════════════════════════════════════════════════════════ */
+
+.reveal,
+.reveal-fade,
+.reveal-slide-left,
+.reveal-slide-right,
+.reveal-slide-up,
+.reveal-zoom,
+.reveal-papyrus,
+.reveal-hieroglyph {
+    opacity: 0;
+    transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
+}
+
+/* Default reveal (fade up) */
+.reveal {
+    transform: translateY(30px);
+}
+
+.reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Specific Animation Effects
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Fade In */
+.reveal-fade {
+    transform: none;
+}
+
+.reveal-fade.visible {
+    opacity: 1;
+}
+
+/* Slide from Left */
+.reveal-slide-left {
+    transform: translateX(-50px);
+}
+
+.reveal-slide-left.visible {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Slide from Right */
+.reveal-slide-right {
+    transform: translateX(50px);
+}
+
+.reveal-slide-right.visible {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Slide Up */
+.reveal-slide-up {
+    transform: translateY(40px);
+}
+
+.reveal-slide-up.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Zoom In */
+.reveal-zoom {
+    transform: scale(0.8);
+}
+
+.reveal-zoom.visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Papyrus Unroll Effect */
+.reveal-papyrus {
+    transform: scaleY(0.3) rotateX(45deg);
+    transform-origin: top center;
+    perspective: 1000px;
+}
+
+.reveal-papyrus.visible {
+    opacity: 1;
+    transform: scaleY(1) rotateX(0deg);
+    animation: papyrusUnroll 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Hieroglyph Reveal with Gold Shimmer */
+.reveal-hieroglyph {
+    transform: translateY(20px) scale(0.9);
+}
+
+.reveal-hieroglyph.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    animation: hieroglyphReveal 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Staggered Animations (for lists/grids)
+   ═══════════════════════════════════════════════════════════════ */
+
+.stagger > .reveal-item {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.stagger.visible > .reveal-item {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Stagger delays for up to 12 items */
+.stagger.visible > .reveal-item:nth-child(1) { transition-delay: 0ms; }
+.stagger.visible > .reveal-item:nth-child(2) { transition-delay: 60ms; }
+.stagger.visible > .reveal-item:nth-child(3) { transition-delay: 120ms; }
+.stagger.visible > .reveal-item:nth-child(4) { transition-delay: 180ms; }
+.stagger.visible > .reveal-item:nth-child(5) { transition-delay: 240ms; }
+.stagger.visible > .reveal-item:nth-child(6) { transition-delay: 300ms; }
+.stagger.visible > .reveal-item:nth-child(7) { transition-delay: 360ms; }
+.stagger.visible > .reveal-item:nth-child(8) { transition-delay: 420ms; }
+.stagger.visible > .reveal-item:nth-child(9) { transition-delay: 480ms; }
+.stagger.visible > .reveal-item:nth-child(10) { transition-delay: 540ms; }
+.stagger.visible > .reveal-item:nth-child(11) { transition-delay: 600ms; }
+.stagger.visible > .reveal-item:nth-child(12) { transition-delay: 660ms; }
+
+/* For more items, add generic fallback */
+.stagger.visible > .reveal-item:nth-child(n+13) {
+    transition-delay: 720ms;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Golden Shimmer Text Effect
+   ═══════════════════════════════════════════════════════════════ */
+
+.gold-shimmer {
+    background: linear-gradient(
+        90deg,
+        #D4AF37 0%,
+        #F4D03F 25%,
+        #FFE55C 50%,
+        #F4D03F 75%,
+        #D4AF37 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: goldShimmer 3s linear infinite;
+}
+
+.gold-shimmer-slow {
+    animation-duration: 5s;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Special Effects
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Ankh Glow Effect for Cards */
+.ankh-glow {
+    animation: ankhGlow 2s ease-in-out infinite;
+}
+
+/* Gold Border Animation */
+.gold-border-animated {
+    position: relative;
+    overflow: hidden;
+}
+
+.gold-border-animated::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(
+        45deg,
+        transparent,
+        rgba(212, 175, 55, 0.5),
+        transparent
+    );
+    z-index: -1;
+    animation: goldShimmer 3s linear infinite;
+    border-radius: inherit;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Animation Duration Variants
+   ═══════════════════════════════════════════════════════════════ */
+
+.anim-fast {
+    transition-duration: 0.3s !important;
+    animation-duration: 0.3s !important;
+}
+
+.anim-slow {
+    transition-duration: 1s !important;
+    animation-duration: 1s !important;
+}
+
+.anim-delay-1 { transition-delay: 0.1s; animation-delay: 0.1s; }
+.anim-delay-2 { transition-delay: 0.2s; animation-delay: 0.2s; }
+.anim-delay-3 { transition-delay: 0.3s; animation-delay: 0.3s; }
+.anim-delay-4 { transition-delay: 0.4s; animation-delay: 0.4s; }
+.anim-delay-5 { transition-delay: 0.5s; animation-delay: 0.5s; }
+
+/* ═══════════════════════════════════════════════════════════════
+   Animation Toggle Control
+   ═══════════════════════════════════════════════════════════════ */
+
+.animation-toggle {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 999;
+    background: var(--bg-card, #F5E6D3);
+    border: 1px solid var(--border, #CC7722);
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary, #1A1A1A);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.animation-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(212, 175, 55, 0.3);
+    border-color: var(--accent-gold, #D4AF37);
+}
+
+.animation-toggle-icon {
+    font-size: 16px;
+    transition: transform 0.3s ease;
+}
+
+.animation-toggle.disabled .animation-toggle-icon {
+    opacity: 0.5;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Performance Optimizations
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Use GPU acceleration */
+.reveal,
+.reveal-fade,
+.reveal-slide-left,
+.reveal-slide-right,
+.reveal-slide-up,
+.reveal-zoom,
+.reveal-papyrus,
+.reveal-hieroglyph,
+.stagger > .reveal-item {
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+}
