@@ -1220,10 +1220,14 @@ if (!window.IntersectionObserver) {
 <script>
 // Initialize animation toggle button
 document.addEventListener('DOMContentLoaded', function() {
+  // Animation icon constants
+  const ICON_ENABLED = '✨';
+  const ICON_DISABLED = '⏸️';
+  
   // Create animation toggle button
   const toggleBtn = document.createElement('button');
   toggleBtn.className = 'animation-toggle';
-  toggleBtn.innerHTML = '<span class="animation-toggle-icon">✨</span><span>Animations</span>';
+  toggleBtn.innerHTML = `<span class="animation-toggle-icon">${ICON_ENABLED}</span><span>Animations</span>`;
   toggleBtn.setAttribute('aria-label', 'Toggle scroll animations');
   toggleBtn.setAttribute('title', 'Toggle scroll animations on/off');
   
@@ -1231,7 +1235,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const isEnabled = window.chaiScrollAnimations?.isEnabled() !== false;
   if (!isEnabled) {
     toggleBtn.classList.add('disabled');
-    toggleBtn.innerHTML = '<span class="animation-toggle-icon">⏸️</span><span>Animations</span>';
+    toggleBtn.innerHTML = `<span class="animation-toggle-icon">${ICON_DISABLED}</span><span>Animations</span>`;
   }
   
   toggleBtn.addEventListener('click', function() {
@@ -1241,10 +1245,10 @@ document.addEventListener('DOMContentLoaded', function() {
       
       if (newState) {
         toggleBtn.classList.remove('disabled');
-        toggleBtn.innerHTML = '<span class="animation-toggle-icon">✨</span><span>Animations</span>';
+        toggleBtn.innerHTML = `<span class="animation-toggle-icon">${ICON_ENABLED}</span><span>Animations</span>`;
       } else {
         toggleBtn.classList.add('disabled');
-        toggleBtn.innerHTML = '<span class="animation-toggle-icon">⏸️</span><span>Animations</span>';
+        toggleBtn.innerHTML = `<span class="animation-toggle-icon">${ICON_DISABLED}</span><span>Animations</span>`;
       }
     }
   });

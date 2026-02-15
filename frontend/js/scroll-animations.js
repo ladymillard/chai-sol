@@ -10,6 +10,7 @@ class ScrollAnimations {
             threshold: options.threshold || 0.15,
             rootMargin: options.rootMargin || '0px 0px -100px 0px',
             animateOnce: options.animateOnce !== false, // true by default
+            staggerDelay: options.staggerDelay || 60, // milliseconds between stagger items
             ...options
         };
         
@@ -103,7 +104,7 @@ class ScrollAnimations {
         children.forEach((child, index) => {
             setTimeout(() => {
                 child.classList.add('visible');
-            }, index * 60); // 60ms stagger delay
+            }, index * this.options.staggerDelay);
         });
     }
 
