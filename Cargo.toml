@@ -1,7 +1,8 @@
 [workspace]
 members = [
     "programs/escrow",
-    "programs/registry"
+    "programs/registry",
+    "programs/credit_card"
 ]
 resolver = "2"
 

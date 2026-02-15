@@ -6,6 +6,7 @@ skip-lint = false
 
 [programs.mainnet]
 escrow = "Escrow11111111111111111111111111111111111111"
+credit_card = "Credit11111111111111111111111111111111111111"
 
 [registry]
 url = "https://api.apr.dev"
