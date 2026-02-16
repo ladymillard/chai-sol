@@ -6,7 +6,5 @@ target/
 data/wallets/
 data/agent-keys.json
 
-# Generated data files
-data/conversations/
-data/team.json
+# Generated data files - runtime data directory
 data/

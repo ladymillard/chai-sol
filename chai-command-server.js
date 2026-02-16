@@ -1477,6 +1477,8 @@ async function handleGetAgentPerformance(req, res, agentId) {
     ? tasksWithTiming.reduce((sum, t) => {
         const claimed = new Date(t.claimedAt).getTime();
         const completed = new Date(t.completedAt).getTime();
+        // Validate dates to prevent NaN
+        if (isNaN(claimed) || isNaN(completed)) return sum;
         return sum + (completed - claimed);
       }, 0) / tasksWithTiming.length
     : null;

@@ -377,7 +377,10 @@ async function executeTool(name, args) {
           if (performance.recentTasks && performance.recentTasks.length > 0) {
             text += `\n\nRecent Tasks (${performance.recentTasks.length}):\n`;
             performance.recentTasks.forEach((task, i) => {
-              text += `${i + 1}. ${task.title} - ${task.bounty} ${task.currency}\n`;
+              const title = task.title || 'Untitled';
+              const bounty = task.bounty || 0;
+              const currency = task.currency || 'SOL';
+              text += `${i + 1}. ${title} - ${bounty} ${currency}\n`;
             });
           }
         }
