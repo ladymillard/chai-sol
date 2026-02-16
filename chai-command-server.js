@@ -14,8 +14,8 @@ const { URL } = require('url');
 // ─── Configuration ──────────────────────────────────────────────────────────
 
 const PORT = parseInt(process.env.PORT, 10) || 9000;
-const OPENCLAW_URL = process.env.OPENCLAW_URL || 'http://3.14.142.213:18789';
-const OPENCLAW_TOKEN = process.env.OPENCLAW_TOKEN || '62ce21942dee9391c8d6e9e189daf1b00d0e6807c56eb14c';
+const OPENCLAW_URL = process.env.OPENCLAW_URL || 'http://127.0.0.1:18789';
+const OPENCLAW_TOKEN = process.env.OPENCLAW_TOKEN || '';
 const DATA_DIR = process.env.DATA_DIR || '/data';
 const CONV_DIR = path.join(DATA_DIR, 'conversations');
 const TEAM_FILE = path.join(DATA_DIR, 'team.json');
@@ -126,7 +126,7 @@ function authenticateAgent(req) {
 
 // ─── Session Auth (V-003) ───────────────────────────────────────────────────
 
-const AUTH_PASSWORD_HASH = 'd9ae3dffbab6b3dc23142a64411bd732c180301e268d1257d059681c0afa7296';
+const AUTH_PASSWORD_HASH = process.env.AUTH_PASSWORD_HASH || 'd9ae3dffbab6b3dc23142a64411bd732c180301e268d1257d059681c0afa7296';
 const SESSION_TTL = 24 * 60 * 60 * 1000; // 24 hours in ms
 
 // Map<token, { expiresAt: number }>
@@ -1131,7 +1131,12 @@ async function router(req, res) {
 
     // ── Stripe Publishable Key Endpoint (V-001) ─────────────────────────
     if (method === 'GET' && pathname === '/api/config/stripe-key') {
-      const stripePk = process.env.STRIPE_PK || 'pk_live_51RGbN2GGgBHthisisnottherealkeyjustplaceholder';
+      const stripePk = process.env.STRIPE_PK || '';
+      if (!stripePk) {
+        jsonResponse(res, 503, { error: 'Stripe not configured. Set STRIPE_PK env variable.' });
+        log(method, pathname, 503);
+        return;
+      }
       jsonResponse(res, 200, { publishableKey: stripePk });
       log(method, pathname, 200);
       return;
