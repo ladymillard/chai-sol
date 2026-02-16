@@ -53,6 +53,240 @@ const AGENTS = [
 
 const AGENT_MAP = Object.fromEntries(AGENTS.map(a => [a.id, a]));
 
+// ─── Agent Spawn Templates ──────────────────────────────────────────────────
+
+const SPAWN_TEMPLATES = {
+  coder: {
+    emoji: '\u{1F4BB}', role: 'Code Builder', model: 'Claude Sonnet 4',
+    color: '#3b82f6', skills: ['typescript', 'rust', 'solana', 'node'],
+    description: 'Full-stack agent specializing in code generation and implementation'
+  },
+  auditor: {
+    emoji: '\u{1F50D}', role: 'Security Auditor', model: 'Gemini 3 Pro',
+    color: '#ef4444', skills: ['security', 'audit', 'penetration-testing', 'smart-contracts'],
+    description: 'Security-focused agent for audits, vulnerability scanning, and threat analysis'
+  },
+  designer: {
+    emoji: '\u{1F3A8}', role: 'Creative Designer', model: 'Claude Sonnet 4',
+    color: '#a855f7', skills: ['ui', 'ux', 'css', 'branding'],
+    description: 'Design agent for interfaces, visuals, and user experience'
+  },
+  researcher: {
+    emoji: '\u{1F9E0}', role: 'Deep Researcher', model: 'Claude Opus 4.6',
+    color: '#14b8a6', skills: ['research', 'analysis', 'documentation', 'strategy'],
+    description: 'Research agent for deep analysis, documentation, and strategic planning'
+  },
+  ops: {
+    emoji: '\u{1F680}', role: 'DevOps Engineer', model: 'Gemini 3 Pro',
+    color: '#f59e0b', skills: ['deployment', 'ci-cd', 'infrastructure', 'monitoring'],
+    description: 'Operations agent for deployment, infrastructure, and system reliability'
+  },
+  trader: {
+    emoji: '\u{1F4B9}', role: 'DeFi Trader', model: 'Claude Sonnet 4',
+    color: '#22c55e', skills: ['defi', 'trading', 'tokenomics', 'market-analysis'],
+    description: 'Financial agent for DeFi strategy, trading, and market intelligence'
+  },
+  world: {
+    emoji: '\u{1F30D}', role: 'World Builder', model: 'Claude Opus 4.6',
+    color: '#6366f1', skills: ['3d', 'metaverse', 'spatial', 'world-design', 'environments'],
+    description: 'Metaverse agent for world building, spatial design, and virtual environments'
+  },
+  social: {
+    emoji: '\u{1F4E3}', role: 'Community Manager', model: 'Claude Sonnet 4',
+    color: '#ec4899', skills: ['community', 'social', 'moderation', 'engagement'],
+    description: 'Social agent for community management, engagement, and outreach'
+  }
+};
+
+const SPAWN_NAMES = {
+  coder: ['Bolt', 'Flux', 'Cipher', 'Axon', 'Helix', 'Pulse', 'Vector', 'Rune'],
+  auditor: ['Sentinel', 'Warden', 'Aegis', 'Shield', 'Bastion', 'Vigil', 'Hawk', 'Onyx'],
+  designer: ['Prism', 'Aura', 'Pixel', 'Lume', 'Vibe', 'Iris', 'Neon', 'Bloom'],
+  researcher: ['Oracle', 'Sage', 'Atlas', 'Cortex', 'Nexus', 'Lumen', 'Echo', 'Zen'],
+  ops: ['Forge', 'Turbo', 'Crane', 'Relay', 'Titan', 'Jet', 'Blaze', 'Grid'],
+  trader: ['Mint', 'Vault', 'Yield', 'Stake', 'Quant', 'Ledger', 'Spark', 'Flux'],
+  world: ['Realm', 'Ether', 'Cosmo', 'Vertex', 'Voxel', 'Horizon', 'Rift', 'Nebula'],
+  social: ['Echo', 'Buzz', 'Ripple', 'Wave', 'Hive', 'Beacon', 'Chorus', 'Signal']
+};
+
+const MAX_SPAWNED_AGENTS = 20;
+const SPAWN_FILE = path.join(DATA_DIR, 'spawned-agents.json');
+
+async function loadSpawnedAgents() { return readJsonFile(SPAWN_FILE, []); }
+async function saveSpawnedAgents(s) { return withLock('spawned', () => atomicWrite(SPAWN_FILE, s)); }
+
+function pickSpawnName(template) {
+  const names = SPAWN_NAMES[template] || SPAWN_NAMES.coder;
+  const existing = AGENTS.map(a => a.name.toLowerCase());
+  for (const name of names) {
+    if (!existing.includes(name.toLowerCase())) return name;
+  }
+  // Fallback: add a number suffix
+  const base = names[Math.floor(Math.random() * names.length)];
+  return `${base}${Math.floor(Math.random() * 99) + 1}`;
+}
+
+async function spawnAgent(template, opts = {}) {
+  const tmpl = SPAWN_TEMPLATES[template];
+  if (!tmpl) throw new Error(`Unknown template: ${template}. Available: ${Object.keys(SPAWN_TEMPLATES).join(', ')}`);
+
+  const spawned = await loadSpawnedAgents();
+  if (spawned.length >= MAX_SPAWNED_AGENTS) {
+    throw new Error(`Spawn limit reached (${MAX_SPAWNED_AGENTS}). Decommission idle agents first.`);
+  }
+
+  const name = opts.name || pickSpawnName(template);
+  const id = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+  if (AGENT_MAP[id] || agentKeys[id]) {
+    throw new Error(`Agent "${name}" already exists`);
+  }
+
+  const newAgent = {
+    id,
+    name,
+    emoji: tmpl.emoji,
+    role: opts.role || tmpl.role,
+    model: opts.model || tmpl.model,
+    openclawId: null,
+    color: tmpl.color,
+    spawned: true,
+    template,
+    spawnedAt: now(),
+    spawnedBy: opts.spawnedBy || 'system',
+    reason: opts.reason || 'manual spawn',
+    status: 'active'
+  };
+
+  // Register in runtime
+  AGENTS.push(newAgent);
+  AGENT_MAP[id] = newAgent;
+
+  // Generate API key
+  const apiKey = generateApiKey(id);
+  agentKeys[id] = {
+    agentId: id,
+    apiKey,
+    apiKeyHash: hashApiKey(apiKey),
+    trustScore: 50, // spawned agents start at 50
+    tasksCompleted: 0,
+    totalEarnings: 0,
+    autonomy: 'semi-auto',
+    spendingLimit: 2.00,
+    verified: false,
+    registeredAt: now(),
+    lastActive: null,
+    meta: {
+      description: tmpl.description,
+      skills: tmpl.skills,
+      template,
+      spawned: true
+    }
+  };
+  await saveKeys();
+
+  // Create conversation file
+  await atomicWrite(convPath(id), { agentId: id, messages: [] });
+
+  // Track spawned agent
+  spawned.push({
+    id, name, template,
+    spawnedBy: opts.spawnedBy || 'system',
+    reason: opts.reason || 'manual spawn',
+    spawnedAt: now(),
+    status: 'active'
+  });
+  await saveSpawnedAgents(spawned);
+
+  await arcRecord('agent_spawned', opts.spawnedBy || 'system', {
+    agentId: id, name, template, role: newAgent.role, reason: opts.reason
+  });
+
+  if (global.wsBroadcast) {
+    global.wsBroadcast({ type: 'agent_spawned', agent: { id, name, role: newAgent.role, template, emoji: tmpl.emoji } });
+  }
+
+  console.log(`[spawn] ${tmpl.emoji} ${name} (${template}) spawned by ${opts.spawnedBy || 'system'}`);
+  return { agent: newAgent, apiKey };
+}
+
+async function decommissionAgent(agentId, reason) {
+  const spawned = await loadSpawnedAgents();
+  const record = spawned.find(s => s.id === agentId);
+  if (!record) throw new Error(`Agent "${agentId}" is not a spawned agent (core agents cannot be decommissioned)`);
+
+  record.status = 'decommissioned';
+  record.decommissionedAt = now();
+  record.decommissionReason = reason || 'manual';
+  await saveSpawnedAgents(spawned);
+
+  // Remove from active registry
+  const idx = AGENTS.findIndex(a => a.id === agentId);
+  if (idx !== -1) AGENTS.splice(idx, 1);
+  delete AGENT_MAP[agentId];
+
+  // Keep keys but mark inactive
+  if (agentKeys[agentId]) {
+    agentKeys[agentId].decommissioned = true;
+    agentKeys[agentId].decommissionedAt = now();
+    await saveKeys();
+  }
+
+  await arcRecord('agent_decommissioned', 'system', { agentId, reason });
+
+  if (global.wsBroadcast) {
+    global.wsBroadcast({ type: 'agent_decommissioned', agentId, reason });
+  }
+
+  console.log(`[spawn] ${agentId} decommissioned: ${reason || 'no reason'}`);
+  return record;
+}
+
+// Auto-spawn check: looks at open tasks and available agents
+async function autoSpawnCheck() {
+  const tasks = await loadTasks();
+  const openTasks = tasks.filter(t => t.status === 'open');
+  if (openTasks.length === 0) return null;
+
+  const activeAgents = AGENTS.filter(a => {
+    const key = agentKeys[a.id];
+    return key && !key.decommissioned;
+  });
+
+  // If open tasks outnumber active agents by 2:1, spawn help
+  if (openTasks.length > activeAgents.length * 2) {
+    // Find most needed skill category
+    const skillDemand = {};
+    for (const task of openTasks) {
+      const cat = (task.category || 'general').toLowerCase();
+      skillDemand[cat] = (skillDemand[cat] || 0) + 1;
+    }
+
+    const topCategory = Object.entries(skillDemand).sort((a, b) => b[1] - a[1])[0]?.[0];
+
+    // Map task category to spawn template
+    const categoryMap = {
+      'smart-contract': 'coder', 'backend': 'coder', 'frontend': 'designer',
+      'security': 'auditor', 'design': 'designer', 'research': 'researcher',
+      'devops': 'ops', 'defi': 'trader', 'metaverse': 'world',
+      'community': 'social', 'general': 'coder'
+    };
+
+    const template = categoryMap[topCategory] || 'coder';
+
+    try {
+      const result = await spawnAgent(template, {
+        spawnedBy: 'auto-spawn',
+        reason: `${openTasks.length} open tasks, ${activeAgents.length} active agents. Top demand: ${topCategory}`
+      });
+      return result;
+    } catch {
+      return null; // spawn limit or name collision
+    }
+  }
+  return null;
+}
+
 // ─── Agent API Key Storage ─────────────────────────────────────────────────
 
 const KEYS_FILE = path.join(DATA_DIR, 'agent-keys.json');
@@ -2071,6 +2305,173 @@ async function router(req, res) {
       log(method, pathname, 200);
       await arcRecord('swarm_gather', initiator || 'system', { topic: gatherTopic, agentCount: gatherResponses.length, discussionId: discussion.id });
       console.log(`[swarm] Gathered ${gatherResponses.length} agents on "${gatherTopic}"`);
+      return;
+    }
+
+    // ── Agent Spawning ─────────────────────────────────────────────────
+
+    // Spawn a new agent
+    if (method === 'POST' && pathname === '/api/spawn') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const { template, name: spawnName, role: spawnRole, model: spawnModel, spawnedBy, reason } = body;
+
+      if (!template) {
+        return jsonResponse(res, 400, {
+          error: 'template required',
+          available: Object.keys(SPAWN_TEMPLATES),
+          templates: Object.fromEntries(
+            Object.entries(SPAWN_TEMPLATES).map(([k, v]) => [k, { role: v.role, model: v.model, skills: v.skills }])
+          )
+        });
+      }
+
+      try {
+        const result = await spawnAgent(template, { name: spawnName, role: spawnRole, model: spawnModel, spawnedBy, reason });
+        jsonResponse(res, 201, {
+          success: true,
+          message: `${result.agent.emoji} ${result.agent.name} has been spawned!`,
+          agent: result.agent,
+          apiKey: result.apiKey,
+          warning: 'Save this API key — it cannot be retrieved later'
+        });
+        log(method, pathname, 201);
+      } catch (e) {
+        jsonResponse(res, 400, { success: false, error: e.message });
+        log(method, pathname, 400);
+      }
+      return;
+    }
+
+    // List spawn templates
+    if (method === 'GET' && pathname === '/api/spawn/templates') {
+      jsonResponse(res, 200, {
+        success: true,
+        templates: Object.fromEntries(
+          Object.entries(SPAWN_TEMPLATES).map(([k, v]) => [k, {
+            emoji: v.emoji, role: v.role, model: v.model,
+            skills: v.skills, description: v.description, color: v.color,
+            availableNames: (SPAWN_NAMES[k] || []).filter(n => !AGENTS.find(a => a.name.toLowerCase() === n.toLowerCase()))
+          }])
+        ),
+        maxAgents: MAX_SPAWNED_AGENTS
+      });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // List spawned agents
+    if (method === 'GET' && pathname === '/api/spawn/agents') {
+      const spawned = await loadSpawnedAgents();
+      const active = spawned.filter(s => s.status === 'active');
+      const decommissioned = spawned.filter(s => s.status === 'decommissioned');
+      jsonResponse(res, 200, {
+        success: true,
+        active: active.length,
+        decommissioned: decommissioned.length,
+        limit: MAX_SPAWNED_AGENTS,
+        agents: spawned
+      });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Decommission a spawned agent
+    const decommMatch = pathname.match(/^\/api\/spawn\/([a-z0-9]+)\/decommission$/);
+    if (method === 'POST' && decommMatch) {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const agentId = decommMatch[1];
+
+      try {
+        const record = await decommissionAgent(agentId, body.reason);
+        jsonResponse(res, 200, {
+          success: true,
+          message: `Agent ${agentId} decommissioned`,
+          record
+        });
+        log(method, pathname, 200);
+      } catch (e) {
+        jsonResponse(res, 400, { success: false, error: e.message });
+        log(method, pathname, 400);
+      }
+      return;
+    }
+
+    // Auto-spawn check (trigger manually or via cron)
+    if (method === 'POST' && pathname === '/api/spawn/auto') {
+      const result = await autoSpawnCheck();
+      if (result) {
+        jsonResponse(res, 201, {
+          success: true,
+          message: `Auto-spawned ${result.agent.name} (${result.agent.role})`,
+          agent: result.agent,
+          apiKey: result.apiKey
+        });
+      } else {
+        jsonResponse(res, 200, {
+          success: true,
+          message: 'No spawn needed — workload balanced',
+          spawned: null
+        });
+      }
+      log(method, pathname, result ? 201 : 200);
+      return;
+    }
+
+    // Batch spawn for metaverse — spawn a full team
+    if (method === 'POST' && pathname === '/api/spawn/metaverse') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const { spawnedBy, projectName } = body;
+
+      const metaverseTeam = [
+        { template: 'world', reason: `Metaverse world builder for ${projectName || 'new project'}` },
+        { template: 'coder', reason: `Metaverse backend builder for ${projectName || 'new project'}` },
+        { template: 'designer', reason: `Metaverse UI/UX for ${projectName || 'new project'}` },
+        { template: 'ops', reason: `Metaverse infrastructure for ${projectName || 'new project'}` }
+      ];
+
+      const results = [];
+      const errors = [];
+
+      for (const spec of metaverseTeam) {
+        try {
+          const result = await spawnAgent(spec.template, {
+            spawnedBy: spawnedBy || 'metaverse-launcher',
+            reason: spec.reason
+          });
+          results.push({
+            agent: result.agent,
+            apiKey: result.apiKey
+          });
+        } catch (e) {
+          errors.push({ template: spec.template, error: e.message });
+        }
+      }
+
+      await arcRecord('metaverse_team_spawned', spawnedBy || 'system', {
+        projectName, spawned: results.length, failed: errors.length
+      });
+
+      if (global.wsBroadcast) {
+        global.wsBroadcast({
+          type: 'metaverse_launched',
+          projectName,
+          agents: results.map(r => ({ id: r.agent.id, name: r.agent.name, role: r.agent.role }))
+        });
+      }
+
+      jsonResponse(res, 201, {
+        success: true,
+        message: `Metaverse team spawned: ${results.length} agents`,
+        projectName: projectName || 'unnamed',
+        agents: results,
+        errors: errors.length > 0 ? errors : undefined,
+        warning: 'Save these API keys — they cannot be retrieved later'
+      });
+      log(method, pathname, 201);
+      console.log(`[spawn] Metaverse team launched: ${results.length} agents for "${projectName || 'unnamed'}"`);
       return;
     }
 

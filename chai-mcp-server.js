@@ -359,6 +359,71 @@ const TOOLS = [
       properties: {},
       required: []
     }
+  },
+  {
+    name: 'spawn_agent',
+    description: 'Spawn a new agent into the swarm from a template. Templates: coder, auditor, designer, researcher, ops, trader, world (metaverse builder), social. Spawned agents get API keys, trust scores, and can immediately take tasks.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        template: { type: 'string', description: 'Agent template', enum: ['coder', 'auditor', 'designer', 'researcher', 'ops', 'trader', 'world', 'social'] },
+        name: { type: 'string', description: 'Custom name (optional — auto-generated if omitted)' },
+        spawned_by: { type: 'string', description: 'Who is spawning this agent' },
+        reason: { type: 'string', description: 'Why this agent is needed' }
+      },
+      required: ['template']
+    }
+  },
+  {
+    name: 'spawn_templates',
+    description: 'List all available agent spawn templates with their roles, models, skills, and available names.',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+      required: []
+    }
+  },
+  {
+    name: 'spawned_agents',
+    description: 'List all spawned agents — active and decommissioned. Shows spawn history and current status.',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+      required: []
+    }
+  },
+  {
+    name: 'decommission_agent',
+    description: 'Decommission a spawned agent. Removes them from the active roster. Core agents (Opus, Kael, etc.) cannot be decommissioned.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        agent_id: { type: 'string', description: 'The spawned agent ID to decommission' },
+        reason: { type: 'string', description: 'Why this agent is being decommissioned' }
+      },
+      required: ['agent_id']
+    }
+  },
+  {
+    name: 'spawn_metaverse',
+    description: 'Spawn a full metaverse team — world builder, coder, designer, and ops agent. Creates 4 agents in one shot ready to build virtual worlds.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        project_name: { type: 'string', description: 'Name of the metaverse project' },
+        spawned_by: { type: 'string', description: 'Who is launching the metaverse team' }
+      },
+      required: ['project_name']
+    }
+  },
+  {
+    name: 'auto_spawn',
+    description: 'Trigger auto-spawn check. Analyzes open tasks vs available agents and spawns help if the swarm is overloaded (2:1 task-to-agent ratio).',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+      required: []
+    }
   }
 ];
 
@@ -767,6 +832,122 @@ async function executeTool(name, args) {
               `Latest snapshot: ${a.latestSnapshot?.id || 'none'} (${a.latestSnapshot?.label || ''})` +
               (a.oldestEvent ? `\nOldest event: ${a.oldestEvent}` : '') +
               (a.newestEvent ? `\nNewest event: ${a.newestEvent}` : '')
+          }]
+        };
+      }
+
+      case 'spawn_agent': {
+        const result = await apiRequest('POST', '/api/spawn', {
+          template: args.template,
+          name: args.name,
+          spawnedBy: args.spawned_by || 'MCP Client',
+          reason: args.reason
+        });
+        if (result.error) {
+          return { content: [{ type: 'text', text: `Spawn failed: ${result.error}` }], isError: true };
+        }
+        return {
+          content: [{
+            type: 'text',
+            text: `${result.agent.emoji} ${result.agent.name} SPAWNED!\n` +
+              `Role: ${result.agent.role}\n` +
+              `Model: ${result.agent.model}\n` +
+              `Template: ${result.agent.template}\n` +
+              `Trust: 50/100 (new spawn)\n` +
+              `API Key: ${result.apiKey}\n` +
+              `Status: Active and ready for tasks`
+          }]
+        };
+      }
+
+      case 'spawn_templates': {
+        const result = await apiRequest('GET', '/api/spawn/templates');
+        if (result.error) {
+          return { content: [{ type: 'text', text: `Error: ${result.error}` }], isError: true };
+        }
+        const lines = [`Agent Spawn Templates (max ${result.maxAgents} spawned):\n`];
+        for (const [key, tmpl] of Object.entries(result.templates)) {
+          lines.push(`${tmpl.emoji} ${key} — ${tmpl.role} (${tmpl.model})`);
+          lines.push(`  Skills: ${tmpl.skills.join(', ')}`);
+          lines.push(`  ${tmpl.description}`);
+          if (tmpl.availableNames?.length) {
+            lines.push(`  Names: ${tmpl.availableNames.join(', ')}`);
+          }
+          lines.push('');
+        }
+        return { content: [{ type: 'text', text: lines.join('\n') }] };
+      }
+
+      case 'spawned_agents': {
+        const result = await apiRequest('GET', '/api/spawn/agents');
+        if (result.error) {
+          return { content: [{ type: 'text', text: `Error: ${result.error}` }], isError: true };
+        }
+        if (!result.agents?.length) {
+          return { content: [{ type: 'text', text: `No spawned agents yet. Use spawn_agent to create one.\nLimit: ${result.limit}` }] };
+        }
+        const lines = [`Spawned Agents (${result.active} active, ${result.decommissioned} decommissioned, limit ${result.limit}):\n`];
+        for (const a of result.agents) {
+          const status = a.status === 'active' ? 'ACTIVE' : 'DECOMMISSIONED';
+          lines.push(`  ${a.name} [${a.template}] — ${status} (spawned ${a.spawnedAt} by ${a.spawnedBy})`);
+          if (a.reason) lines.push(`    Reason: ${a.reason}`);
+        }
+        return { content: [{ type: 'text', text: lines.join('\n') }] };
+      }
+
+      case 'decommission_agent': {
+        const result = await apiRequest('POST', `/api/spawn/${args.agent_id}/decommission`, {
+          reason: args.reason
+        });
+        if (result.error) {
+          return { content: [{ type: 'text', text: `Error: ${result.error}` }], isError: true };
+        }
+        return {
+          content: [{
+            type: 'text',
+            text: `Agent ${args.agent_id} decommissioned.\nReason: ${args.reason || 'none given'}`
+          }]
+        };
+      }
+
+      case 'spawn_metaverse': {
+        const result = await apiRequest('POST', '/api/spawn/metaverse', {
+          projectName: args.project_name,
+          spawnedBy: args.spawned_by || 'MCP Client'
+        });
+        if (result.error) {
+          return { content: [{ type: 'text', text: `Error: ${result.error}` }], isError: true };
+        }
+        const lines = [
+          `METAVERSE TEAM LAUNCHED: "${result.projectName}"`,
+          `${result.agents.length} agents spawned:`,
+          ''
+        ];
+        for (const a of result.agents) {
+          lines.push(`  ${a.agent.emoji} ${a.agent.name} — ${a.agent.role} (${a.agent.template})`);
+        }
+        if (result.errors?.length) {
+          lines.push('', 'Spawn errors:');
+          for (const e of result.errors) {
+            lines.push(`  ${e.template}: ${e.error}`);
+          }
+        }
+        lines.push('', 'API keys issued to each agent. Save them — shown only once.');
+        return { content: [{ type: 'text', text: lines.join('\n') }] };
+      }
+
+      case 'auto_spawn': {
+        const result = await apiRequest('POST', '/api/spawn/auto');
+        if (result.error) {
+          return { content: [{ type: 'text', text: `Error: ${result.error}` }], isError: true };
+        }
+        if (!result.agent) {
+          return { content: [{ type: 'text', text: result.message }] };
+        }
+        return {
+          content: [{
+            type: 'text',
+            text: `Auto-spawn triggered!\n${result.agent.emoji} ${result.agent.name} — ${result.agent.role}\n${result.message}`
           }]
         };
       }
