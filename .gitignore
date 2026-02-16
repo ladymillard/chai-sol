@@ -2,9 +2,5 @@ node_modules/
 dist/
 target/
 
-# Private — wallets and API keys
-data/wallets/
-data/agent-keys.json
-
-# Generated data files - runtime data directory
+# Generated data directory - all runtime data
 data/
