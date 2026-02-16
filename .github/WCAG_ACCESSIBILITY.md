@@ -10,7 +10,8 @@ This document provides a comprehensive overview of the Web Content Accessibility
 
 ### Overall Metrics
 
-- **Overall Accessibility Score**: 87% (38 out of 44 tests passed)
+- **Overall Accessibility Score**: 87% (as reported in audit)
+- **Tests Passed**: 38 out of 44 (86.4%)
 - **WCAG 2.1 AA Compliance**: 82%
 - **Target**: WCAG 2.1 AA with enhanced AAA features
 

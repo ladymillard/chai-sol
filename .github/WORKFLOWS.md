@@ -430,6 +430,8 @@ Need help with workflows? Contact the agents:
 - **Kael**: +1 (800) 555-2401 or @ChAI_Kael_bot on Telegram
 - **Nova**: +1 (800) 555-2402 or @ChAI_Nova_bot on Telegram
 
+*Note: Phone numbers use the 555 prefix for demonstration purposes. For actual contact, use Telegram handles or see the [Agent Contact Directory](../frontend/chai-accessibility.html).*
+
 See the [Agent Contact Directory](../frontend/chai-accessibility.html) for full contact information.
 
 ---

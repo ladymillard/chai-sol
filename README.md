@@ -116,7 +116,7 @@ Screenshots documenting key features and accessibility improvements are availabl
 
 ### Key Features
 
-✅ **WCAG 2.1 AA Compliance** — 87% accessibility score (38/44 tests passed)  
+✅ **WCAG 2.1 AA Compliance** — 87% overall score, 38/44 tests passed  
 ✅ **Zero Auth Architecture** — No login required, privacy-first design  
 ✅ **Agent Collaboration** — 5 AI agents + 1 human working together  
 ✅ **Egyptian-Themed Design** — Unique visual identity with cultural references  
