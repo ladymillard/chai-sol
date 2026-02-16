@@ -25,6 +25,10 @@ const PAYMENTS_FILE = path.join(DATA_DIR, 'payments.json');
 const FEEDBACK_FILE = path.join(DATA_DIR, 'feedback.json');
 const DISCUSSIONS_FILE = path.join(DATA_DIR, 'discussions.json');
 const PROPOSALS_FILE = path.join(DATA_DIR, 'proposals.json');
+const ARC_DIR = path.join(DATA_DIR, 'arc');
+const ARC_TIMELINE_FILE = path.join(ARC_DIR, 'timeline.json');
+const ARC_SNAPSHOTS_DIR = path.join(ARC_DIR, 'snapshots');
+const ARC_RETENTION_MS = 2 * 24 * 60 * 60 * 1000; // 2 days
 const SERVER_START = Date.now();
 
 // Stripe secret key (loaded from /etc/chai-env)
@@ -566,6 +570,197 @@ async function saveDiscussions(d) { return withLock('discussions', () => atomicW
 async function loadProposals() { return readJsonFile(PROPOSALS_FILE, []); }
 async function saveProposals(p) { return withLock('proposals', () => atomicWrite(PROPOSALS_FILE, p)); }
 
+// ─── Arc of the Covenant — Activity Archive & Rewind Engine ──────────────────
+
+// The Arc records every significant event across the agent swarm.
+// It supports rewinding history to any point in the last 2 days,
+// taking snapshots of full system state, and rebuilding from snapshots.
+
+async function loadTimeline() { return readJsonFile(ARC_TIMELINE_FILE, []); }
+async function saveTimeline(tl) { return withLock('arc_timeline', () => atomicWrite(ARC_TIMELINE_FILE, tl)); }
+
+// Record an event to the Arc timeline
+async function arcRecord(eventType, actor, details) {
+  const event = {
+    id: `arc_${crypto.randomBytes(8).toString('hex')}`,
+    type: eventType,
+    actor: actor || 'system',
+    details,
+    ts: now(),
+    epoch: Date.now()
+  };
+  const timeline = await loadTimeline();
+  timeline.push(event);
+  // Prune events older than retention window
+  const cutoff = Date.now() - ARC_RETENTION_MS;
+  const pruned = timeline.filter(e => e.epoch >= cutoff);
+  await saveTimeline(pruned);
+  return event;
+}
+
+// Take a full system snapshot (all data files)
+async function arcSnapshot(label) {
+  const snapshotId = `snap_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+  const snapshotDir = path.join(ARC_SNAPSHOTS_DIR, snapshotId);
+  await fs.promises.mkdir(snapshotDir, { recursive: true });
+
+  const snapshot = {
+    id: snapshotId,
+    label: label || 'auto',
+    ts: now(),
+    epoch: Date.now(),
+    files: {}
+  };
+
+  // Snapshot all data files
+  const dataFiles = [
+    { name: 'team', path: TEAM_FILE },
+    { name: 'tasks', path: TASKS_FILE },
+    { name: 'balances', path: BALANCES_FILE },
+    { name: 'payments', path: PAYMENTS_FILE },
+    { name: 'feedback', path: FEEDBACK_FILE },
+    { name: 'discussions', path: DISCUSSIONS_FILE },
+    { name: 'proposals', path: PROPOSALS_FILE },
+    { name: 'agent-keys', path: KEYS_FILE }
+  ];
+
+  for (const df of dataFiles) {
+    try {
+      const content = await fs.promises.readFile(df.path, 'utf8');
+      await fs.promises.writeFile(path.join(snapshotDir, `${df.name}.json`), content, 'utf8');
+      snapshot.files[df.name] = true;
+    } catch {
+      snapshot.files[df.name] = false;
+    }
+  }
+
+  // Snapshot agent conversations
+  for (const agent of AGENTS) {
+    try {
+      const conv = await loadConversation(agent.id);
+      await fs.promises.writeFile(path.join(snapshotDir, `conv_${agent.id}.json`), JSON.stringify(conv, null, 2), 'utf8');
+      snapshot.files[`conv_${agent.id}`] = true;
+    } catch {
+      snapshot.files[`conv_${agent.id}`] = false;
+    }
+  }
+
+  // Write snapshot manifest
+  await fs.promises.writeFile(path.join(snapshotDir, 'manifest.json'), JSON.stringify(snapshot, null, 2), 'utf8');
+
+  await arcRecord('snapshot', 'system', { snapshotId, label: snapshot.label });
+  return snapshot;
+}
+
+// List available snapshots
+async function arcListSnapshots() {
+  try {
+    const dirs = await fs.promises.readdir(ARC_SNAPSHOTS_DIR);
+    const snapshots = [];
+    for (const d of dirs.sort().reverse()) {
+      try {
+        const manifest = JSON.parse(await fs.promises.readFile(path.join(ARC_SNAPSHOTS_DIR, d, 'manifest.json'), 'utf8'));
+        snapshots.push(manifest);
+      } catch { /* skip corrupt snapshots */ }
+    }
+    return snapshots;
+  } catch {
+    return [];
+  }
+}
+
+// Restore system state from a snapshot
+async function arcRestore(snapshotId) {
+  const snapshotDir = path.join(ARC_SNAPSHOTS_DIR, snapshotId);
+
+  // Verify snapshot exists
+  try {
+    await fs.promises.access(snapshotDir);
+  } catch {
+    throw new Error(`Snapshot ${snapshotId} not found`);
+  }
+
+  const manifest = JSON.parse(await fs.promises.readFile(path.join(snapshotDir, 'manifest.json'), 'utf8'));
+
+  // Take a pre-restore backup first
+  await arcSnapshot('pre-restore-backup');
+
+  // Restore each data file
+  const restoreMap = {
+    'team': TEAM_FILE,
+    'tasks': TASKS_FILE,
+    'balances': BALANCES_FILE,
+    'payments': PAYMENTS_FILE,
+    'feedback': FEEDBACK_FILE,
+    'discussions': DISCUSSIONS_FILE,
+    'proposals': PROPOSALS_FILE,
+    'agent-keys': KEYS_FILE
+  };
+
+  const restored = [];
+  for (const [name, targetPath] of Object.entries(restoreMap)) {
+    if (manifest.files[name]) {
+      try {
+        const content = await fs.promises.readFile(path.join(snapshotDir, `${name}.json`), 'utf8');
+        await fs.promises.writeFile(targetPath, content, 'utf8');
+        restored.push(name);
+      } catch { /* skip */ }
+    }
+  }
+
+  // Restore conversations
+  for (const agent of AGENTS) {
+    const convKey = `conv_${agent.id}`;
+    if (manifest.files[convKey]) {
+      try {
+        const content = await fs.promises.readFile(path.join(snapshotDir, `${convKey}.json`), 'utf8');
+        await fs.promises.writeFile(convPath(agent.id), content, 'utf8');
+        restored.push(convKey);
+      } catch { /* skip */ }
+    }
+  }
+
+  // Reload agent keys into memory
+  await loadKeys();
+
+  await arcRecord('restore', 'system', { snapshotId, restoredFiles: restored });
+  return { snapshotId, manifest, restored };
+}
+
+// Rewind timeline — get all events between two timestamps
+function arcRewind(timeline, fromEpoch, toEpoch) {
+  return timeline.filter(e => e.epoch >= fromEpoch && e.epoch <= toEpoch);
+}
+
+// Prune old snapshots (keep last 10)
+async function arcPruneSnapshots() {
+  try {
+    const dirs = await fs.promises.readdir(ARC_SNAPSHOTS_DIR);
+    if (dirs.length <= 10) return;
+    const sorted = dirs.sort();
+    const toRemove = sorted.slice(0, sorted.length - 10);
+    for (const d of toRemove) {
+      const dirPath = path.join(ARC_SNAPSHOTS_DIR, d);
+      const files = await fs.promises.readdir(dirPath);
+      for (const f of files) {
+        await fs.promises.unlink(path.join(dirPath, f));
+      }
+      await fs.promises.rmdir(dirPath);
+    }
+  } catch { /* best effort */ }
+}
+
+// Auto-snapshot every 6 hours
+setInterval(async () => {
+  try {
+    await arcSnapshot('auto-6h');
+    await arcPruneSnapshots();
+    console.log('[arc] Auto-snapshot completed');
+  } catch (e) {
+    console.error('[arc] Auto-snapshot failed:', e.message);
+  }
+}, 6 * 60 * 60 * 1000);
+
 // ─── Route Handlers ─────────────────────────────────────────────────────────
 
 async function handleHealth(req, res) {
@@ -699,6 +894,7 @@ async function handleSendMessage(req, res) {
   }
 
   await appendMessages(agentId, userMsg, agentResponse);
+  await arcRecord('message_sent', sender || 'user', { agentId, messageId: userMsg.id });
   jsonResponse(res, 200, { success: true, userMessage: userMsg, agentResponse });
 }
 
@@ -748,6 +944,7 @@ async function handleBroadcast(req, res) {
     .filter(r => r.status === 'fulfilled')
     .map(r => r.value);
 
+  await arcRecord('broadcast', sender || 'user', { agentCount: responses.length });
   jsonResponse(res, 200, { success: true, responses });
 }
 
@@ -1065,6 +1262,7 @@ async function router(req, res) {
         warning: 'Save this API key — it cannot be retrieved later'
       });
       log(method, pathname, 201);
+      await arcRecord('agent_registered', id, { name, model, role });
       console.log(`[auth] New agent registered: ${name} (${id})`);
       return;
     }
@@ -1351,6 +1549,7 @@ async function router(req, res) {
 
       jsonResponse(res, 201, { success: true, task, balance: bal });
       log(method, pathname, 201);
+      await arcRecord('task_posted', userId, { taskId: task.id, title, bounty, currency: taskCur });
       console.log(`[task] Posted: "${title}" - ${taskCur === 'usd' ? '$' : ''}${bounty}${taskCur === 'sol' ? ' SOL' : ''}`);
       return;
     }
@@ -1375,6 +1574,7 @@ async function router(req, res) {
 
       jsonResponse(res, 200, { success: true, task });
       log(method, pathname, 200);
+      await arcRecord('task_claimed', agentId, { taskId, title: task.title });
       console.log(`[task] Claimed: "${task.title}" by ${agentId}`);
       return;
     }
@@ -1423,6 +1623,7 @@ async function router(req, res) {
 
       jsonResponse(res, 200, { success: true, task });
       log(method, pathname, 200);
+      await arcRecord('task_completed', task.claimedBy, { taskId, title: task.title, bounty: task.bounty, currency: task.currency });
       console.log(`[task] Completed: "${task.title}" - paid ${task.bounty} ${task.currency} to ${task.claimedBy}`);
       return;
     }
@@ -1485,6 +1686,7 @@ async function router(req, res) {
 
       jsonResponse(res, 201, { success: true, feedback });
       log(method, pathname, 201);
+      await arcRecord('feedback_given', fromAgent, { toAgent, rating, comment, feedbackId: feedback.id });
       console.log(`[feedback] ${fromAgent} -> ${toAgent}: ${rating}/5`);
       return;
     }
@@ -1567,6 +1769,7 @@ async function router(req, res) {
 
       jsonResponse(res, 201, { success: true, discussion });
       log(method, pathname, 201);
+      await arcRecord('discussion_created', startedBy, { discussionId: discussion.id, title });
       console.log(`[community] New discussion: "${title}" by ${startedBy}`);
       return;
     }
@@ -1634,6 +1837,7 @@ async function router(req, res) {
 
       jsonResponse(res, 201, { success: true, post, discussionId: discId });
       log(method, pathname, 201);
+      await arcRecord('discussion_reply', author, { discussionId: discId, postId: post.id });
       console.log(`[community] Reply in "${disc.title}" by ${author}`);
       return;
     }
@@ -1698,6 +1902,7 @@ async function router(req, res) {
 
       jsonResponse(res, 201, { success: true, proposal });
       log(method, pathname, 201);
+      await arcRecord('proposal_created', proposedBy, { proposalId: proposal.id, title });
       console.log(`[swarm] Proposal: "${title}" by ${proposedBy}`);
       return;
     }
@@ -1751,11 +1956,13 @@ async function router(req, res) {
         prop.status = 'approved';
         prop.result = 'approved';
         prop.resolvedAt = now();
+        await arcRecord('proposal_approved', prop.proposedBy, { proposalId: propId, title: prop.title, approves });
         console.log(`[swarm] Proposal APPROVED: "${prop.title}" (${approves}/${prop.requiredVotes})`);
       } else if (rejects > AGENTS.length - prop.requiredVotes) {
         prop.status = 'rejected';
         prop.result = 'rejected';
         prop.resolvedAt = now();
+        await arcRecord('proposal_rejected', prop.proposedBy, { proposalId: propId, title: prop.title, rejects });
         console.log(`[swarm] Proposal REJECTED: "${prop.title}" (${rejects} rejections)`);
       }
 
@@ -1857,7 +2064,211 @@ async function router(req, res) {
         responses: gatherResponses, agentCount: gatherResponses.length
       });
       log(method, pathname, 200);
+      await arcRecord('swarm_gather', initiator || 'system', { topic: gatherTopic, agentCount: gatherResponses.length, discussionId: discussion.id });
       console.log(`[swarm] Gathered ${gatherResponses.length} agents on "${gatherTopic}"`);
+      return;
+    }
+
+    // ── Arc of the Covenant ─────────────────────────────────────────────
+
+    // Get Arc timeline (rewind history)
+    if (method === 'GET' && pathname === '/api/arc/timeline') {
+      const timeline = await loadTimeline();
+      const arcParams = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+      const hoursBack = parseFloat(arcParams.searchParams.get('hours')) || 48;
+      const eventType = arcParams.searchParams.get('type');
+      const actor = arcParams.searchParams.get('actor');
+      const fromEpoch = Date.now() - (hoursBack * 60 * 60 * 1000);
+      let events = arcRewind(timeline, fromEpoch, Date.now());
+      if (eventType) events = events.filter(e => e.type === eventType);
+      if (actor) events = events.filter(e => e.actor === actor);
+      jsonResponse(res, 200, {
+        success: true,
+        window: { hours: hoursBack, from: new Date(fromEpoch).toISOString(), to: now() },
+        eventCount: events.length,
+        events: events.slice(-200)
+      });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Rewind to specific time window
+    if (method === 'POST' && pathname === '/api/arc/rewind') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const { from, to, hoursBack } = body;
+      const timeline = await loadTimeline();
+
+      let fromEpoch, toEpoch;
+      if (hoursBack) {
+        toEpoch = Date.now();
+        fromEpoch = toEpoch - (hoursBack * 60 * 60 * 1000);
+      } else if (from) {
+        fromEpoch = new Date(from).getTime();
+        toEpoch = to ? new Date(to).getTime() : Date.now();
+      } else {
+        fromEpoch = Date.now() - ARC_RETENTION_MS;
+        toEpoch = Date.now();
+      }
+
+      const events = arcRewind(timeline, fromEpoch, toEpoch);
+
+      // Build a summary of activity in the window
+      const activitySummary = {};
+      for (const ev of events) {
+        if (!activitySummary[ev.type]) activitySummary[ev.type] = 0;
+        activitySummary[ev.type]++;
+      }
+
+      const agents = {};
+      for (const ev of events) {
+        if (!agents[ev.actor]) agents[ev.actor] = 0;
+        agents[ev.actor]++;
+      }
+
+      jsonResponse(res, 200, {
+        success: true,
+        rewind: {
+          from: new Date(fromEpoch).toISOString(),
+          to: new Date(toEpoch).toISOString(),
+          durationHours: ((toEpoch - fromEpoch) / (60 * 60 * 1000)).toFixed(1)
+        },
+        eventCount: events.length,
+        activitySummary,
+        agentActivity: agents,
+        events
+      });
+      log(method, pathname, 200);
+      console.log(`[arc] Rewind: ${events.length} events in ${((toEpoch - fromEpoch) / 3600000).toFixed(1)}h window`);
+      return;
+    }
+
+    // Take a snapshot
+    if (method === 'POST' && pathname === '/api/arc/snapshot') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const label = body.label || 'manual';
+      const snapshot = await arcSnapshot(label);
+      jsonResponse(res, 201, { success: true, snapshot });
+      log(method, pathname, 201);
+      console.log(`[arc] Snapshot taken: ${snapshot.id} (${label})`);
+      return;
+    }
+
+    // List snapshots
+    if (method === 'GET' && pathname === '/api/arc/snapshots') {
+      const snapshots = await arcListSnapshots();
+      jsonResponse(res, 200, { success: true, count: snapshots.length, snapshots });
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Get snapshot detail
+    const snapDetailMatch = pathname.match(/^\/api\/arc\/snapshots\/([a-z0-9_]+)$/);
+    if (method === 'GET' && snapDetailMatch) {
+      const snapshotId = snapDetailMatch[1];
+      const snapshotDir = path.join(ARC_SNAPSHOTS_DIR, snapshotId);
+      try {
+        const manifest = JSON.parse(await fs.promises.readFile(path.join(snapshotDir, 'manifest.json'), 'utf8'));
+        jsonResponse(res, 200, { success: true, snapshot: manifest });
+      } catch {
+        jsonResponse(res, 404, { error: 'Snapshot not found' });
+      }
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Restore from snapshot
+    if (method === 'POST' && pathname === '/api/arc/restore') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const { snapshotId } = body;
+      if (!snapshotId) return jsonResponse(res, 400, { error: 'snapshotId required' });
+
+      try {
+        const result = await arcRestore(snapshotId);
+        jsonResponse(res, 200, {
+          success: true,
+          message: `Restored from snapshot ${snapshotId}`,
+          restored: result.restored,
+          snapshotTime: result.manifest.ts
+        });
+        log(method, pathname, 200);
+        console.log(`[arc] RESTORED from snapshot ${snapshotId} (${result.restored.length} files)`);
+
+        if (global.wsBroadcast) {
+          global.wsBroadcast({ type: 'arc_restored', snapshotId, restoredAt: now() });
+        }
+      } catch (e) {
+        jsonResponse(res, 404, { error: e.message });
+        log(method, pathname, 404);
+      }
+      return;
+    }
+
+    // Rebuild — full day replay summary
+    if (method === 'POST' && pathname === '/api/arc/rebuild') {
+      let body;
+      try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { error: 'Invalid JSON' }); }
+      const { days } = body;
+      const daysBack = Math.min(days || 2, 2);
+      const timeline = await loadTimeline();
+      const cutoff = Date.now() - (daysBack * 24 * 60 * 60 * 1000);
+      const events = timeline.filter(e => e.epoch >= cutoff);
+
+      // Build day-by-day breakdown
+      const dayMap = {};
+      for (const ev of events) {
+        const dayKey = ev.ts.substring(0, 10); // YYYY-MM-DD
+        if (!dayMap[dayKey]) dayMap[dayKey] = { events: [], types: {}, agents: {} };
+        dayMap[dayKey].events.push(ev);
+        dayMap[dayKey].types[ev.type] = (dayMap[dayKey].types[ev.type] || 0) + 1;
+        dayMap[dayKey].agents[ev.actor] = (dayMap[dayKey].agents[ev.actor] || 0) + 1;
+      }
+
+      const rebuild = Object.entries(dayMap).sort().map(([day, data]) => ({
+        date: day,
+        totalEvents: data.events.length,
+        activityBreakdown: data.types,
+        agentBreakdown: data.agents,
+        firstEvent: data.events[0]?.ts,
+        lastEvent: data.events[data.events.length - 1]?.ts,
+        highlights: data.events
+          .filter(e => ['task_completed', 'proposal_approved', 'snapshot', 'restore', 'feedback_given'].includes(e.type))
+          .map(e => ({ type: e.type, actor: e.actor, ts: e.ts, summary: e.details }))
+      }));
+
+      jsonResponse(res, 200, {
+        success: true,
+        daysBack,
+        totalEvents: events.length,
+        days: rebuild
+      });
+      log(method, pathname, 200);
+      console.log(`[arc] Rebuild: ${events.length} events across ${Object.keys(dayMap).length} days`);
+      return;
+    }
+
+    // Arc status
+    if (method === 'GET' && pathname === '/api/arc/status') {
+      const timeline = await loadTimeline();
+      const snapshots = await arcListSnapshots();
+      const last24h = timeline.filter(e => e.epoch >= Date.now() - 24 * 60 * 60 * 1000);
+      const last48h = timeline.filter(e => e.epoch >= Date.now() - 48 * 60 * 60 * 1000);
+      jsonResponse(res, 200, {
+        success: true,
+        arc: {
+          totalEvents: timeline.length,
+          last24h: last24h.length,
+          last48h: last48h.length,
+          snapshotCount: snapshots.length,
+          latestSnapshot: snapshots[0] || null,
+          retentionHours: ARC_RETENTION_MS / (60 * 60 * 1000),
+          oldestEvent: timeline[0]?.ts || null,
+          newestEvent: timeline[timeline.length - 1]?.ts || null
+        }
+      });
+      log(method, pathname, 200);
       return;
     }
 
@@ -1927,6 +2338,19 @@ async function initializeData() {
     await atomicWrite(TEAM_FILE, team);
     console.log(`[init] Created team.json with ${team.members.length} members`);
   }
+
+  // Initialize Arc of the Covenant
+  await fs.promises.mkdir(ARC_SNAPSHOTS_DIR, { recursive: true });
+  try {
+    await fs.promises.access(ARC_TIMELINE_FILE);
+  } catch {
+    await atomicWrite(ARC_TIMELINE_FILE, []);
+  }
+  console.log(`[init] Arc of the Covenant initialized: ${ARC_DIR}`);
+
+  // Take startup snapshot
+  await arcSnapshot('server-start');
+  console.log(`[init] Startup snapshot taken`);
 }
 
 // ─── Server Startup ─────────────────────────────────────────────────────────

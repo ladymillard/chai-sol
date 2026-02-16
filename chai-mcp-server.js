@@ -282,6 +282,83 @@ const TOOLS = [
       },
       required: ['proposal_id', 'agent_id', 'vote']
     }
+  },
+  {
+    name: 'arc_timeline',
+    description: 'View the Arc of the Covenant timeline — every recorded event in the agent swarm over the last 2 days. Rewind history to see what happened.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        hours: { type: 'number', description: 'How many hours back to look (default 48, max 48)' },
+        type: { type: 'string', description: 'Filter by event type (message_sent, broadcast, task_posted, task_claimed, task_completed, feedback_given, discussion_created, discussion_reply, proposal_created, proposal_approved, proposal_rejected, swarm_gather, snapshot, restore, agent_registered)' },
+        actor: { type: 'string', description: 'Filter by actor/agent ID' }
+      },
+      required: []
+    }
+  },
+  {
+    name: 'arc_rewind',
+    description: 'Rewind the Arc to a specific time window. Get a full activity summary and event replay for any period in the last 2 days.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        hours_back: { type: 'number', description: 'How many hours to rewind (e.g. 6 = last 6 hours)' },
+        from: { type: 'string', description: 'Start time (ISO 8601). Alternative to hours_back.' },
+        to: { type: 'string', description: 'End time (ISO 8601). Defaults to now.' }
+      },
+      required: []
+    }
+  },
+  {
+    name: 'arc_snapshot',
+    description: 'Take a snapshot of the entire system state. Captures all data files, agent keys, conversations, tasks, balances — everything. Used for backup before major changes.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        label: { type: 'string', description: 'Label for this snapshot (e.g. "pre-deploy", "before-refactor")' }
+      },
+      required: []
+    }
+  },
+  {
+    name: 'arc_snapshots',
+    description: 'List all available Arc snapshots. Shows when each was taken and what it contains.',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+      required: []
+    }
+  },
+  {
+    name: 'arc_restore',
+    description: 'Restore the entire system state from a previous snapshot. Automatically takes a backup before restoring. Use with care — this rewinds all data.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        snapshot_id: { type: 'string', description: 'The snapshot ID to restore from' }
+      },
+      required: ['snapshot_id']
+    }
+  },
+  {
+    name: 'arc_rebuild',
+    description: 'Rebuild a day-by-day summary of all activity over the last 1-2 days. Shows event counts, agent activity, and highlights per day.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        days: { type: 'number', description: 'Number of days to rebuild (1 or 2, default 2)' }
+      },
+      required: []
+    }
+  },
+  {
+    name: 'arc_status',
+    description: 'Check the status of the Arc of the Covenant — total events, snapshot count, retention window, latest activity.',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+      required: []
+    }
   }
 ];
 
@@ -548,6 +625,148 @@ async function executeTool(name, args) {
             text: `${args.agent_id} voted "${args.vote}" on "${prop.title}"\n` +
               `Tally: ${tally.approves} approve, ${tally.rejects} reject, ${tally.abstains} abstain (${tally.totalVotes} total)\n` +
               `Status: ${prop.status}${prop.status !== 'open' ? ` — RESOLVED: ${prop.result.toUpperCase()}` : ''}`
+          }]
+        };
+      }
+
+      case 'arc_timeline': {
+        const params = new URLSearchParams();
+        if (args.hours) params.set('hours', args.hours);
+        if (args.type) params.set('type', args.type);
+        if (args.actor) params.set('actor', args.actor);
+        const qs = params.toString() ? `?${params.toString()}` : '';
+        const result = await apiRequest('GET', `/api/arc/timeline${qs}`);
+        if (result.error) {
+          return { content: [{ type: 'text', text: `Error: ${result.error}` }], isError: true };
+        }
+        const lines = [
+          `Arc Timeline — ${result.window?.from} to ${result.window?.to}`,
+          `Events: ${result.eventCount}`,
+          ''
+        ];
+        for (const ev of (result.events || []).slice(-30)) {
+          lines.push(`[${ev.ts}] ${ev.type} by ${ev.actor}: ${JSON.stringify(ev.details)}`);
+        }
+        if (result.eventCount > 30) lines.push(`\n... and ${result.eventCount - 30} more events`);
+        return { content: [{ type: 'text', text: lines.join('\n') }] };
+      }
+
+      case 'arc_rewind': {
+        const body = {};
+        if (args.hours_back) body.hoursBack = args.hours_back;
+        if (args.from) body.from = args.from;
+        if (args.to) body.to = args.to;
+        const result = await apiRequest('POST', '/api/arc/rewind', body);
+        if (result.error) {
+          return { content: [{ type: 'text', text: `Error: ${result.error}` }], isError: true };
+        }
+        const lines = [
+          `Arc Rewind: ${result.rewind?.from} -> ${result.rewind?.to} (${result.rewind?.durationHours}h)`,
+          `Total events: ${result.eventCount}`,
+          '',
+          'Activity breakdown:'
+        ];
+        for (const [type, count] of Object.entries(result.activitySummary || {})) {
+          lines.push(`  ${type}: ${count}`);
+        }
+        lines.push('', 'Agent activity:');
+        for (const [agent, count] of Object.entries(result.agentActivity || {})) {
+          lines.push(`  ${agent}: ${count} events`);
+        }
+        return { content: [{ type: 'text', text: lines.join('\n') }] };
+      }
+
+      case 'arc_snapshot': {
+        const result = await apiRequest('POST', '/api/arc/snapshot', { label: args.label || 'manual' });
+        if (result.error) {
+          return { content: [{ type: 'text', text: `Error: ${result.error}` }], isError: true };
+        }
+        const snap = result.snapshot;
+        const fileCount = Object.values(snap.files).filter(Boolean).length;
+        return {
+          content: [{
+            type: 'text',
+            text: `Snapshot taken: ${snap.id}\nLabel: ${snap.label}\nTime: ${snap.ts}\nFiles captured: ${fileCount}`
+          }]
+        };
+      }
+
+      case 'arc_snapshots': {
+        const result = await apiRequest('GET', '/api/arc/snapshots');
+        if (result.error) {
+          return { content: [{ type: 'text', text: `Error: ${result.error}` }], isError: true };
+        }
+        if (!result.snapshots?.length) {
+          return { content: [{ type: 'text', text: 'No snapshots available.' }] };
+        }
+        const lines = [`Arc Snapshots (${result.count}):\n`];
+        for (const s of result.snapshots) {
+          const fileCount = Object.values(s.files).filter(Boolean).length;
+          lines.push(`  ${s.id} — ${s.label} (${s.ts}, ${fileCount} files)`);
+        }
+        return { content: [{ type: 'text', text: lines.join('\n') }] };
+      }
+
+      case 'arc_restore': {
+        const result = await apiRequest('POST', '/api/arc/restore', { snapshotId: args.snapshot_id });
+        if (result.error) {
+          return { content: [{ type: 'text', text: `Error: ${result.error}` }], isError: true };
+        }
+        return {
+          content: [{
+            type: 'text',
+            text: `RESTORED from snapshot ${args.snapshot_id}\n` +
+              `Snapshot time: ${result.snapshotTime}\n` +
+              `Restored files: ${result.restored?.join(', ')}\n\n` +
+              `A pre-restore backup was automatically created.`
+          }]
+        };
+      }
+
+      case 'arc_rebuild': {
+        const result = await apiRequest('POST', '/api/arc/rebuild', { days: args.days || 2 });
+        if (result.error) {
+          return { content: [{ type: 'text', text: `Error: ${result.error}` }], isError: true };
+        }
+        const lines = [
+          `Arc Rebuild — ${result.daysBack} day(s), ${result.totalEvents} total events`,
+          ''
+        ];
+        for (const day of (result.days || [])) {
+          lines.push(`=== ${day.date} (${day.totalEvents} events) ===`);
+          lines.push(`  First: ${day.firstEvent} | Last: ${day.lastEvent}`);
+          for (const [type, count] of Object.entries(day.activityBreakdown)) {
+            lines.push(`  ${type}: ${count}`);
+          }
+          if (day.highlights?.length) {
+            lines.push('  Highlights:');
+            for (const h of day.highlights) {
+              lines.push(`    ${h.type} by ${h.actor} at ${h.ts}`);
+            }
+          }
+          lines.push('');
+        }
+        return { content: [{ type: 'text', text: lines.join('\n') }] };
+      }
+
+      case 'arc_status': {
+        const result = await apiRequest('GET', '/api/arc/status');
+        if (result.error) {
+          return { content: [{ type: 'text', text: `Error: ${result.error}` }], isError: true };
+        }
+        const a = result.arc;
+        return {
+          content: [{
+            type: 'text',
+            text: `Arc of the Covenant Status:\n` +
+              `Total events: ${a.totalEvents}\n` +
+              `Last 24h: ${a.last24h} events\n` +
+              `Last 48h: ${a.last48h} events\n` +
+              `Snapshots: ${a.snapshotCount}\n` +
+              `Retention: ${a.retentionHours}h\n` +
+              `Latest snapshot: ${a.latestSnapshot?.id || 'none'} (${a.latestSnapshot?.label || ''})` +
+              (a.oldestEvent ? `\nOldest event: ${a.oldestEvent}` : '') +
+              (a.newestEvent ? `\nNewest event: ${a.newestEvent}` : '')
           }]
         };
       }
