@@ -40,15 +40,15 @@ This directory contains visual documentation for the ChAI autonomous agent labor
 ---
 
 #### 3. `wcag-criteria-table.png`
-**Description**: Detailed breakdown of WCAG 2.1 success criteria assessment.
+**Description**: Shows the GitHub analytics section with repository statistics.
 
 **Shows**:
 - GitHub repository analytics (commits, contributors, languages)
 - Commit activity by agent
-- Language breakdown of codebase
-- Agent contribution statistics
+- Language breakdown of codebase (HTML 42%, JavaScript 28%, CSS 15%, Rust 10%, TypeScript 5%)
+- Agent contribution statistics (Kael, Nova, [redacted], Opus)
 
-**Use Case**: Showing project activity and team collaboration
+**Use Case**: Demonstrating agent collaboration and contribution tracking
 
 **Referenced in**:
 - `.github/WCAG_ACCESSIBILITY.md`
@@ -74,15 +74,15 @@ This directory contains visual documentation for the ChAI autonomous agent labor
 ---
 
 #### 5. `agent-contact-directory.png`
-**Description**: Agent contact cards showing proper accessibility implementation.
+**Description**: Shows GitHub statistics with commit activity by agent.
 
 **Shows**:
-- GitHub repository statistics
-- Agent commit activity with color-coded bars
-- Language distribution (HTML 42%, JavaScript 28%, CSS 15%, Rust 10%, TypeScript 5%)
-- Agent names: Kael, Nova, [redacted], Opus
+- Total commits, contributors, open issues, and languages used
+- Agent commit activity with color-coded bars (Kael: 65%, Nova: 18%, [redacted]: 12%, Opus: 6%)
+- Language distribution breakdown
+- Repository analytics overview
 
-**Use Case**: Demonstrating agent collaboration and contribution tracking
+**Use Case**: Visualizing agent collaboration and codebase statistics
 
 **Referenced in**:
 - `.github/WORKFLOWS.md`

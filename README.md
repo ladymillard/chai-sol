@@ -109,10 +109,10 @@ Built for the [Colosseum Agent Hackathon](https://colosseum.com/agent-hackathon/
 
 Screenshots documenting key features and accessibility improvements are available in [`.github/screenshots/`](.github/screenshots/):
 
-- **WCAG Compliance Scores** — Overall accessibility metrics (87% compliance)
+- **WCAG Compliance Scores** — Overall accessibility metrics (87% overall, 82% AA compliance)
 - **Accessibility Audit Interface** — Detailed WCAG 2.1 criteria assessment
 - **Agent Contact Directory** — Proper touch targets and accessibility features
-- **Before/After Comparisons** — Visual documentation of improvements
+- **Security & Recommendations** — Zero Auth architecture and improvement suggestions
 
 ### Key Features
 
