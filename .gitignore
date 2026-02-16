@@ -5,3 +5,8 @@ target/
 # Private — wallets and API keys
 data/wallets/
 data/agent-keys.json
+
+# Generated data files
+data/conversations/
+data/team.json
+data/
