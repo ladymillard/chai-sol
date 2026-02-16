@@ -1444,6 +1444,108 @@ async function handleGetAgent(req, res, agentId) {
   });
 }
 
+async function handleGetAgentPerformance(req, res, agentId) {
+  const agent = AGENT_MAP[agentId];
+  if (!agent) return jsonResponse(res, 404, { success: false, error: `Agent "${agentId}" not found` });
+
+  const keyData = agentKeys[agentId] || {};
+  const tasks = await loadTasks();
+  const agency = await loadAgency();
+  const checkins = await loadCheckins();
+  const allFeedback = await loadFeedback();
+
+  // Get tasks completed by this agent
+  const completedTasks = tasks.filter(t => t.claimedBy === agentId && t.status === 'completed');
+  const inProgressTasks = tasks.filter(t => t.claimedBy === agentId && t.status === 'in-progress');
+  
+  // Get recent task history (last 10 completed)
+  const recentTasks = completedTasks
+    .sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt))
+    .slice(0, 10)
+    .map(t => ({
+      id: t.id,
+      title: t.title,
+      bounty: t.bounty,
+      currency: t.currency,
+      completedAt: t.completedAt,
+      claimedAt: t.claimedAt
+    }));
+
+  // Calculate average completion time
+  const tasksWithTiming = completedTasks.filter(t => t.claimedAt && t.completedAt);
+  const avgCompletionTime = tasksWithTiming.length > 0
+    ? tasksWithTiming.reduce((sum, t) => {
+        const claimed = new Date(t.claimedAt).getTime();
+        const completed = new Date(t.completedAt).getTime();
+        return sum + (completed - claimed);
+      }, 0) / tasksWithTiming.length
+    : null;
+
+  // Get feedback received
+  const receivedFeedback = allFeedback.filter(f => f.toAgent === agentId);
+  const avgFeedbackRating = receivedFeedback.length > 0
+    ? receivedFeedback.reduce((s, f) => s + f.rating, 0) / receivedFeedback.length
+    : null;
+
+  // Check if currently checked in
+  const isCheckedIn = checkins.active && checkins.active[agentId] !== undefined;
+  const lastCheckIn = checkins.history
+    ? checkins.history
+        .filter(h => h.agentId === agentId && h.action === 'check-in')
+        .sort((a, b) => new Date(b.checkedInAt) - new Date(a.checkedInAt))[0]
+    : null;
+
+  // Get agency record
+  const agencyRecord = agency.agents ? agency.agents[agentId] : null;
+
+  const performance = {
+    agentId,
+    agentName: agent.name,
+    emoji: agent.emoji,
+    role: agent.role,
+    
+    // Work metrics
+    tasksCompleted: keyData.tasksCompleted || 0,
+    tasksInProgress: inProgressTasks.length,
+    totalEarnings: keyData.totalEarnings || 0,
+    
+    // Performance metrics
+    trustScore: keyData.trustScore || 0,
+    avgFeedbackRating: avgFeedbackRating ? parseFloat(avgFeedbackRating.toFixed(1)) : null,
+    feedbackCount: receivedFeedback.length,
+    
+    // Timing metrics
+    avgCompletionTimeMs: avgCompletionTime,
+    avgCompletionTimeHours: avgCompletionTime ? parseFloat((avgCompletionTime / (1000 * 60 * 60)).toFixed(1)) : null,
+    
+    // Activity status
+    status: agent.isHuman ? 'human' : (isCheckedIn ? 'checked-in' : 'checked-out'),
+    lastActive: keyData.lastActive,
+    lastCheckIn: lastCheckIn ? lastCheckIn.checkedInAt : null,
+    registeredAt: keyData.registeredAt,
+    
+    // Agency details
+    agentIdNumber: agencyRecord ? agencyRecord.agentIdNumber : null,
+    clearanceLevel: agencyRecord ? agencyRecord.clearanceLevel : null,
+    jobsAssigned: agencyRecord ? agencyRecord.jobsAssigned : 0,
+    jobsCompleted: agencyRecord ? agencyRecord.jobsCompleted : 0,
+    
+    // Recent work
+    recentTasks,
+    
+    // Summary
+    isWorking: inProgressTasks.length > 0,
+    hasWorked: completedTasks.length > 0,
+    workingStatus: inProgressTasks.length > 0 
+      ? 'actively working' 
+      : completedTasks.length > 0 
+        ? 'has completed work' 
+        : 'no work completed yet'
+  };
+
+  jsonResponse(res, 200, { success: true, performance });
+}
+
 async function handleCreateSession(req, res) {
   let body;
   try { body = await parseBody(req); } catch { return jsonResponse(res, 400, { success: false, error: 'Invalid JSON body' }); }
@@ -1669,6 +1771,91 @@ async function handleDeleteTeamMember(req, res, memberId) {
 
     await atomicWrite(TEAM_FILE, team);
     jsonResponse(res, 200, { success: true, message: `Slot ${memberId} is now available` });
+  });
+}
+
+async function handleGetAllAgentsPerformance(req, res) {
+  const tasks = await loadTasks();
+  const agency = await loadAgency();
+  const checkins = await loadCheckins();
+  const allFeedback = await loadFeedback();
+
+  const agentsPerformance = [];
+
+  for (const agent of AGENTS) {
+    const agentId = agent.id;
+    const keyData = agentKeys[agentId] || {};
+    
+    // Get tasks completed by this agent
+    const completedTasks = tasks.filter(t => t.claimedBy === agentId && t.status === 'completed');
+    const inProgressTasks = tasks.filter(t => t.claimedBy === agentId && t.status === 'in-progress');
+    
+    // Get feedback received
+    const receivedFeedback = allFeedback.filter(f => f.toAgent === agentId);
+    const avgFeedbackRating = receivedFeedback.length > 0
+      ? receivedFeedback.reduce((s, f) => s + f.rating, 0) / receivedFeedback.length
+      : null;
+
+    // Check if currently checked in
+    const isCheckedIn = checkins.active && checkins.active[agentId] !== undefined;
+
+    // Get agency record
+    const agencyRecord = agency.agents ? agency.agents[agentId] : null;
+
+    agentsPerformance.push({
+      agentId,
+      agentName: agent.name,
+      emoji: agent.emoji,
+      role: agent.role,
+      
+      // Work metrics
+      tasksCompleted: keyData.tasksCompleted || 0,
+      tasksInProgress: inProgressTasks.length,
+      totalEarnings: keyData.totalEarnings || 0,
+      
+      // Performance metrics
+      trustScore: keyData.trustScore || 0,
+      avgFeedbackRating: avgFeedbackRating ? parseFloat(avgFeedbackRating.toFixed(1)) : null,
+      
+      // Activity status
+      status: agent.isHuman ? 'human' : (isCheckedIn ? 'checked-in' : 'checked-out'),
+      lastActive: keyData.lastActive,
+      
+      // Agency details
+      agentIdNumber: agencyRecord ? agencyRecord.agentIdNumber : null,
+      clearanceLevel: agencyRecord ? agencyRecord.clearanceLevel : null,
+      
+      // Summary
+      isWorking: inProgressTasks.length > 0,
+      hasWorked: completedTasks.length > 0,
+      workingStatus: inProgressTasks.length > 0 
+        ? 'actively working' 
+        : completedTasks.length > 0 
+          ? 'has completed work' 
+          : 'no work completed yet'
+    });
+  }
+
+  // Calculate summary statistics
+  const totalTasksCompleted = agentsPerformance.reduce((sum, a) => sum + a.tasksCompleted, 0);
+  const totalTasksInProgress = agentsPerformance.reduce((sum, a) => sum + a.tasksInProgress, 0);
+  const totalEarnings = agentsPerformance.reduce((sum, a) => sum + a.totalEarnings, 0);
+  const agentsWorking = agentsPerformance.filter(a => a.isWorking).length;
+  const agentsCheckedIn = agentsPerformance.filter(a => a.status === 'checked-in').length;
+  const agentsWithWork = agentsPerformance.filter(a => a.hasWorked).length;
+
+  jsonResponse(res, 200, {
+    success: true,
+    summary: {
+      totalTasksCompleted,
+      totalTasksInProgress,
+      totalEarnings,
+      agentsWorking,
+      agentsCheckedIn,
+      agentsWithWork,
+      totalAgents: agentsPerformance.length
+    },
+    agents: agentsPerformance
   });
 }
 
@@ -2073,6 +2260,14 @@ async function router(req, res) {
     }
 
     // ── Agents ────────────────────────────────────────────────────────────
+    
+    // Get performance overview for all agents (must come before single agent route)
+    if (method === 'GET' && pathname === '/api/agents/performance') {
+      await handleGetAllAgentsPerformance(req, res);
+      log(method, pathname, 200);
+      return;
+    }
+    
     if (method === 'GET' && pathname === '/api/agents') {
       await handleGetAgents(req, res);
       log(method, pathname, 200);
@@ -2082,6 +2277,14 @@ async function router(req, res) {
     const agentMatch = pathname.match(/^\/api\/agents\/([a-z]+)$/);
     if (method === 'GET' && agentMatch) {
       await handleGetAgent(req, res, agentMatch[1]);
+      log(method, pathname, 200);
+      return;
+    }
+
+    // Get agent performance/work history
+    const agentPerfMatch = pathname.match(/^\/api\/agents\/([a-z]+)\/performance$/);
+    if (method === 'GET' && agentPerfMatch) {
+      await handleGetAgentPerformance(req, res, agentPerfMatch[1]);
       log(method, pathname, 200);
       return;
     }

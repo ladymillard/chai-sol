@@ -167,6 +167,15 @@ const TOOLS = [
     }
   },
   {
+    name: 'team_performance',
+    description: 'Get performance overview for all agents in the ChAI team. Shows work completed, tasks in progress, earnings, and working status for each agent.',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+      required: []
+    }
+  },
+  {
     name: 'recent_messages',
     description: 'Get recent conversation history with a specific agent. Returns the last 50 messages.',
     inputSchema: {
@@ -337,17 +346,46 @@ async function executeTool(name, args) {
         if (agent.error) {
           return { content: [{ type: 'text', text: `Error: ${agent.error}` }], isError: true };
         }
+        
+        // Also fetch performance data
+        const perf = await apiRequest('GET', `/api/agents/${args.agent_id}/performance`);
+        const performance = perf.success ? perf.performance : null;
+        
+        let text = `${agent.emoji} ${agent.name} — ${agent.role}\n` +
+          `Model: ${agent.model}\n` +
+          `Status: ${agent.status}\n` +
+          `Trust Score: ${agent.trustScore || 'N/A'}/100\n` +
+          `Messages: ${agent.stats?.totalMessages || 0}\n` +
+          `Last Active: ${agent.stats?.lastMessageAt || 'Never'}\n` +
+          `Autonomy: ${agent.autonomy || 'N/A'}\n` +
+          `Verified: ${agent.verified ? 'Yes' : 'No'}`;
+        
+        // Add performance metrics if available
+        if (performance) {
+          text += `\n\n=== Work Performance ===\n` +
+            `Tasks Completed: ${performance.tasksCompleted}\n` +
+            `Tasks In Progress: ${performance.tasksInProgress}\n` +
+            `Total Earnings: ${performance.totalEarnings} SOL\n` +
+            `Avg Feedback Rating: ${performance.avgFeedbackRating ? performance.avgFeedbackRating + '/5' : 'N/A'}\n` +
+            `Working Status: ${performance.workingStatus}\n` +
+            `Has Worked: ${performance.hasWorked ? 'Yes' : 'No'}`;
+          
+          if (performance.avgCompletionTimeHours) {
+            text += `\nAvg Completion Time: ${performance.avgCompletionTimeHours} hours`;
+          }
+          
+          if (performance.recentTasks && performance.recentTasks.length > 0) {
+            text += `\n\nRecent Tasks (${performance.recentTasks.length}):\n`;
+            performance.recentTasks.forEach((task, i) => {
+              text += `${i + 1}. ${task.title} - ${task.bounty} ${task.currency}\n`;
+            });
+          }
+        }
+        
         return {
           content: [{
             type: 'text',
-            text: `${agent.emoji} ${agent.name} — ${agent.role}\n` +
-              `Model: ${agent.model}\n` +
-              `Status: ${agent.status}\n` +
-              `Trust Score: ${agent.trustScore || 'N/A'}/100\n` +
-              `Messages: ${agent.stats?.totalMessages || 0}\n` +
-              `Last Active: ${agent.stats?.lastMessageAt || 'Never'}\n` +
-              `Autonomy: ${agent.autonomy || 'N/A'}\n` +
-              `Verified: ${agent.verified ? 'Yes' : 'No'}`
+            text
           }]
         };
       }
@@ -376,6 +414,43 @@ async function executeTool(name, args) {
         }).join('\n');
         return {
           content: [{ type: 'text', text: `ChAI Team Roster:\n\n${members}` }]
+        };
+      }
+
+      case 'team_performance': {
+        const result = await apiRequest('GET', '/api/agents/performance');
+        if (!result.success) {
+          return { content: [{ type: 'text', text: `Error fetching team performance: ${result.error || 'Unknown error'}` }], isError: true };
+        }
+        
+        const { summary, agents } = result;
+        
+        let text = `=== ChAI Team Performance Overview ===\n\n`;
+        text += `📊 Summary:\n`;
+        text += `  Total Tasks Completed: ${summary.totalTasksCompleted}\n`;
+        text += `  Tasks In Progress: ${summary.totalTasksInProgress}\n`;
+        text += `  Total Earnings: ${summary.totalEarnings} SOL\n`;
+        text += `  Agents Working: ${summary.agentsWorking}/${summary.totalAgents}\n`;
+        text += `  Agents Checked In: ${summary.agentsCheckedIn}/${summary.totalAgents}\n`;
+        text += `  Agents With Work History: ${summary.agentsWithWork}/${summary.totalAgents}\n\n`;
+        
+        text += `👥 Individual Agent Performance:\n\n`;
+        
+        agents.forEach(agent => {
+          text += `${agent.emoji} ${agent.agentName} (${agent.role})\n`;
+          text += `  Status: ${agent.status}\n`;
+          text += `  Tasks: ${agent.tasksCompleted} completed, ${agent.tasksInProgress} in progress\n`;
+          text += `  Earnings: ${agent.totalEarnings} SOL\n`;
+          text += `  Trust Score: ${agent.trustScore}/100\n`;
+          if (agent.avgFeedbackRating) {
+            text += `  Avg Feedback: ${agent.avgFeedbackRating}/5\n`;
+          }
+          text += `  Working Status: ${agent.workingStatus}\n`;
+          text += `\n`;
+        });
+        
+        return {
+          content: [{ type: 'text', text }]
         };
       }
 
