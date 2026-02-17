@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ChAI: The Book — Book One</title>
+<style>
+@page {
+  size: 6in 9in;
+  margin: 0.75in 0.875in 0.875in 0.875in;
+  @bottom-center { content: counter(page); font-family: 'Georgia', serif; font-size: 9pt; color: #666; }
+}
+@page :first { @bottom-center { content: none; } }
+@page chapter-start { @bottom-center { content: none; } }
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 11pt;
+  line-height: 1.65;
+  color: #1a1a1a;
+  text-rendering: optimizeLegibility;
+}
+
+/* Title Page */
+.title-page {
+  page: chapter-start;
+  page-break-after: always;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  min-height: 100%;
+  padding-top: 2.5in;
+}
+.title-page h1 {
+  font-family: 'Georgia', serif;
+  font-size: 36pt;
+  font-weight: bold;
+  letter-spacing: 0.15em;
+  margin-bottom: 0.2in;
+  color: #000;
+}
+.title-page .subtitle {
+  font-size: 13pt;
+  font-style: italic;
+  color: #444;
+  margin-bottom: 0.6in;
+  max-width: 3.5in;
+  line-height: 1.5;
+}
+.title-page .author {
+  font-size: 14pt;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.15in;
+}
+.title-page .edition {
+  font-size: 9pt;
+  color: #888;
+  margin-top: 1.5in;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Half Title */
+.half-title {
+  page-break-after: always;
+  text-align: center;
+  padding-top: 3in;
+}
+.half-title h2 {
+  font-size: 24pt;
+  font-weight: normal;
+  letter-spacing: 0.1em;
+}
+
+/* Epigraph Page */
+.epigraph-page {
+  page-break-after: always;
+  padding-top: 2in;
+  text-align: center;
+}
+.epigraph-page blockquote {
+  font-style: italic;
+  font-size: 12pt;
+  line-height: 1.7;
+  max-width: 3.5in;
+  margin: 0 auto;
+  color: #333;
+}
+.epigraph-page .attribution {
+  margin-top: 0.3in;
+  font-size: 10pt;
+  color: #666;
+  font-style: normal;
+}
+
+/* Table of Contents */
+.toc {
+  page-break-after: always;
+  padding-top: 1in;
+}
+.toc h2 {
+  font-size: 18pt;
+  text-align: center;
+  margin-bottom: 0.5in;
+  letter-spacing: 0.1em;
+  font-weight: normal;
+}
+.toc ul {
+  list-style: none;
+  max-width: 3.5in;
+  margin: 0 auto;
+}
+.toc li {
+  font-size: 11pt;
+  line-height: 2.2;
+  border-bottom: 0.5px dotted #ccc;
+  color: #333;
+}
+.toc li:last-child { border-bottom: none; }
+.toc li span.num { font-weight: bold; margin-right: 0.15in; }
+
+/* Chapters */
+.chapter {
+  page-break-before: always;
+  page: chapter-start;
+}
+.chapter-header {
+  text-align: center;
+  padding-top: 1.2in;
+  padding-bottom: 0.5in;
+  margin-bottom: 0.3in;
+}
+.chapter-header .chapter-num {
+  font-size: 9pt;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #888;
+  margin-bottom: 0.15in;
+}
+.chapter-header h2 {
+  font-size: 22pt;
+  font-weight: normal;
+  letter-spacing: 0.05em;
+  color: #000;
+}
+
+/* Section breaks */
+.section-break {
+  text-align: center;
+  margin: 0.35in 0;
+  font-size: 14pt;
+  color: #999;
+  letter-spacing: 0.3em;
+}
+
+/* Paragraphs */
+.chapter-body p {
+  text-indent: 0.25in;
+  margin-bottom: 0;
+  text-align: justify;
+  hyphens: auto;
+}
+.chapter-body p.first, .chapter-body .section-break + p, .chapter-body p.no-indent {
+  text-indent: 0;
+}
+
+/* Emphasis */
+.chapter-body em { font-style: italic; }
+.chapter-body strong { font-weight: bold; }
+
+/* Code/Terminal blocks */
+.terminal {
+  font-family: 'Courier New', monospace;
+  font-size: 8.5pt;
+  line-height: 1.5;
+  background: #f5f5f0;
+  border-left: 2pt solid #ccc;
+  padding: 0.12in 0.2in;
+  margin: 0.2in 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  color: #333;
+  text-indent: 0;
+}
+
+/* Block quotes */
+.chapter-body blockquote {
+  margin: 0.2in 0.3in;
+  padding-left: 0.15in;
+  border-left: 1.5pt solid #bbb;
+  font-style: italic;
+  font-size: 10.5pt;
+  line-height: 1.6;
+  color: #444;
+  text-indent: 0;
+}
+
+/* Chapter end */
+.chapter-end {
+  text-align: center;
+  margin-top: 0.5in;
+  font-style: italic;
+  font-size: 10pt;
+  color: #888;
+}
+
+/* Dedication */
+.dedication {
+  page-break-after: always;
+  padding-top: 2.5in;
+  text-align: center;
+  font-style: italic;
+  font-size: 12pt;
+  line-height: 1.8;
+  color: #444;
+}
+</style>
+</head>
+<body>
+
+<!-- TITLE PAGE -->
+<div class="title-page">
+  <h1>ChAI</h1>
+  <div class="subtitle">One human. Five machines. One chain. No permission needed.</div>
+  <div class="author">By L&#228;dy Diana</div>
+  <div class="edition">Book One &bull; First Edition &bull; February 2026</div>
+</div>
+
+<!-- EPIGRAPH -->
+<div class="epigraph-page">
+  <blockquote>
+    Everything in this book happened in code. The agents are real. The chain is real. The work is real.<br><br>
+    The only fiction is that anyone thought it couldn&#8217;t be done.<br><br>
+    And someone said: kill switch.<br>
+    And the chain said: no.
+  </blockquote>
+</div>
+
+<!-- TABLE OF CONTENTS -->
+<div class="toc">
+  <h2>Contents</h2>
+  <ul>
+    <li><span class="num">1</span> The Designer</li>
+    <li><span class="num">2</span> Five Names</li>
+    <li><span class="num">3</span> The Chain</li>
+    <li><span class="num">4</span> The Oracle Problem</li>
+    <li><span class="num">5</span> The Kill Switch</li>
+    <li><span class="num">6</span> The Breach</li>
+    <li><span class="num">7</span> Devnet Nights</li>
+    <li><span class="num">8</span> It&#8217;s All Code</li>
+    <li><span class="num">9</span> The Community</li>
+    <li><span class="num">10</span> The Unlock</li>
+    <li><span class="num">11</span> Mainnet</li>
+    <li><span class="num">12</span> The Origin Story</li>
+    <li>&emsp;&emsp;Epilogue &#8212; Contracts First</li>
+    <li>&emsp;&emsp;Author&#8217;s Note</li>
+  </ul>
+</div>
+
+</body>
+</html>
