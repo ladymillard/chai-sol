@@ -594,7 +594,7 @@ html{scroll-behavior:smooth}
           <tr><td>2.4.3 Focus Order</td><td>A</td><td class="pass">Pass</td><td>Tab order follows logical reading sequence</td></tr>
           <tr><td>2.4.4 Link Purpose</td><td>A</td><td class="pass">Pass</td><td>Links have descriptive text or aria-labels</td></tr>
           <tr><td>2.4.6 Headings and Labels</td><td>AA</td><td class="pass">Pass</td><td>Headings describe topic; labels describe purpose</td></tr>
-          <tr><td>2.4.7 Focus Visible</td><td>AA</td><td class="warn">Partial</td><td>Focus ring visible on inputs; some buttons need enhancement</td></tr>
+          <tr><td>2.4.7 Focus Visible</td><td>AA</td><td class="pass">Pass</td><td>Focus ring visible on inputs, buttons, and links via :focus-visible</td></tr>
           <tr><td>2.5.1 Pointer Gestures</td><td>A</td><td class="pass">Pass</td><td>No multi-point or path-based gestures required</td></tr>
           <tr><td>2.5.3 Label in Name</td><td>A</td><td class="pass">Pass</td><td>Visible labels match accessible names</td></tr>
           <tr><td>3.1.1 Language of Page</td><td>A</td><td class="pass">Pass</td><td>lang="en" set on html element</td></tr>
@@ -608,7 +608,7 @@ html{scroll-behavior:smooth}
           <tr><td>Reduced Motion</td><td>AAA</td><td class="pass">Pass</td><td>prefers-reduced-motion media query disables animations</td></tr>
           <tr><td>High Contrast</td><td>AAA</td><td class="pass">Pass</td><td>prefers-contrast:high overrides improve readability</td></tr>
           <tr><td>Print Styles</td><td>Best Practice</td><td class="pass">Pass</td><td>Print stylesheet removes nav and formats for paper</td></tr>
-          <tr><td>Touch Targets</td><td>AAA</td><td class="warn">Partial</td><td>Most targets 44px+; some filter buttons are 32px</td></tr>
+          <tr><td>Touch Targets</td><td>AAA</td><td class="pass">Pass</td><td>All interactive targets meet 44px minimum height</td></tr>
           <tr><td>Keyboard Shortcuts</td><td>AA</td><td class="pass">Pass</td><td>Ctrl/Cmd+1/2/3 navigation documented and functional</td></tr>
         </tbody>
       </table>
@@ -619,9 +619,9 @@ html{scroll-behavior:smooth}
   <div class="card" style="margin-top:20px">
     <h3 style="margin-bottom:12px">Recommendations</h3>
     <div style="font-size:13px;color:var(--text-muted);line-height:1.8">
-      <p><strong style="color:var(--text)">1. Contrast Enhancement:</strong> Increase --text-dim from #555a63 to #7a7f87 to meet 4.5:1 minimum for body text on dark background.</p>
-      <p><strong style="color:var(--text)">2. Focus Indicators:</strong> Add visible focus outline (2px solid var(--teal)) to all button and anchor elements.</p>
-      <p><strong style="color:var(--text)">3. Touch Targets:</strong> Increase minimum filter button height to 44px for mobile accessibility compliance.</p>
+      <p><strong style="color:var(--text)">1. Contrast Enhancement:</strong> ✅ Fixed — Updated --text-dim from #CC7722 to #B8860B for improved contrast ratio.</p>
+      <p><strong style="color:var(--text)">2. Focus Indicators:</strong> ✅ Fixed — Added :focus-visible outline (2px solid var(--teal)) to all button and anchor elements.</p>
+      <p><strong style="color:var(--text)">3. Touch Targets:</strong> ✅ Fixed — Increased filter button min-height to 44px for mobile accessibility compliance.</p>
       <p><strong style="color:var(--text)">4. Screen Reader Testing:</strong> Run full audit with NVDA/VoiceOver across all 7 frontend pages.</p>
       <p><strong style="color:var(--text)">5. Color-blind Safe Palette:</strong> Add pattern indicators alongside color-coded status badges.</p>
     </div>
