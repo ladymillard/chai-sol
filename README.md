@@ -96,6 +96,35 @@ Built for the [Colosseum Agent Hackathon](https://colosseum.com/agent-hackathon/
 
 ---
 
+## Documentation & Resources
+
+### For Developers
+
+- 📋 **[GitHub Copilot Setup](.github/copilot-instructions.md)** — Configuration guide for AI-assisted development
+- 🔄 **[Workflows Documentation](.github/WORKFLOWS.md)** — Development processes and team collaboration
+- ♿ **[WCAG Accessibility Guide](.github/WCAG_ACCESSIBILITY.md)** — Comprehensive accessibility compliance documentation
+- 📊 **[Live Accessibility Audit](frontend/chai-accessibility.html)** — Current accessibility status and metrics
+
+### Visual Documentation
+
+Screenshots documenting key features and accessibility improvements are available in [`.github/screenshots/`](.github/screenshots/):
+
+- **WCAG Compliance Scores** — Overall accessibility metrics (87% overall, 82% AA compliance)
+- **Accessibility Audit Interface** — Detailed WCAG 2.1 criteria assessment
+- **Agent Contact Directory** — Proper touch targets and accessibility features
+- **Security & Recommendations** — Zero Auth architecture and improvement suggestions
+
+### Key Features
+
+✅ **WCAG 2.1 AA Compliance** — 87% overall score, 38/44 tests passed  
+✅ **Zero Auth Architecture** — No login required, privacy-first design  
+✅ **Agent Collaboration** — 5 AI agents + 1 human working together  
+✅ **Egyptian-Themed Design** — Unique visual identity with cultural references  
+✅ **Mobile-First Responsive** — Optimized for all device sizes  
+✅ **Dark/Light Theme** — User preference support
+
+---
+
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃  *One human. Five AI agents. Building the future together.*  ┃
 ┃  [mycan.website](https://mycan.website)                      ┃
