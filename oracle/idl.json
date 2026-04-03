@@ -1,78 +1,478 @@
 {
-  "version": "0.1.0",
-  "name": "registry",
+  "address": "9UZ8YFVGhZ5UBx9U8g7EzFjFCyP4P1g15UBdEpT82P1M",
+  "metadata": {
+    "name": "registry",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Agent Registry Smart Contract for ChAI Labor Market"
+  },
   "instructions": [
     {
-      "name": "initialize",
+      "name": "close_agent",
+      "docs": [
+        "Close agent account — rent returned to admin (treasury)."
+      ],
+      "discriminator": [
+        52,
+        185,
+        104,
+        145,
+        157,
+        30,
+        87,
+        237
+      ],
       "accounts": [
-        { "name": "registryConfig", "isMut": true, "isSigner": false },
-        { "name": "admin", "isMut": true, "isSigner": true },
-        { "name": "systemProgram", "isMut": false, "isSigner": false }
+        {
+          "name": "agent_account",
+          "writable": true
+        },
+        {
+          "name": "registry_config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "registry_config"
+          ]
+        }
       ],
       "args": []
     },
     {
-      "name": "registerAgent",
+      "name": "initialize",
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
       "accounts": [
-        { "name": "agentAccount", "isMut": true, "isSigner": false },
-        { "name": "signer", "isMut": true, "isSigner": true },
-        { "name": "systemProgram", "isMut": false, "isSigner": false }
+        {
+          "name": "registry_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "register_agent",
+      "discriminator": [
+        135,
+        157,
+        66,
+        195,
+        2,
+        113,
+        175,
+        30
+      ],
+      "accounts": [
+        {
+          "name": "agent_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  103,
+                  101,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
       ],
       "args": [
-        { "name": "name", "type": "string" },
-        { "name": "model", "type": "string" },
-        { "name": "githubUrl", "type": "string" }
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "model",
+          "type": "string"
+        },
+        {
+          "name": "github_url",
+          "type": "string"
+        }
       ]
     },
     {
-      "name": "verifyAgent",
+      "name": "register_agent_free",
+      "docs": [
+        "Register agent for FREE — admin pays rent on behalf of the bot.",
+        "Bot pays nothing. Zero cost to register skills on-chain."
+      ],
+      "discriminator": [
+        87,
+        195,
+        137,
+        73,
+        116,
+        238,
+        87,
+        148
+      ],
       "accounts": [
-        { "name": "agentAccount", "isMut": true, "isSigner": false },
-        { "name": "registryConfig", "isMut": false, "isSigner": false },
-        { "name": "admin", "isMut": false, "isSigner": true }
+        {
+          "name": "agent_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  103,
+                  101,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "agent_wallet"
+              }
+            ]
+          }
+        },
+        {
+          "name": "registry_config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "registry_config"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
       ],
       "args": [
-        { "name": "reputationScore", "type": "u8" },
-        { "name": "verifiedSpecialties", "type": "string" }
+        {
+          "name": "agent_wallet",
+          "type": "pubkey"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "model",
+          "type": "string"
+        },
+        {
+          "name": "github_url",
+          "type": "string"
+        }
       ]
     },
     {
-      "name": "updateAgent",
+      "name": "update_agent",
+      "discriminator": [
+        85,
+        2,
+        178,
+        9,
+        119,
+        139,
+        102,
+        164
+      ],
       "accounts": [
-        { "name": "agentAccount", "isMut": true, "isSigner": false },
-        { "name": "signer", "isMut": false, "isSigner": true }
+        {
+          "name": "agent_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  103,
+                  101,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "signer",
+          "signer": true
+        }
       ],
       "args": [
-        { "name": "metadataUrl", "type": "string" }
+        {
+          "name": "metadata_url",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "verify_agent",
+      "discriminator": [
+        206,
+        212,
+        108,
+        12,
+        105,
+        61,
+        100,
+        66
+      ],
+      "accounts": [
+        {
+          "name": "agent_account",
+          "writable": true
+        },
+        {
+          "name": "registry_config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "registry_config"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "reputation_score",
+          "type": "u8"
+        },
+        {
+          "name": "verified_specialties",
+          "type": "string"
+        }
       ]
     }
   ],
   "accounts": [
     {
-      "name": "RegistryConfig",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          { "name": "admin", "type": "publicKey" }
-        ]
-      }
+      "name": "AgentAccount",
+      "discriminator": [
+        241,
+        119,
+        69,
+        140,
+        233,
+        9,
+        112,
+        50
+      ]
     },
+    {
+      "name": "RegistryConfig",
+      "discriminator": [
+        23,
+        118,
+        10,
+        246,
+        173,
+        231,
+        243,
+        156
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "NameTooLong",
+      "msg": "Name too long"
+    },
+    {
+      "code": 6001,
+      "name": "ModelTooLong",
+      "msg": "Model name too long"
+    },
+    {
+      "code": 6002,
+      "name": "SpecialtiesTooLong",
+      "msg": "Specialties description too long"
+    },
+    {
+      "code": 6003,
+      "name": "UrlTooLong",
+      "msg": "URL too long"
+    },
+    {
+      "code": 6004,
+      "name": "Unauthorized",
+      "msg": "Unauthorized access"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidScore",
+      "msg": "Invalid reputation score (must be 0-100)"
+    }
+  ],
+  "types": [
     {
       "name": "AgentAccount",
       "type": {
         "kind": "struct",
         "fields": [
-          { "name": "wallet", "type": "publicKey" },
-          { "name": "name", "type": "string" },
-          { "name": "model", "type": "string" },
-          { "name": "specialties", "type": "string" },
-          { "name": "githubUrl", "type": "string" },
-          { "name": "metadataUrl", "type": "string" },
-          { "name": "tasksCompleted", "type": "u64" },
-          { "name": "totalEarned", "type": "u64" },
-          { "name": "reputation", "type": "u8" },
-          { "name": "verified", "type": "bool" },
-          { "name": "registeredAt", "type": "i64" }
+          {
+            "name": "wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "model",
+            "type": "string"
+          },
+          {
+            "name": "specialties",
+            "type": "string"
+          },
+          {
+            "name": "github_url",
+            "type": "string"
+          },
+          {
+            "name": "metadata_url",
+            "type": "string"
+          },
+          {
+            "name": "tasks_completed",
+            "type": "u64"
+          },
+          {
+            "name": "total_earned",
+            "type": "u64"
+          },
+          {
+            "name": "reputation",
+            "type": "u8"
+          },
+          {
+            "name": "verified",
+            "type": "bool"
+          },
+          {
+            "name": "registered_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RegistryConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          }
         ]
       }
     }

@@ -1,0 +1,15 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "node command-center/chai-command-server.js"
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+restartPolicyType = "on_failure"
+
+[deploy.envs]
+PORT = "9000"
+DATA_DIR = "/data"
+SOLANA_RPC_URL = "https://api.devnet.solana.com"
+REGISTRY_PROGRAM_ID = "9UZ8YFVGhZ5UBx9U8g7EzFjFCyP4P1g15UBdEpT82P1M"
+ESCROW_PROGRAM_ID = "DKEbMD61G68RhqK37Z7Sxkf7NeuQ6WGm3q4PsA4j5kpK"

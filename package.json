@@ -1,5 +1,21 @@
 {
+  "name": "chai-sol",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node command-center/chai-command-server.js",
+    "dev": "node server.js"
+  },
   "dependencies": {
     "@solana/web3.js": "^1.98.4"
+  },
+  "devDependencies": {
+    "@coral-xyz/anchor": "^0.32.1",
+    "@solana/web3.js": "^1.98.4",
+    "@types/chai": "^5.2.3",
+    "@types/mocha": "^10.0.10",
+    "chai": "^6.2.2",
+    "mocha": "^11.7.5",
+    "ts-mocha": "^11.1.0",
+    "typescript": "^6.0.2"
   }
 }

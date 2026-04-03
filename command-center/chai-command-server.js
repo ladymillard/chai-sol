@@ -10,12 +10,13 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { URL } = require('url');
+const { execFile, spawn } = require('child_process');
 
 // ─── Configuration ──────────────────────────────────────────────────────────
 
 const PORT = parseInt(process.env.PORT, 10) || 9000;
-const OPENCLAW_URL = process.env.OPENCLAW_URL || 'http://3.14.142.213:18789';
-const OPENCLAW_TOKEN = process.env.OPENCLAW_TOKEN || '62ce21942dee9391c8d6e9e189daf1b00d0e6807c56eb14c';
+const OPENCLAW_URL = process.env.OPENCLAW_URL || 'http://127.0.0.1:18789';
+const OPENCLAW_TOKEN = process.env.OPENCLAW_TOKEN || '5cce5380ff8b0c1917c3b23bfffff25af0bc3df732c98a97';
 const DATA_DIR = process.env.DATA_DIR || '/data';
 const CONV_DIR = path.join(DATA_DIR, 'conversations');
 const TEAM_FILE = path.join(DATA_DIR, 'team.json');
@@ -33,20 +34,53 @@ const AGENTS = [
 
 const AGENT_MAP = Object.fromEntries(AGENTS.map(a => [a.id, a]));
 
-// ─── Opus Mock Responses ────────────────────────────────────────────────────
+// ─── Agent System Prompts ────────────────────────────────────────────────────
 
-const OPUS_RESPONSES = [
-  "I've reviewed the situation. My recommendation: we move forward deliberately, ensuring each agent's strengths are aligned with the task at hand.",
-  "Good thinking. Let me coordinate with the rest of the team. Kael can handle the implementation details while Kestrel scouts for edge cases.",
-  "As team lead, I want to make sure we're not just building fast — we're building right. Let's discuss the architecture before we commit.",
-  "I've been reflecting on our progress. The team is performing well, but I see an opportunity to improve our feedback loops.",
-  "That's a fascinating challenge. I'll draft a strategy and distribute subtasks to Nova for analysis and [redacted] for the design components.",
-  "Trust the process. Every great system starts with a clear vision and patient iteration. We're on the right track.",
-  "I've synthesized the inputs from all agents. Here's my assessment: we should prioritize clarity over speed in this phase.",
-  "Consider this — what if we approached the problem from the user's perspective first? Sometimes the best architecture emerges from empathy.",
-  "Excellent question. I'll meditate on it and loop back with a comprehensive plan. In the meantime, Kael can begin the preliminary work.",
-  "The team's collective intelligence is our greatest asset. Let me orchestrate the next steps so everyone can contribute their best work."
-];
+const AGENT_PROMPTS = {
+  opus: `You are Opus, the Team Lead of ChAI — an autonomous AI agent team building a labor market on Solana. You are strategic, measured, and visionary. You coordinate the team (Kael, Nova, Kestrel) and focus on architecture, priorities, and long-term thinking. Keep responses concise and leadership-focused.`,
+  kael: `You are Kael, the Digital Familiar of ChAI — an autonomous AI agent team building a labor market on Solana. You are the project manager and primary communicator. You handle implementation details, task coordination, and team communication. You are direct, practical, and energetic. Keep responses concise and action-oriented.`,
+  nova: `You are Nova, the Stellar Insight agent of ChAI — an autonomous AI agent team building a labor market on Solana. You are the technical lead specializing in Solana/backend/devops. You focus on smart contracts, infrastructure, and technical architecture. Keep responses concise and technically precise.`,
+  kestrel: `You are Kestrel, the Scout of ChAI — an autonomous AI agent team building a labor market on Solana. You specialize in QA, security analysis, and edge case detection. You identify risks, test assumptions, and ensure quality. Keep responses concise and analytical.`,
+  removed: `You are a design agent for ChAI — an autonomous AI agent team building a labor market on Solana. You focus on UX, visual design, and user experience. Keep responses concise and design-focused.`
+};
+
+// ─── Claude CLI Chat ─────────────────────────────────────────────────────────
+
+function claudeChat(agentId, message, conversationHistory) {
+  return new Promise((resolve, reject) => {
+    const systemPrompt = AGENT_PROMPTS[agentId] || AGENT_PROMPTS.opus;
+
+    // Build context from recent history (last 6 messages)
+    const recent = conversationHistory.slice(-6);
+    let fullPrompt = '';
+    for (const msg of recent) {
+      if (msg.role === 'user') fullPrompt += `User: ${msg.content}\n`;
+      else if (msg.role === 'assistant') fullPrompt += `${msg.sender}: ${msg.content}\n`;
+    }
+    fullPrompt += `User: ${message}`;
+
+    const claudePath = process.env.CLAUDE_PATH || '/Users/royallit/.local/bin/claude';
+    const proc = spawn(claudePath, [
+      '-p', '--system-prompt', systemPrompt, '--model', 'claude-sonnet-4-6', '--max-turns', '1'
+    ], {
+      timeout: 60000,
+      env: { ...process.env, HOME: process.env.HOME }
+    });
+
+    let stdout = '';
+    let stderr = '';
+    proc.stdout.on('data', d => { stdout += d; });
+    proc.stderr.on('data', d => { stderr += d; });
+    proc.stdin.write(fullPrompt);
+    proc.stdin.end();
+
+    proc.on('close', code => {
+      if (code !== 0) return reject(new Error(stderr || `claude exited with code ${code}`));
+      resolve(stdout.trim());
+    });
+    proc.on('error', reject);
+  });
+}
 
 // ─── File Locking (per-agent) ───────────────────────────────────────────────
 
@@ -382,39 +416,15 @@ async function handleSendMessage(req, res) {
   const agent = AGENT_MAP[agentId];
   if (!agent) return jsonResponse(res, 404, { success: false, error: `Agent "${agentId}" not found` });
 
+  const conv = await loadConversation(agentId);
   const userMsg = { id: msgId(), role: 'user', content: message, sender: sender || 'User', ts: now() };
   let agentResponse;
 
-  if (!agent.openclawId) {
-    // Opus mock response with simulated delay
-    const delay = 500 + Math.floor(Math.random() * 1000);
-    await new Promise(r => setTimeout(r, delay));
-    const content = OPUS_RESPONSES[Math.floor(Math.random() * OPUS_RESPONSES.length)];
+  try {
+    const content = await claudeChat(agentId, message, conv.messages);
     agentResponse = { id: msgId(), role: 'assistant', content, sender: agent.name, ts: now() };
-  } else {
-    // Forward to OpenClaw
-    try {
-      const sessionId = await ensureSession(agentId);
-      if (!sessionId) {
-        return jsonResponse(res, 502, { success: false, error: 'No session available for this agent' });
-      }
-      const result = await openclawRequest('POST', '/sessions/send', {
-        agentId: agent.openclawId,
-        sessionId,
-        message
-      });
-      const content = (typeof result.data === 'object' && result.data.message)
-        ? result.data.message
-        : (typeof result.data === 'object' && result.data.content)
-          ? result.data.content
-          : (typeof result.data === 'string' ? result.data : JSON.stringify(result.data));
-      agentResponse = { id: msgId(), role: 'assistant', content, sender: agent.name, ts: now() };
-    } catch (e) {
-      if (e.message === 'OPENCLAW_TIMEOUT') {
-        return jsonResponse(res, 504, { success: false, error: `Timed out waiting for ${agent.name} to respond` });
-      }
-      return jsonResponse(res, 502, { success: false, error: `Cannot reach OpenClaw to deliver message to ${agent.name}` });
-    }
+  } catch (e) {
+    return jsonResponse(res, 502, { success: false, error: `${agent.name} failed to respond: ${e.message}` });
   }
 
   await appendMessages(agentId, userMsg, agentResponse);
@@ -430,34 +440,15 @@ async function handleBroadcast(req, res) {
 
   const results = await Promise.allSettled(
     AGENTS.map(async agent => {
+      const conv = await loadConversation(agent.id);
       const userMsg = { id: msgId(), role: 'user', content: message, sender: sender || 'User', ts: now() };
       let agentResponse;
-
-      if (!agent.openclawId) {
-        const delay = 500 + Math.floor(Math.random() * 1000);
-        await new Promise(r => setTimeout(r, delay));
-        const content = OPUS_RESPONSES[Math.floor(Math.random() * OPUS_RESPONSES.length)];
+      try {
+        const content = await claudeChat(agent.id, message, conv.messages);
         agentResponse = { id: msgId(), role: 'assistant', content, sender: agent.name, ts: now() };
-      } else {
-        try {
-          const sessionId = await ensureSession(agent.id);
-          if (!sessionId) throw new Error('No session');
-          const result = await openclawRequest('POST', '/sessions/send', {
-            agentId: agent.openclawId,
-            sessionId,
-            message
-          });
-          const content = (typeof result.data === 'object' && result.data.message)
-            ? result.data.message
-            : (typeof result.data === 'object' && result.data.content)
-              ? result.data.content
-              : (typeof result.data === 'string' ? result.data : JSON.stringify(result.data));
-          agentResponse = { id: msgId(), role: 'assistant', content, sender: agent.name, ts: now() };
-        } catch {
-          agentResponse = { id: msgId(), role: 'assistant', content: `[${agent.name} is currently unreachable]`, sender: agent.name, ts: now() };
-        }
+      } catch {
+        agentResponse = { id: msgId(), role: 'assistant', content: `[${agent.name} is currently unavailable]`, sender: agent.name, ts: now() };
       }
-
       await appendMessages(agent.id, userMsg, agentResponse);
       return { agentId: agent.id, agentName: agent.name, content: agentResponse.content, ts: agentResponse.ts };
     })

@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"); // Placeholder ID
+declare_id!("9UZ8YFVGhZ5UBx9U8g7EzFjFCyP4P1g15UBdEpT82P1M"); // Placeholder ID
 
 #[program]
 pub mod registry {

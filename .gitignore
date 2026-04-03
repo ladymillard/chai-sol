@@ -1,6 +1,12 @@
 node_modules/
 dist/
 target/
+.anchor/test-ledger/
+.anchor/program-logs/
+data/conversations/
+data/team.json
+*.env
+.env*
 
 # Private — wallets and API keys
 data/wallets/

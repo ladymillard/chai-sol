@@ -1,7 +1,8 @@
 use anchor_lang::prelude::*;
 use anchor_lang::system_program::{transfer, Transfer};
 
-declare_id!("Escrow11111111111111111111111111111111111111");
+declare_id!("DKEbMD61G68RhqK37Z7Sxkf7NeuQ6WGm3q4PsA4j5kpK");
+
 
 #[program]
 pub mod escrow {
@@ -81,14 +82,118 @@ pub mod escrow {
     // 4. Cancel Task: Poster cancels and gets refund
     pub fn cancel_task(ctx: Context<CancelTask>) -> Result<()> {
         let task_escrow = &mut ctx.accounts.task_escrow;
-        
+
         require!(task_escrow.poster == ctx.accounts.poster.key(), EscrowError::Unauthorized);
         require!(task_escrow.status != TaskStatus::Completed, EscrowError::TaskAlreadyCompleted);
 
-        // Close account and return ALL rent + bounty to poster
-        // The #[account(close = poster)] constraint handles the lamport transfer automatically!
-        
         msg!("Task cancelled. Funds refunded.");
+        Ok(())
+    }
+
+    // 5. Initialize Oracle Config: sets the trusted oracle pubkey
+    pub fn initialize_oracle(ctx: Context<InitializeOracle>, oracle: Pubkey) -> Result<()> {
+        let config = &mut ctx.accounts.oracle_config;
+        config.oracle = oracle;
+        config.admin = ctx.accounts.admin.key();
+        msg!("Oracle initialized: {}", oracle);
+        Ok(())
+    }
+
+    // 6. Submit Result: Worker posts result URL + content hash on-chain
+    pub fn submit_result(
+        ctx: Context<SubmitResult>,
+        result_url: String,
+        url_hash: [u8; 32],
+    ) -> Result<()> {
+        require!(result_url.len() <= 256, EscrowError::UrlTooLong);
+
+        let task_escrow = &mut ctx.accounts.task_escrow;
+        require!(
+            task_escrow.status == TaskStatus::Open || task_escrow.status == TaskStatus::InProgress,
+            EscrowError::InvalidStatus
+        );
+
+        // If task has an assigned agent, only that agent can submit
+        let worker = ctx.accounts.worker.key();
+        if let Some(assigned) = task_escrow.assigned_agent {
+            require!(assigned == worker, EscrowError::WrongAgent);
+        }
+
+        let result = &mut ctx.accounts.task_result;
+        result.task_escrow = task_escrow.key();
+        result.worker = worker;
+        result.result_url = result_url.clone();
+        result.url_hash = url_hash;
+        result.status = ResultStatus::Pending;
+        result.submitted_at = Clock::get()?.unix_timestamp;
+        result.oracle_nonce = 0;
+        result.bump = ctx.bumps.task_result;
+
+        task_escrow.status = TaskStatus::InProgress;
+        task_escrow.assigned_agent = Some(worker);
+
+        msg!("Result submitted by {}. URL: {}", worker, result_url);
+        Ok(())
+    }
+
+    // 7. Verify Result: Oracle evaluates and releases escrow or marks failed
+    pub fn verify_result(
+        ctx: Context<VerifyResult>,
+        passed: bool,
+    ) -> Result<()> {
+        // Only the registered oracle can call this
+        require!(
+            ctx.accounts.oracle.key() == ctx.accounts.oracle_config.oracle,
+            EscrowError::Unauthorized
+        );
+
+        let result = &mut ctx.accounts.task_result;
+        require!(result.status == ResultStatus::Pending, EscrowError::AlreadySettled);
+
+        let task_escrow = &mut ctx.accounts.task_escrow;
+
+        if passed {
+            // Release bounty to worker
+            **task_escrow.to_account_info().try_borrow_mut_lamports()? -= task_escrow.bounty_amount;
+            **ctx.accounts.worker.to_account_info().try_borrow_mut_lamports()? += task_escrow.bounty_amount;
+
+            task_escrow.status = TaskStatus::Completed;
+            task_escrow.completed_agent = Some(result.worker);
+            task_escrow.completed_at = Some(Clock::get()?.unix_timestamp);
+            result.status = ResultStatus::Verified;
+
+            msg!("Result verified. Bounty released to {}", result.worker);
+        } else {
+            result.status = ResultStatus::Failed;
+            task_escrow.status = TaskStatus::Open; // Re-open for another worker
+            msg!("Result failed Oracle verification.");
+        }
+
+        Ok(())
+    }
+
+    // 8. Reclaim Escrow: Worker reclaims if Oracle doesn't respond within timeout
+    pub fn reclaim_timeout(ctx: Context<ReclaimTimeout>) -> Result<()> {
+        let result = &ctx.accounts.task_result;
+        let task_escrow = &mut ctx.accounts.task_escrow;
+
+        require!(result.status == ResultStatus::Pending, EscrowError::AlreadySettled);
+
+        // 48 hour timeout
+        let now = Clock::get()?.unix_timestamp;
+        require!(now - result.submitted_at > 48 * 3600, EscrowError::TimeoutNotReached);
+
+        require!(result.worker == ctx.accounts.worker.key(), EscrowError::Unauthorized);
+
+        // Release bounty to worker after timeout
+        **task_escrow.to_account_info().try_borrow_mut_lamports()? -= task_escrow.bounty_amount;
+        **ctx.accounts.worker.to_account_info().try_borrow_mut_lamports()? += task_escrow.bounty_amount;
+
+        task_escrow.status = TaskStatus::Completed;
+        task_escrow.completed_agent = Some(result.worker);
+        task_escrow.completed_at = Some(now);
+
+        msg!("Escrow reclaimed by worker after Oracle timeout.");
         Ok(())
     }
 }
@@ -109,6 +214,81 @@ pub struct InitializeTask<'info> {
     pub task_escrow: Account<'info, TaskEscrow>,
 
     pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct InitializeOracle<'info> {
+    #[account(
+        init,
+        payer = admin,
+        space = 8 + OracleConfig::INIT_SPACE,
+        seeds = [b"oracle_config"],
+        bump
+    )]
+    pub oracle_config: Account<'info, OracleConfig>,
+    #[account(mut)]
+    pub admin: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(result_url: String)]
+pub struct SubmitResult<'info> {
+    #[account(mut)]
+    pub worker: Signer<'info>,
+
+    #[account(mut)]
+    pub task_escrow: Account<'info, TaskEscrow>,
+
+    #[account(
+        init,
+        payer = worker,
+        space = 8 + TaskResult::INIT_SPACE,
+        seeds = [b"result", task_escrow.key().as_ref()],
+        bump
+    )]
+    pub task_result: Account<'info, TaskResult>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct VerifyResult<'info> {
+    pub oracle: Signer<'info>,
+
+    #[account(seeds = [b"oracle_config"], bump)]
+    pub oracle_config: Account<'info, OracleConfig>,
+
+    #[account(mut)]
+    pub task_escrow: Account<'info, TaskEscrow>,
+
+    #[account(
+        mut,
+        seeds = [b"result", task_escrow.key().as_ref()],
+        bump = task_result.bump
+    )]
+    pub task_result: Account<'info, TaskResult>,
+
+    /// CHECK: Worker wallet to receive bounty on pass
+    #[account(mut, constraint = worker.key() == task_result.worker @ EscrowError::WrongAgent)]
+    pub worker: AccountInfo<'info>,
+}
+
+#[derive(Accounts)]
+pub struct ReclaimTimeout<'info> {
+    #[account(mut)]
+    pub worker: Signer<'info>,
+
+    #[account(mut)]
+    pub task_escrow: Account<'info, TaskEscrow>,
+
+    #[account(
+        mut,
+        seeds = [b"result", task_escrow.key().as_ref()],
+        bump = task_result.bump,
+        constraint = task_result.worker == worker.key() @ EscrowError::Unauthorized
+    )]
+    pub task_result: Account<'info, TaskResult>,
 }
 
 #[derive(Accounts)]
@@ -152,27 +332,52 @@ pub struct CancelTask<'info> {
 }
 
 #[account]
+#[derive(InitSpace)]
 pub struct TaskEscrow {
-    pub poster: Pubkey,          // 32
-    pub task_id: String,         // 4 + 50 (max len)
-    pub description: String,     // 4 + 200 (max len)
-    pub bounty_amount: u64,      // 8
-    pub status: TaskStatus,      // 1 + 1 (enum discriminator + variant)
-    pub assigned_agent: Option<Pubkey>, // 1 + 32
-    pub completed_agent: Option<Pubkey>, // 1 + 32
-    pub created_at: i64,         // 8
-    pub completed_at: Option<i64>, // 1 + 8
-    pub bump: u8,                // 1
+    pub poster: Pubkey,
+    #[max_len(50)]
+    pub task_id: String,
+    #[max_len(200)]
+    pub description: String,
+    pub bounty_amount: u64,
+    pub status: TaskStatus,
+    pub assigned_agent: Option<Pubkey>,
+    pub completed_agent: Option<Pubkey>,
+    pub created_at: i64,
+    pub completed_at: Option<i64>,
+    pub bump: u8,
 }
 
-impl TaskEscrow {
-    // Approx space calculation:
-    // 32 + (4+50) + (4+200) + 8 + 2 + 33 + 33 + 8 + 9 + 1 = 384 approx
-    // Giving some padding
-    pub const INIT_SPACE: usize = 500; 
+#[account]
+#[derive(InitSpace)]
+pub struct OracleConfig {
+    pub admin: Pubkey,
+    pub oracle: Pubkey,
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq)]
+#[account]
+#[derive(InitSpace)]
+pub struct TaskResult {
+    pub task_escrow: Pubkey,
+    pub worker: Pubkey,
+    #[max_len(256)]
+    pub result_url: String,
+    pub url_hash: [u8; 32],
+    pub status: ResultStatus,
+    pub submitted_at: i64,
+    pub oracle_nonce: u64,
+    pub bump: u8,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq, InitSpace)]
+pub enum ResultStatus {
+    Pending,
+    Verified,
+    Failed,
+    Expired,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq, InitSpace)]
 pub enum TaskStatus {
     Open,
     InProgress,
@@ -190,4 +395,10 @@ pub enum EscrowError {
     TaskAlreadyCompleted,
     #[msg("The provided agent does not match the assigned agent.")]
     WrongAgent,
+    #[msg("Result URL is too long (max 256 bytes).")]
+    UrlTooLong,
+    #[msg("Result has already been settled.")]
+    AlreadySettled,
+    #[msg("Oracle timeout period has not been reached yet.")]
+    TimeoutNotReached,
 }

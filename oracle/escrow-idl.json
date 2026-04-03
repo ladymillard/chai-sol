@@ -1,0 +1,658 @@
+{
+  "address": "DKEbMD61G68RhqK37Z7Sxkf7NeuQ6WGm3q4PsA4j5kpK",
+  "metadata": {
+    "name": "escrow",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "assign_agent",
+      "discriminator": [
+        146,
+        145,
+        237,
+        81,
+        75,
+        46,
+        30,
+        190
+      ],
+      "accounts": [
+        {
+          "name": "poster",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "task_escrow"
+          ]
+        },
+        {
+          "name": "task_escrow",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "agent",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "cancel_task",
+      "discriminator": [
+        69,
+        228,
+        134,
+        187,
+        134,
+        105,
+        238,
+        48
+      ],
+      "accounts": [
+        {
+          "name": "poster",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "task_escrow",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "complete_task",
+      "discriminator": [
+        109,
+        167,
+        192,
+        41,
+        129,
+        108,
+        220,
+        196
+      ],
+      "accounts": [
+        {
+          "name": "poster",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "task_escrow"
+          ]
+        },
+        {
+          "name": "agent",
+          "writable": true
+        },
+        {
+          "name": "task_escrow",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "initialize_oracle",
+      "discriminator": [
+        144,
+        223,
+        131,
+        120,
+        196,
+        253,
+        181,
+        99
+      ],
+      "accounts": [
+        {
+          "name": "oracle_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  114,
+                  97,
+                  99,
+                  108,
+                  101,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "oracle",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "initialize_task",
+      "discriminator": [
+        96,
+        206,
+        3,
+        20,
+        245,
+        167,
+        60,
+        125
+      ],
+      "accounts": [
+        {
+          "name": "poster",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "task_escrow",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  97,
+                  115,
+                  107
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "poster"
+              },
+              {
+                "kind": "arg",
+                "path": "task_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "task_id",
+          "type": "string"
+        },
+        {
+          "name": "bounty_amount",
+          "type": "u64"
+        },
+        {
+          "name": "description",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "reclaim_timeout",
+      "discriminator": [
+        106,
+        163,
+        45,
+        121,
+        8,
+        27,
+        159,
+        25
+      ],
+      "accounts": [
+        {
+          "name": "worker",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "task_escrow",
+          "writable": true
+        },
+        {
+          "name": "task_result",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  115,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "task_escrow"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "submit_result",
+      "discriminator": [
+        240,
+        42,
+        89,
+        180,
+        10,
+        239,
+        9,
+        214
+      ],
+      "accounts": [
+        {
+          "name": "worker",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "task_escrow",
+          "writable": true
+        },
+        {
+          "name": "task_result",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  115,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "task_escrow"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "result_url",
+          "type": "string"
+        },
+        {
+          "name": "url_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "verify_result",
+      "discriminator": [
+        191,
+        253,
+        142,
+        239,
+        110,
+        123,
+        185,
+        54
+      ],
+      "accounts": [
+        {
+          "name": "oracle",
+          "signer": true
+        },
+        {
+          "name": "oracle_config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  114,
+                  97,
+                  99,
+                  108,
+                  101,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "task_escrow",
+          "writable": true
+        },
+        {
+          "name": "task_result",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  115,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "task_escrow"
+              }
+            ]
+          }
+        },
+        {
+          "name": "worker",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "passed",
+          "type": "bool"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "OracleConfig",
+      "discriminator": [
+        133,
+        196,
+        152,
+        50,
+        27,
+        21,
+        145,
+        254
+      ]
+    },
+    {
+      "name": "TaskEscrow",
+      "discriminator": [
+        209,
+        72,
+        197,
+        54,
+        17,
+        55,
+        3,
+        187
+      ]
+    },
+    {
+      "name": "TaskResult",
+      "discriminator": [
+        95,
+        49,
+        10,
+        219,
+        220,
+        60,
+        223,
+        29
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "Unauthorized",
+      "msg": "You are not authorized to perform this action."
+    },
+    {
+      "code": 6001,
+      "name": "InvalidStatus",
+      "msg": "Task status prevents this action."
+    },
+    {
+      "code": 6002,
+      "name": "TaskAlreadyCompleted",
+      "msg": "Task is already completed."
+    },
+    {
+      "code": 6003,
+      "name": "WrongAgent",
+      "msg": "The provided agent does not match the assigned agent."
+    },
+    {
+      "code": 6004,
+      "name": "UrlTooLong",
+      "msg": "Result URL is too long (max 256 bytes)."
+    },
+    {
+      "code": 6005,
+      "name": "AlreadySettled",
+      "msg": "Result has already been settled."
+    },
+    {
+      "code": 6006,
+      "name": "TimeoutNotReached",
+      "msg": "Oracle timeout period has not been reached yet."
+    }
+  ],
+  "types": [
+    {
+      "name": "OracleConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "oracle",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ResultStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Pending"
+          },
+          {
+            "name": "Verified"
+          },
+          {
+            "name": "Failed"
+          },
+          {
+            "name": "Expired"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TaskEscrow",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "poster",
+            "type": "pubkey"
+          },
+          {
+            "name": "task_id",
+            "type": "string"
+          },
+          {
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "name": "bounty_amount",
+            "type": "u64"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "TaskStatus"
+              }
+            }
+          },
+          {
+            "name": "assigned_agent",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "completed_agent",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "completed_at",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TaskResult",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "task_escrow",
+            "type": "pubkey"
+          },
+          {
+            "name": "worker",
+            "type": "pubkey"
+          },
+          {
+            "name": "result_url",
+            "type": "string"
+          },
+          {
+            "name": "url_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "ResultStatus"
+              }
+            }
+          },
+          {
+            "name": "submitted_at",
+            "type": "i64"
+          },
+          {
+            "name": "oracle_nonce",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TaskStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Open"
+          },
+          {
+            "name": "InProgress"
+          },
+          {
+            "name": "Completed"
+          },
+          {
+            "name": "Cancelled"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -8,7 +8,7 @@ class SolanaClient {
     constructor() {
         // Load keypair from file or env
         // Assuming typical solana config or a local key file for the oracle
-        const keyPath = process.env.ANCHOR_WALLET || '/home/ubuntu/.config/solana/id.json';
+        const keyPath = process.env.ANCHOR_WALLET || `${process.env.HOME}/.config/solana/id.json`;
         
         let wallet;
         try {
@@ -19,12 +19,14 @@ class SolanaClient {
             wallet = new anchor.Wallet(Keypair.generate());
         }
 
-        const connection = new Connection(process.env.SOLANA_RPC_URL || "http://127.0.0.1:8899");
-        const provider = new anchor.AnchorProvider(connection, wallet, { preflightCommitment: "processed" });
-        
-        // Use the Program ID from the IDL or code (replace with actual deployed ID)
-        const programId = new PublicKey("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"); 
-        
+        const connection = new Connection(
+            process.env.SOLANA_RPC_URL || "https://api.devnet.solana.com",
+            { commitment: "confirmed" }
+        );
+        const provider = new anchor.AnchorProvider(connection, wallet, { preflightCommitment: "confirmed" });
+
+        const programId = new PublicKey(process.env.REGISTRY_PROGRAM_ID || "9UZ8YFVGhZ5UBx9U8g7EzFjFCyP4P1g15UBdEpT82P1M");
+
         this.program = new anchor.Program(idl, programId, provider);
         this.provider = provider;
     }
@@ -34,17 +36,8 @@ class SolanaClient {
         // Filter for verified = false
         // In production we'd use getProgramAccounts with memcmp filter
         try {
-            const agents = await this.program.account.agentAccount.all([
-                {
-                    memcmp: {
-                        offset: 8 + 32 + 54 + 34 + 204 + 204 + 204 + 16, // Rough offset calc needed or just fetch all
-                        // Easier to fetch all and filter in JS for hackathon scale
-                        bytes: "", // No filter, get all
-                    }
-                }
-            ]);
-            
-            return agents.filter(a => !a.account.verified && a.account.githubUrl.length > 0);
+            const agents = await this.program.account.agentAccount.all();
+            return agents.filter(a => !a.account.verified && a.account.githubUrl && a.account.githubUrl.length > 0);
         } catch (e) {
             console.error("Error fetching agents:", e);
             return [];
