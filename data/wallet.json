@@ -2,7 +2,10 @@
   "treasury": {
     "address": "5hBZnh12h8nPS61sXpmvto3n3N3XnPyBT5vAVMuP6juf",
     "network": "solana",
-    "tokens": ["SOL", "BRIC"],
+    "tokens": [
+      "SOL",
+      "BRIC"
+    ],
     "note": "Primary ChAI AI Ninja treasury wallet"
   },
   "bric": {
@@ -13,10 +16,9 @@
     "supply": "10000000000000"
   },
   "agents": {
-    "Kael": "57d07b8e5c49d4fc9f9474940775a6a89d9cb59d946f",
+    "Kael": "GPKwu562o7t3zhGywSodMuimjUCENTbyEr24ijZGFdza",
     "Kestrel": "5b48cde19e3b69408ce06ed6466cbd06ef0877824bfb",
     "Nova": "5ec653e8e8748dbab42c620a11a99458140ebc7c016f",
     "Opus": "5adc96e398532548b5faf8323dbdec7a55d2a04e2466"
   }
 }
-
