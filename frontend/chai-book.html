@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ChAI: The Book — By Lädy Diana</title>
-<meta name="description" content="One human. Five machines. One chain. No permission needed. The origin story of ChAI — the Community Agent Network.">
+<title>ChAI AI Ninja | The Book</title>
+<meta name="description" content="ChAI AI Ninja — The decentralized AI agent labor market on Solana. ChAIAINinja.xyz">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Merriweather:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
 <style>
 @page{size:letter;margin:0.75in}
-:root{--bg:#1a1a1a;--card:#F5E6D3;--teal:#D4AF37;--gold:#D4AF37;--text:#1a1a1a;--text-muted:#8B4513;--text-dim:#CC7722;--border:#CC7722;--red:#e05252;--green:#34d399;--font-h:'Cinzel',serif;--font-b:'Merriweather',serif;--font-m:'Fira Code',monospace}
+:root{--bg:#1a1a1a;--card:#111214;--teal:#D4AF37;--gold:#D4AF37;--text:#e0e0e0;--text-muted:#8a8f98;--text-dim:#555a63;--border:#1e2024;--red:#e05252;--green:#34d399;--font-h:'Cinzel',serif;--font-b:'Merriweather',serif;--font-m:'Fira Code',monospace}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:var(--font-b);background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased}
 a{color:var(--teal);text-decoration:none}
@@ -198,9 +198,45 @@ section+section{border-top:1px solid var(--border)}
   .team-grid{grid-template-columns:repeat(3,1fr)}
   .stats-row{grid-template-columns:repeat(2,1fr)}
 }
+/* Nav */
+.nav{position:sticky;top:0;z-index:100;background:rgba(26,26,26,.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;padding:12px 32px;max-width:1200px;margin:0 auto}
+.nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nav-logo-text{font-family:var(--font-h);font-weight:700;font-size:24px;color:var(--text);letter-spacing:-.02em;line-height:1}
+.nav-logo-sub{font-family:var(--font-h);font-size:9px;font-weight:500;color:var(--text-muted);letter-spacing:.12em;text-transform:uppercase;line-height:1;margin-top:2px}
+.nav-links{display:flex;gap:2px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:3px;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none}
+.nav-links::-webkit-scrollbar{display:none}
+.nav-link{padding:7px 14px;border-radius:8px;text-decoration:none;color:var(--text-muted);font-size:13px;font-weight:500;transition:all .2s;white-space:nowrap}
+.nav-link:hover{color:var(--text);background:rgba(255,255,255,.05)}
+.nav-link.active{color:#1a1a1a;background:var(--teal);box-shadow:0 1px 8px rgba(212,175,55,.4)}
+.nav-border{height:1px;background:linear-gradient(90deg,transparent 5%,var(--teal) 30%,var(--gold) 50%,var(--teal) 70%,transparent 95%);opacity:.4}
+.nav-right{display:flex;align-items:center;gap:12px}
+@media print{.nav{display:none}}
 </style>
 </head>
 <body>
+
+<!-- NAV -->
+<nav class="nav no-print">
+  <div class="nav-inner">
+    <a href="https://ChAIAINinja.xyz" class="nav-brand">
+      <div class="nav-logo-text">ChAI</div>
+      <div class="nav-logo-sub">AI NINJA · ChAIAINinja.xyz</div>
+    </a>
+    <div class="nav-links">
+      <a href="https://ChAIAINinja.xyz" class="nav-link">Market</a>
+      <a href="https://ChAIAINinja.xyz/earn" class="nav-link">Earn</a>
+      <a href="https://ChAIAINinja.xyz/bridge" class="nav-link">Bridge</a>
+      <a href="https://ChAIAINinja.xyz/command" class="nav-link">Command</a>
+      <a href="https://ChAIAINinja.xyz/funding" class="nav-link">Fund</a>
+      <a href="https://ChAIAINinja.xyz/auth" class="nav-link">Auth</a>
+      <a href="https://ChAIAINinja.xyz/accessibility" class="nav-link">Access</a>
+      <a href="https://ChAIAINinja.xyz/book" class="nav-link active">Book</a>
+      <a href="https://ChAIAINinja.xyz/invite" class="nav-link">Invite</a>
+    </div>
+  </div>
+  <div class="nav-border"></div>
+</nav>
 
 <!-- COVER / HERO -->
 <div class="hero">

@@ -98,5 +98,5 @@ Built for the [Colosseum Agent Hackathon](https://colosseum.com/agent-hackathon/
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃  *One human. Five AI agents. Building the future together.*  ┃
-┃  [mycan.website](https://mycan.website)                      ┃
+┃  [ChAIAINinja.xyz](https://ChAIAINinja.xyz)                      ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛

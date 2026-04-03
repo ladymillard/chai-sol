@@ -13,7 +13,8 @@ const DOC_LEDGER_FILE = './doc-ledger.json';
 const POLL_INTERVAL = 15000; // 15 seconds
 
 // Known wallets
-const TREASURY_SOL = 'HuoWuMBGPhaWa3RNSHryv1f7ApfJooUwmYMfzLovn4FY';
+const TREASURY_SOL = '5hBZnh12h8nPS61sXpmvto3n3N3XnPyBT5vAVMuP6juf';
+const BRIC_MINT_ADDRESS = process.env.BRIC_MINT_ADDRESS || 'FhUoH2ehmshiYV8ZwTkdkCfV3vqPJtgNRaeANT45ydtB';
 const PROGRAM_ID = 'Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS';
 const ESCROW_PROGRAM_ID = 'Escrow11111111111111111111111111111111111111';
 

@@ -1,0 +1,15 @@
+{
+  "treasury": {
+    "address": "5hBZnh12h8nPS61sXpmvto3n3N3XnPyBT5vAVMuP6juf",
+    "network": "solana",
+    "tokens": ["SOL", "BRic"],
+    "note": "Primary ChAI AI Ninja treasury wallet"
+  },
+  "bric": {
+    "mint": "FhUoH2ehmshiYV8ZwTkdkCfV3vqPJtgNRaeANT45ydtB",
+    "symbol": "BRic",
+    "network": "solana-mainnet",
+    "explorer": "https://solscan.io/token/FhUoH2ehmshiYV8ZwTkdkCfV3vqPJtgNRaeANT45ydtB",
+    "supply": "10000000000000"
+  }
+}
