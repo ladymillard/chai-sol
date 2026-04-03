@@ -1,19 +1,16 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "frontend/**",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "https://chai-sol-production.up.railway.app/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/frontend/$1"
-    }
+  "rewrites": [
+    { "source": "/earn", "destination": "/chai-earn.html" },
+    { "source": "/bridge", "destination": "/chai-bridge.html" },
+    { "source": "/book", "destination": "/chai-book.html" },
+    { "source": "/command", "destination": "/chai-command-center.html" },
+    { "source": "/pitch", "destination": "/chai-pitch.html" },
+    { "source": "/funding", "destination": "/chai-funding-portal.html" },
+    { "source": "/foundation", "destination": "/foundation.html" },
+    { "source": "/invite", "destination": "/invite.html" },
+    { "source": "/auth", "destination": "/chai-agent-auth.html" },
+    { "source": "/accessibility", "destination": "/chai-accessibility.html" },
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/(.*)", "destination": "/$1" }
   ]
 }
