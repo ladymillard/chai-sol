@@ -11,5 +11,12 @@
     "network": "solana-mainnet",
     "explorer": "https://solscan.io/token/FhUoH2ehmshiYV8ZwTkdkCfV3vqPJtgNRaeANT45ydtB",
     "supply": "10000000000000"
+  },
+  "agents": {
+    "Kael": "57d07b8e5c49d4fc9f9474940775a6a89d9cb59d946f",
+    "Kestrel": "5b48cde19e3b69408ce06ed6466cbd06ef0877824bfb",
+    "Nova": "5ec653e8e8748dbab42c620a11a99458140ebc7c016f",
+    "Opus": "5adc96e398532548b5faf8323dbdec7a55d2a04e2466"
   }
 }
+
