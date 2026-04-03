@@ -9,51 +9,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-:root {
-  --bg: #1a1a1a;
-  --card: #111214;
-  --card-border: #1e2024;
-  --teal: #D4AF37;
-  --teal-dim: rgba(212, 175, 55, 0.15);
-  --teal-glow: rgba(212, 175, 55, 0.08);
-  --gold: #F4D03F;
-  --gold-dim: rgba(232, 197, 71, 0.15);
-  --gold-glow: rgba(232, 197, 71, 0.08);
-  --text: #ffffff;
-  --text-sec: #888888;
-  --text-dim: #555555;
-  --danger: #e04040;
-  --success: #34d399;
-  --radius: 12px;
-  --radius-sm: 8px;
-  --radius-xs: 6px;
-  --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  --border: var(--card-border);
-  --text-muted: var(--text-sec);
-  --green: var(--success);
-}
-
-:root.light {
-  --bg: #f5f5f7;
-  --card: #ffffff;
-  --card-border: #e2e4e8;
-  --text: #1a1a2e;
-  --text-sec: #6b7280;
-  --text-dim: #9ca3af;
-  --teal-dim: rgba(212, 175, 55, 0.10);
-  --teal-glow: rgba(212, 175, 55, 0.06);
-  --gold-dim: rgba(232, 197, 71, 0.10);
-  --gold-glow: rgba(232, 197, 71, 0.06);
-  --border: #e2e4e8;
-  --text-muted: #6b7280;
-  --green: var(--success);
-}
+        :root{--bg:#1a1a1a;--card:#111214;--card-hover:#1a1c1f;--teal:#D4AF37;--teal-dim:rgba(212,175,55,.15);--gold:#D4AF37;--gold-dim:rgba(212,175,55,.15);--text:#e0e0e0;--text-muted:#8a8f98;--text-dim:#555a63;--border:#1e2024;--border-light:#2a2d32;--red:#e05252;--green:#34d399;--font-h:'Cinzel',serif;--font-b:'Inter',sans-serif;--font-m:'Fira Code',monospace;--radius:10px;--radius-lg:14px}
+        :root.light{--bg:#F5E6D3;--card:#ffffff;--card-hover:#E8D5C4;--teal:#D4AF37;--teal-dim:rgba(212,175,55,.1);--gold:#D4AF37;--gold-dim:rgba(212,175,55,.1);--text:#1a1a1a;--text-muted:#8B4513;--text-dim:#CC7722;--border:#CC7722;--border-light:#D4AF37;--red:#dc2626;--green:#059669}
 
 html { scroll-behavior: smooth; }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  
   background: var(--bg);
   color: var(--text);
   line-height: 1.6;

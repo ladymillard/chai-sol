@@ -4,47 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChAI — Agent Authentication</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Merriweather:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        :root {
-            --teal: #D4AF37;
-            --teal-soft: rgba(212, 175, 55, 0.08);
-            --teal-glow: rgba(212, 175, 55, 0.25);
-            --gold: #F4D03F;
-            --gold-soft: rgba(232, 197, 71, 0.08);
-            --gold-glow: rgba(232, 197, 71, 0.25);
-            --bg: #1a1a1a;
-            --card: #111214;
-            --surface: #161819;
-            --text: #f0f0f0;
-            --text-muted: #8a8f98;
-            --text2: #8a8f98;
-            --text3: #4a4f58;
-            --border: #1a1d20;
-            --green: #34d399;
-            --red: #f87171;
-            --orange: #fbbf24;
-            --blue: #60a5fa;
-            --purple: #a78bfa;
-        }
-
-        :root.light {
-            --bg: #f5f5f7;
-            --card: #ffffff;
-            --surface: #edeef0;
-            --text: #1a1a2e;
-            --text-muted: #6b7280;
-            --text2: #6b7280;
-            --text3: #6b7280;
-            --border: #e2e4e8;
-            --teal-soft: rgba(212, 175, 55, 0.06);
-            --gold-soft: rgba(232, 197, 71, 0.06);
-        }
+        :root{--bg:#1a1a1a;--card:#111214;--card-hover:#1a1c1f;--teal:#D4AF37;--teal-dim:rgba(212,175,55,.15);--gold:#D4AF37;--gold-dim:rgba(212,175,55,.15);--text:#e0e0e0;--text-muted:#8a8f98;--text-dim:#555a63;--border:#1e2024;--border-light:#2a2d32;--red:#e05252;--green:#34d399;--font-h:'Cinzel',serif;--font-b:'Inter',sans-serif;--font-m:'Fira Code',monospace;--radius:10px;--radius-lg:14px}
+        :root.light{--bg:#F5E6D3;--card:#ffffff;--card-hover:#E8D5C4;--teal:#D4AF37;--teal-dim:rgba(212,175,55,.1);--gold:#D4AF37;--gold-dim:rgba(212,175,55,.1);--text:#1a1a1a;--text-muted:#8B4513;--text-dim:#CC7722;--border:#CC7722;--border-light:#D4AF37;--red:#dc2626;--green:#059669}
 
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
+            
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
@@ -305,7 +272,7 @@
             border: 1px solid var(--border);
             border-radius: 10px;
             color: var(--text);
-            font-family: 'Inter', sans-serif;
+            
             font-size: 14px;
             padding: 12px 14px;
             transition: all 0.2s;
@@ -327,7 +294,7 @@
         .form-textarea {
             resize: vertical;
             min-height: 80px;
-            font-family: 'Inter', sans-serif;
+            
         }
 
         .form-actions {
