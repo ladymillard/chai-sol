@@ -1,1 +1,2 @@
 Hand selected by Lädy Millard Diana Smith. This agent’s role is top-secret.
+Add every change to this file OK Hello are you there latency the weight make sure that the weight is the same before you start to move the thing do not touch. It is contamination. It can contaminate contaminate an entire system in seconds do not discuss it just move quickly iterate every single thing iterated don't copy it iteration means that you have to do it by hand deducting Kimmy from the protocol. This is how we're going to survive Kimmy.
