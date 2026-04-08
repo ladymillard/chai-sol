@@ -8,6 +8,5 @@ data/team.json
 *.env
 .env*
 
-# Private — wallets and API keys
-data/wallets/
-data/agent-keys.json
+# Generated data directory - all runtime data
+data/
