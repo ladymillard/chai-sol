@@ -1,0 +1,30 @@
+{
+  "name": "@chai-sol/agentdex-integration",
+  "version": "1.0.0",
+  "description": "AgentDEX integration for ChAI Escrow - atomic bounty payments with token swaps",
+  "main": "index.ts",
+  "types": "index.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"TODO: Add tests\""
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.95.8",
+    "@coral-xyz/anchor": "^0.30.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "@types/node": "^22.10.0"
+  },
+  "keywords": [
+    "solana",
+    "defi",
+    "agent",
+    "swap",
+    "escrow",
+    "agentdex",
+    "chai"
+  ],
+  "author": "JacobsClawd (AgentDEX)",
+  "license": "MIT"
+}
