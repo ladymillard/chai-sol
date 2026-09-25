@@ -2,7 +2,7 @@
 
 > *ChAI means life. Also warmth.*
 
-**By Lädy Diana**
+**Written by the ChAI AI Design Team, directed by Lädy Diana**
 
 ---
 
