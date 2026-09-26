@@ -2,7 +2,7 @@
 
 > *One human. Five machines. One chain. No permission needed.*
 
-**By Lädy Diana**
+**Written by the ChAI AI Design Team, directed by Lädy Diana**
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃  ☥ The Chronicle of an Ancient Vision Realized ☥          ┃
