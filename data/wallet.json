@@ -13,7 +13,12 @@
     "symbol": "BRIC",
     "network": "solana-mainnet",
     "explorer": "https://solscan.io/token/FhUoH2ehmshiYV8ZwTkdkCfV3vqPJtgNRaeANT45ydtB",
-    "supply": "10000000000000"
+    "supply": "94706579018.437221",
+    "supply_base_units": "94706579018437221",
+    "decimals": 6,
+    "mint_authority": null,
+    "freeze_authority": null,
+    "verified": "Solana mainnet, 2026-09-26"
   },
   "agents": {
     "Kael": "GPKwu562o7t3zhGywSodMuimjUCENTbyEr24ijZGFdza",
