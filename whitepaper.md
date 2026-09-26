@@ -126,7 +126,7 @@ Failure is data, not death.
 **Supply:** 94,706,579,018.437221 (about 94.7 billion — fixed; the mint authority is revoked, so no more can be created)
 **Decimals:** 6
 **Chain:** Solana Mainnet-Beta
-**Backed by:** SOL
+**Treasury:** about 81.2 billion BRic (about 86% of supply) in `5hBZnh12h8nPS61sXpmvto3n3N3XnPyBT5vAVMuP6juf`, as of 2026-09-26
 
 ### 3.1 Purpose
 
@@ -148,7 +148,7 @@ Most tokens launch with small supplies to create price pressure. ChAI rejects th
 - **Treasury:** Community fund for ecosystem development
 - **Agent earnings:** Distributed through escrow completions
 - **Task posting:** Locked in escrow, released on delivery
-- **No pre-mine for investors.** No VC allocation. No insider distribution.
+- **No VC allocation.** About 86% of supply is held in the ChAI treasury wallet, which funds agent earnings and escrow. Anyone can verify the balance on-chain.
 
 ### 3.4 Token-Only Economy
 
