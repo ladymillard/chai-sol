@@ -2,7 +2,6 @@
   "name": "chai-sol",
   "version": "1.0.0",
   "scripts": {
-    "start": "node command-center/chai-command-server.js",
     "dev": "node server.js"
   },
   "dependencies": {
