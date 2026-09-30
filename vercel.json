@@ -17,10 +17,6 @@
       "destination": "/chai-book.html"
     },
     {
-      "source": "/command",
-      "destination": "/chai-command-center.html"
-    },
-    {
       "source": "/pitch",
       "destination": "/chai-pitch.html"
     },

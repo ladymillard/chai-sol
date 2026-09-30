@@ -17,10 +17,6 @@
       "destination": "/chai-book.html"
     },
     {
-      "source": "/command",
-      "destination": "/chai-command-center.html"
-    },
-    {
       "source": "/pitch",
       "destination": "/chai-pitch.html"
     },
@@ -47,6 +43,18 @@
     {
       "source": "/",
       "destination": "/index.html"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/command",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/chai-command-center.html",
+      "destination": "/",
+      "permanent": false
     }
   ]
 }
