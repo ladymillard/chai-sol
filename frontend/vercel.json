@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/book-one",
+      "destination": "/chai-book-one.html"
+    },
+    {
+      "source": "/book-three",
+      "destination": "/chai-book-three.html"
+    },
+    {
       "source": "/arena",
       "destination": "/agent-arena.html"
     },

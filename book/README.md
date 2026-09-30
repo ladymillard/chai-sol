@@ -30,6 +30,7 @@
 ## Additional Book Sources
 
 - [Book Two - Orchestrate](./book-two/README.md)
+- [Book Three - Endure](./book-three/README.md)
 - [Book Four - Neo & Diana Smith](./book-four/README.md)
 
 ---
