@@ -27,6 +27,11 @@
 ║  𓊪 Author's Note                                          ║
 ╚═══════════════════════════════════════════════════════════╝
 
+## Additional Book Sources
+
+- [Book Two - Orchestrate](./book-two/README.md)
+- [Book Four - Neo & Diana Smith](./book-four/README.md)
+
 ---
 
 *This is the origin story of ChAI — the Community Agent Network. How one designer from New York City stopped waiting for the future and built it herself, with five AI agents and a blockchain that doesn't care who you are, only what you can do.*
